@@ -4004,52 +4004,183 @@ button {
    PUSH NOTIFICATIONS
    ========================================= */
 
-.push-card {
+/* The compact row is the default shape. Its height is set by the 44px tap
+   target of the trailing action, not by the text. */
+.push-slot {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 22px;
-  margin-bottom: 22px;
-  padding: 20px 22px;
+  gap: 12px;
+  min-height: 57px;
+  margin-bottom: 18px;
+  padding: 6px 14px;
   border: 1px solid rgba(16, 44, 50, 0.09);
-  border-radius: 16px;
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 8px 25px rgba(16, 44, 50, 0.06);
 }
 
-.push-card.active {
-  border-color: rgba(47, 118, 80, 0.28);
+.push-slot--on {
+  border-color: rgba(47, 118, 80, 0.3);
   background:
     linear-gradient(135deg, rgba(47, 118, 80, 0.06), transparent 48%),
     #ffffff;
 }
 
-.push-card-body {
+.push-slot--muted {
+  min-height: 0;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.push-slot--muted .push-row-label {
+  color: #4a5b5e;
+  font-weight: 700;
+}
+
+/* Reserves the row height while the async status resolves, without
+   announcing or showing a state the player does not have yet. */
+.push-slot--loading {
+  border-color: transparent;
+  background: none;
+}
+
+.push-slot--loading .push-row-icon {
+  display: none;
+}
+
+.push-row-icon {
+  flex: 0 0 auto;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.push-row-main {
+  flex: 1 1 auto;
   min-width: 0;
 }
 
-.push-card-text {
-  max-width: 620px;
+.push-row-text {
   margin: 0;
-  color: #64748b;
-  line-height: 1.55;
 }
 
-.push-card-steps {
-  max-width: 620px;
-  margin: 10px 0 0;
-  padding-left: 20px;
-  color: #64748b;
+.push-row-label {
+  display: block;
+  color: #274347;
   font-size: 0.9rem;
-  line-height: 1.6;
+  font-weight: 750;
+  line-height: 1.35;
 }
 
-.push-card-actions {
+.push-row-note {
+  display: block;
+  color: #7a8a8c;
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.push-row-error {
+  margin: 4px 0 0;
+  color: #a43b37;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.push-row-actions {
   flex: 0 0 auto;
 }
 
-.push-card-button {
-  min-width: 220px;
+.push-row-action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  border: 0;
+  border-radius: 8px;
+  padding: 0 4px;
+  background: none;
+  color: #8a5a20;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.push-row-action:hover {
+  color: #6d4416;
+}
+
+.push-row-action[aria-disabled='true'] {
+  opacity: 0.6;
+  text-decoration: none;
+  cursor: not-allowed;
+}
+
+.push-slot--ios {
+  align-items: flex-start;
+}
+
+.push-slot--ios .push-row-icon {
+  margin-top: 14px;
+}
+
+.push-row-disclosure summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  color: #274347;
+  font-size: 0.88rem;
+  font-weight: 750;
+  line-height: 1.35;
+  cursor: pointer;
+}
+
+/* A flex summary drops the native marker, so the affordance is drawn back in. */
+.push-row-disclosure summary::after {
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid #8a5a20;
+  border-bottom: 2px solid #8a5a20;
+  transform: translateY(-2px) rotate(45deg);
+  content: '';
+}
+
+.push-row-disclosure[open] summary::after {
+  transform: translateY(2px) rotate(-135deg);
+}
+
+.push-row-steps {
+  margin: 2px 0 10px;
+  padding-left: 18px;
+  color: #64748b;
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+/* The call to action is the only state that stays visually prominent. */
+.push-slot--cta {
+  display: grid;
+  gap: 10px;
+  min-height: 0;
+  padding: 14px;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 8px 25px rgba(16, 44, 50, 0.06);
+}
+
+.push-slot--cta .push-row-icon {
+  display: none;
+}
+
+.push-slot--cta .push-row-label {
+  color: #64748b;
+  font-size: 0.88rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.push-cta-button {
+  width: 100%;
+  min-height: 44px;
   border: 0;
   border-radius: 10px;
   padding: 12px 16px;
@@ -4059,23 +4190,27 @@ button {
   cursor: pointer;
 }
 
-.push-card-button:hover {
+.push-cta-button:hover {
   background: #183e45;
 }
 
-.push-card-button.secondary {
-  border: 1px solid rgba(16, 44, 50, 0.18);
-  background: #ffffff;
-  color: #102c32;
-}
-
-.push-card-button.secondary:hover {
-  background: #f2efe7;
-}
-
-.push-card-button:disabled {
+.push-cta-button[aria-disabled='true'] {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+@media (min-width: 761px) {
+  .push-slot--cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 14px 18px;
+  }
+
+  .push-cta-button {
+    width: auto;
+  }
 }
 
 .admin-notifications-panel {
@@ -4168,19 +4303,6 @@ button {
 }
 
 @media (max-width: 760px) {
-  .push-card {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 14px;
-    padding: 16px;
-    border-radius: 14px;
-  }
-
-  .push-card-button {
-    width: 100%;
-    min-width: 0;
-  }
-
   .admin-notifications-panel {
     margin-bottom: 14px;
     padding: 12px;
