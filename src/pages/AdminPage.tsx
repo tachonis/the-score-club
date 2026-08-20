@@ -3,6 +3,7 @@ import {
   AppHeader,
   type AppDestination,
 } from '../components/AppHeader'
+import { AdminCupPanel } from '../components/cup/AdminCupPanel'
 import { AdminNotificationsPanel } from '../components/AdminNotificationsPanel'
 import { LongTermOutcomesPanel } from '../components/LongTermOutcomesPanel'
 import { supabase } from '../lib/supabase'
@@ -277,6 +278,8 @@ export function AdminPage({
             {message}
           </p>
         )}
+
+        <AdminCupPanel />
 
         <AdminNotificationsPanel />
 

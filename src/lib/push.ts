@@ -4,6 +4,7 @@ export const pushDestinations = [
   'home',
   'predictions',
   'standings',
+  'players-cup',
   'league-phase',
   'rules',
 ] as const

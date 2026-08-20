@@ -4,6 +4,7 @@ export type AppDestination =
   | 'home'
   | 'predictions'
   | 'standings'
+  | 'players-cup'
   | 'league-phase'
   | 'rules'
   | 'admin'
@@ -44,6 +45,12 @@ const navigationItems: NavigationItem[] = [
     icon: '🏆',
   },
   {
+    destination: 'players-cup',
+    desktopLabel: 'Players Cup',
+    mobileLabel: 'Κύπελλο',
+    icon: '◈',
+  },
+  {
     destination: 'league-phase',
     desktopLabel: 'League Phase',
     mobileLabel: 'League Phase',
@@ -68,6 +75,7 @@ const bottomDestinations: AppDestination[] = [
   'home',
   'predictions',
   'standings',
+  'players-cup',
 ]
 
 const overflowDestinations: AppDestination[] = [

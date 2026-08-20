@@ -1,3 +1,5 @@
+import { DEFAULT_CUP_REWARDS } from '../lib/cup'
+
 export function RulesContent() {
   return (
     <>
@@ -81,9 +83,17 @@ export function RulesContent() {
           αναμετρήσεις μεταξύ των ενεργών παικτών.
         </p>
         <ul>
-          <li><strong>30 βαθμοί</strong> για τον νικητή.</li>
-          <li><strong>20 βαθμοί</strong> για τον φιναλίστ.</li>
-          <li><strong>10 βαθμοί</strong> για κάθε ημιφιναλίστ.</li>
+          <li>
+            <strong>{DEFAULT_CUP_REWARDS.winner} βαθμοί</strong> για τον νικητή.
+          </li>
+          <li>
+            <strong>{DEFAULT_CUP_REWARDS.finalist} βαθμοί</strong> για τον
+            φιναλίστ.
+          </li>
+          <li>
+            <strong>{DEFAULT_CUP_REWARDS.semiFinalist} βαθμοί</strong> για κάθε
+            ημιφιναλίστ.
+          </li>
         </ul>
         <p>Οι ανταμοιβές δεν προστίθενται μεταξύ τους.</p>
       </section>

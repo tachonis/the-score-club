@@ -11,6 +11,7 @@ import { RegisterPage } from './pages/RegisterPage'
 import { RulesModal } from './pages/RulesModal'
 import { RulesPage } from './pages/RulesPage'
 import { PredictionsPage } from './pages/PredictionsPage'
+import { PlayersCupPage } from './pages/PlayersCupPage'
 import { StandingsPage } from './pages/StandingsPage'
 import './auth.css'
 
@@ -203,6 +204,17 @@ function App() {
     if (appPage === 'standings') {
       return (
         <StandingsPage
+          username={profile.username}
+          role={profile.role}
+          onNavigate={handleNavigate}
+          onLogout={handleLogout}
+        />
+      )
+    }
+
+    if (appPage === 'players-cup') {
+      return (
+        <PlayersCupPage
           username={profile.username}
           role={profile.role}
           onNavigate={handleNavigate}
