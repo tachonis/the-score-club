@@ -122,10 +122,6 @@ export function StandingsPage({
                   {rows.length === 1 ? 'παίκτης' : 'παίκτες'}
                 </strong>
               </div>
-
-              <span className="tsc-season-badge">
-                League Phase
-              </span>
             </div>
 
             <div className="tsc-table-scroll">
@@ -194,11 +190,29 @@ export function StandingsPage({
           </section>
         )}
 
-        <div className="tsc-tiebreak-note">
-          <strong>Ισοβαθμία:</strong> προηγούνται τα περισσότερα
-          ακριβή σκορ και στη συνέχεια τα περισσότερα σωστά
-          αποτελέσματα.
-        </div>
+        <section className="tsc-tiebreak-note" aria-labelledby="standings-tiebreak-heading">
+          <h2 id="standings-tiebreak-heading">Ισοβαθμία</h2>
+          <p>Σε ισοβαθμία εφαρμόζονται διαδοχικά:</p>
+          <ol>
+            <li>περισσότερα ακριβή σκορ</li>
+            <li>περισσότερα σωστά αποτελέσματα</li>
+            <li>περισσότεροι βαθμοί στα νοκ-άουτ</li>
+            <li>λιγότερες χαμένες προβλέψεις</li>
+          </ol>
+          <p>
+            Αν παραμένει ισοβαθμία, οι παίκτες μοιράζονται την ίδια θέση.
+          </p>
+          <p>
+            Οι βαθμοί στα νοκ-άουτ προέρχονται από προβλέψεις στα Knockout
+            Play-offs, τη Φάση των 16, τα Προημιτελικά, τα Ημιτελικά και
+            τον Τελικό. Δεν περιλαμβάνουν League Phase, Players Cup ή
+            μακροχρόνιες προβλέψεις.
+          </p>
+          <p>
+            Χαμένες προβλέψεις είναι τελειωμένοι αγώνες στους οποίους ο
+            παίκτης δεν είχε πρόβλεψη.
+          </p>
+        </section>
       </main>
 
     </div>

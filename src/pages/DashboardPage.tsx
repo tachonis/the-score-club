@@ -4,6 +4,13 @@ import {
   type AppDestination,
 } from '../components/AppHeader'
 import { PushNotificationsCard } from '../components/PushNotificationsCard'
+import {
+  compareMatchdays,
+  getMatchdayRoundLabel,
+  getStageLabel,
+  isFinalStage,
+  isLeaguePhaseStage,
+} from '../lib/stages'
 import { supabase } from '../lib/supabase'
 
 type DashboardPageProps = {
@@ -47,30 +54,44 @@ const isMatchdayComplete = (matchdayMatches: Match[]) => {
   return matchdayMatches.every((match) => match.status === 'finished')
 }
 
-const selectNextMatchday = (
+const isMatchLocked = (match: Match, now: number) => {
+  return (
+    match.status !== 'scheduled' ||
+    now >= new Date(match.kickoff_at).getTime()
+  )
+}
+
+const selectCurrentMatchday = (
   matchdays: MatchdayWithMatches[],
-): { matchday: Matchday; matches: Match[] } | null => {
-  const orderedMatchdays = [...matchdays].sort((a, b) => {
-    const numberDiff = (a.matchday_number ?? 0) - (b.matchday_number ?? 0)
-    if (numberDiff !== 0) {
-      return numberDiff
-    }
+): { matchday: Matchday; matches: Match[]; allComplete: boolean } | null => {
+  const orderedMatchdays = [...matchdays].sort(compareMatchdays)
+  const populated = orderedMatchdays.filter(
+    (matchday) => (matchday.matches ?? []).length > 0,
+  )
 
-    return a.id - b.id
-  })
-
-  for (const matchday of orderedMatchdays) {
-    const matchdayMatches = [...(matchday.matches ?? [])].sort(
-      (a, b) =>
-        new Date(a.kickoff_at).getTime() - new Date(b.kickoff_at).getTime(),
-    )
-
-    if (!isMatchdayComplete(matchdayMatches)) {
-      return { matchday, matches: matchdayMatches }
-    }
+  if (populated.length === 0) {
+    return null
   }
 
-  return null
+  const withSortedMatches = populated.map((matchday) => ({
+    matchday,
+    matches: [...(matchday.matches ?? [])].sort(
+      (left, right) =>
+        new Date(left.kickoff_at).getTime() -
+        new Date(right.kickoff_at).getTime(),
+    ),
+  }))
+
+  const incomplete = withSortedMatches.find(
+    ({ matches }) => !isMatchdayComplete(matches),
+  )
+
+  if (incomplete) {
+    return { ...incomplete, allComplete: false }
+  }
+
+  const latest = withSortedMatches[withSortedMatches.length - 1]
+  return { ...latest, allComplete: true }
 }
 
 type Prediction = {
@@ -93,6 +114,7 @@ export function DashboardPage({
 }: DashboardPageProps) {
   const [nextMatchday, setNextMatchday] =
     useState<Matchday | null>(null)
+  const [roundComplete, setRoundComplete] = useState(false)
 
   const [matches, setMatches] = useState<Match[]>([])
   const [predictions, setPredictions] = useState<Prediction[]>([])
@@ -150,22 +172,22 @@ export function DashboardPage({
               status
             )
           `)
-          .order('matchday_number', { ascending: true })
 
       if (matchdayError) {
         setLoadError(
-          `Δεν φορτώθηκε η επόμενη αγωνιστική: ${matchdayError.message}`,
+          `Δεν φορτώθηκαν οι επόμενοι αγώνες: ${matchdayError.message}`,
         )
         setLoading(false)
         return
       }
 
-      const selected = selectNextMatchday(
+      const selected = selectCurrentMatchday(
         (matchdaysData ?? []) as MatchdayWithMatches[],
       )
 
       if (!selected) {
         setNextMatchday(null)
+        setRoundComplete(false)
         setMatches([])
         setPredictions([])
         setLoading(false)
@@ -176,6 +198,7 @@ export function DashboardPage({
       const loadedMatches = selected.matches
 
       setNextMatchday(loadedMatchday)
+      setRoundComplete(selected.allComplete)
       setMatches(loadedMatches)
 
       const matchIds = loadedMatches.map((match) => match.id)
@@ -220,6 +243,40 @@ export function DashboardPage({
   }, [savedPredictions, totalMatches])
 
   const nextKickoff = matches[0]?.kickoff_at ?? null
+  const now = Date.now()
+  const allFinished =
+    matches.length > 0 &&
+    matches.every((match) => match.status === 'finished')
+  const allLocked =
+    matches.length > 0 &&
+    matches.every((match) => isMatchLocked(match, now))
+  const stageLabel = nextMatchday ? getStageLabel(nextMatchday.stage) : ''
+  const roundLabel = nextMatchday
+    ? getMatchdayRoundLabel(
+        nextMatchday.stage,
+        nextMatchday.matchday_number,
+        nextMatchday.name,
+      )
+    : ''
+  const showRoundSubtitle =
+    roundLabel !== '' &&
+    roundLabel !== stageLabel &&
+    !isFinalStage(nextMatchday?.stage ?? '')
+  const eyebrowLabel = () => {
+    if (!nextMatchday) {
+      return 'Επόμενοι αγώνες'
+    }
+
+    if (roundComplete || allFinished) {
+      return 'Ολοκληρωμένοι αγώνες'
+    }
+
+    if (isLeaguePhaseStage(nextMatchday.stage)) {
+      return 'Επόμενη αγωνιστική'
+    }
+
+    return 'Επόμενοι αγώνες'
+  }
 
   const formatDate = (dateValue: string) => {
     return new Intl.DateTimeFormat('el-GR', {
@@ -240,11 +297,19 @@ export function DashboardPage({
 
   const matchdayStatusLabel = () => {
     if (!nextMatchday) {
-      return 'Δεν υπάρχει αγωνιστική'
+      return 'Δεν υπάρχουν αγώνες'
     }
 
     if (matches.length === 0) {
       return 'Δεν έχει ξεκινήσει'
+    }
+
+    if (allFinished) {
+      return 'Ολοκληρώθηκε'
+    }
+
+    if (allLocked) {
+      return 'Κλειδωμένο'
     }
 
     const allScheduled = matches.every(
@@ -257,6 +322,23 @@ export function DashboardPage({
 
     return 'Σε εξέλιξη'
   }
+
+  const roundDescription = () => {
+    if (allFinished) {
+      return 'Οι αγώνες αυτού του γύρου ολοκληρώθηκαν.'
+    }
+
+    if (allLocked) {
+      return 'Οι προβλέψεις έχουν κλειδώσει.'
+    }
+
+    return 'Οι προβλέψεις κλειδώνουν ξεχωριστά με την έναρξη κάθε αγώνα. Μπορείς να τις αλλάξεις μέχρι τότε.'
+  }
+
+  const ctaLabel =
+    totalMatches > 0 && (allLocked || allFinished || savedPredictions === totalMatches)
+      ? 'Έλεγξε τις προβλέψεις σου'
+      : 'Κάνε τις προβλέψεις σου'
 
   return (
     <div className="app-shell">
@@ -322,7 +404,11 @@ export function DashboardPage({
             </strong>
 
             <small>
-              {nextMatchday?.name ?? 'Δεν υπάρχει ενεργή αγωνιστική'}
+              {nextMatchday
+                ? showRoundSubtitle
+                  ? `${stageLabel} · ${roundLabel}`
+                  : stageLabel
+                : 'Δεν υπάρχει ενεργός γύρος'}
             </small>
           </article>
         </section>
@@ -332,7 +418,7 @@ export function DashboardPage({
         {loading ? (
           <section className="dashboard-loading-card">
             <div className="loading-mark">TSC</div>
-            <p>Φόρτωση αγωνιστικής...</p>
+            <p>Φόρτωση αγώνων...</p>
           </section>
         ) : nextMatchday ? (
           <section className="next-matchday-card">
@@ -340,10 +426,13 @@ export function DashboardPage({
               <div className="matchday-heading-row">
                 <div>
                   <p className="dashboard-eyebrow">
-                    Επόμενη αγωνιστική
+                    {eyebrowLabel()}
                   </p>
 
-                  <h2>{nextMatchday.name}</h2>
+                  <h2>{stageLabel}</h2>
+                  {showRoundSubtitle && (
+                    <p className="matchday-round-label">{roundLabel}</p>
+                  )}
                 </div>
 
                 <span className="matchday-status">
@@ -353,7 +442,7 @@ export function DashboardPage({
 
               {nextKickoff ? (
                 <p className="matchday-date">
-                  Πρώτος αγώνας: {formatDate(nextKickoff)} στις{' '}
+                  Έναρξη: {formatDate(nextKickoff)} στις{' '}
                   {formatTime(nextKickoff)}
                 </p>
               ) : (
@@ -363,8 +452,7 @@ export function DashboardPage({
               )}
 
               <p className="matchday-description">
-                Οι προβλέψεις κλειδώνουν ξεχωριστά με την έναρξη
-                κάθε αγώνα. Μπορείς να τις αλλάξεις μέχρι τότε.
+                {roundDescription()}
               </p>
 
               <div className="prediction-progress">
@@ -398,10 +486,7 @@ export function DashboardPage({
                 onClick={() => onNavigate('predictions')}
                 disabled={totalMatches === 0}
               >
-                {savedPredictions === totalMatches &&
-                totalMatches > 0
-                  ? 'Έλεγξε τις προβλέψεις σου'
-                  : 'Κάνε τις προβλέψεις σου'}
+                {ctaLabel}
               </button>
             </div>
 
@@ -421,11 +506,11 @@ export function DashboardPage({
           </section>
         ) : (
           <section className="empty-state">
-            <h2>Δεν υπάρχει επόμενη αγωνιστική</h2>
+            <h2>Δεν υπάρχουν διαθέσιμοι αγώνες</h2>
 
             <p>
-              Η επόμενη αγωνιστική θα εμφανιστεί όταν προστεθεί
-              από τη διαχείριση.
+              Ο επόμενος γύρος θα εμφανιστεί όταν προστεθούν οι
+              επίσημες αναμετρήσεις.
             </p>
           </section>
         )}

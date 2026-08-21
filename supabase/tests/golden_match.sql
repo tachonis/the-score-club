@@ -24,7 +24,8 @@ select set_config(
     from public.matches as match_row
     join public.matchdays as matchday
       on matchday.id = match_row.matchday_id
-    where matchday.matchday_number = 1
+    where matchday.stage = 'league_phase'
+      and matchday.matchday_number = 1
     order by match_row.kickoff_at, match_row.id
     limit 1
   ),
@@ -37,7 +38,8 @@ select set_config(
     from public.matches as match_row
     join public.matchdays as matchday
       on matchday.id = match_row.matchday_id
-    where matchday.matchday_number = 2
+    where matchday.stage = 'league_phase'
+      and matchday.matchday_number = 2
     order by match_row.kickoff_at, match_row.id
     limit 1
   ),
@@ -50,7 +52,8 @@ select set_config(
     from public.matches as match_row
     join public.matchdays as matchday
       on matchday.id = match_row.matchday_id
-    where matchday.matchday_number = 2
+    where matchday.stage = 'league_phase'
+      and matchday.matchday_number = 2
     order by match_row.kickoff_at, match_row.id
     offset 1
     limit 1
@@ -64,7 +67,8 @@ select set_config(
     from public.matches as match_row
     join public.matchdays as matchday
       on matchday.id = match_row.matchday_id
-    where matchday.matchday_number = 2
+    where matchday.stage = 'league_phase'
+      and matchday.matchday_number = 2
     order by match_row.kickoff_at, match_row.id
     offset 2
     limit 1

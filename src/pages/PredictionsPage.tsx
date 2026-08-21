@@ -4,6 +4,17 @@ import {
   type AppDestination,
 } from '../components/AppHeader'
 import { LongTermPredictionsSection } from '../components/LongTermPredictionsSection'
+import {
+  compareMatchdays,
+  formatMatchdayLabel,
+  formatMatchdayTabLabel,
+  getMatchdayHeadingEyebrow,
+  getMatchdayRoundLabel,
+  isFinalStage,
+  isGoldenMatchAvailable,
+  isGoldenMatchStage,
+  isKnockoutPredictionStage,
+} from '../lib/stages'
 import { supabase } from '../lib/supabase'
 import { getCompactTeamName } from '../lib/teamDisplayName'
 
@@ -63,6 +74,69 @@ type GoldenMatchSelection = {
   matchday_id: number
 }
 
+const uniqueOrderedMatchdays = (matches: Match[]) => {
+  const uniqueMatchdays = new Map<number, Matchday>()
+
+  matches.forEach((match) => {
+    uniqueMatchdays.set(match.matchday.id, match.matchday)
+  })
+
+  return Array.from(uniqueMatchdays.values()).sort(compareMatchdays)
+}
+
+const isMatchOpenForPredictions = (match: Match, now: number) => {
+  return (
+    match.status === 'scheduled' &&
+    now < new Date(match.kickoff_at).getTime()
+  )
+}
+
+const selectPreferredMatchdayId = (
+  orderedMatchdays: Matchday[],
+  matches: Match[],
+  now: number,
+) => {
+  const matchdaysWithMatches = orderedMatchdays.filter((matchday) =>
+    matches.some((match) => match.matchday_id === matchday.id),
+  )
+  const candidates =
+    matchdaysWithMatches.length > 0 ? matchdaysWithMatches : orderedMatchdays
+
+  if (candidates.length === 0) {
+    return null
+  }
+
+  const matchesFor = (matchdayId: number) =>
+    matches.filter((match) => match.matchday_id === matchdayId)
+
+  const isComplete = (matchday: Matchday) => {
+    const roundMatches = matchesFor(matchday.id)
+
+    return (
+      roundMatches.length > 0 &&
+      roundMatches.every((match) => match.status === 'finished')
+    )
+  }
+
+  const hasOpenMatch = (matchday: Matchday) =>
+    matchesFor(matchday.id).some((match) =>
+      isMatchOpenForPredictions(match, now),
+    )
+
+  const incomplete = candidates.filter((matchday) => !isComplete(matchday))
+  const withOpenPredictions = incomplete.find(hasOpenMatch)
+
+  if (withOpenPredictions) {
+    return withOpenPredictions.id
+  }
+
+  if (incomplete.length > 0) {
+    return incomplete[0].id
+  }
+
+  return candidates[candidates.length - 1].id
+}
+
 export function PredictionsPage({
   username,
   role,
@@ -83,6 +157,10 @@ export function PredictionsPage({
     Record<number, PredictionValues>
   >({})
 
+  const [predictionPoints, setPredictionPoints] = useState<
+    Record<number, number | null>
+  >({})
+
   const [goldenMatches, setGoldenMatches] = useState<
     Record<number, number>
   >({})
@@ -101,6 +179,8 @@ export function PredictionsPage({
   const [recentSaveFlash, setRecentSaveFlash] = useState(false)
   const saveFlashTimeoutRef = useRef<number | null>(null)
   const awayInputRefs = useRef<Record<number, HTMLInputElement | null>>({})
+  const matchdayTabRefs = useRef<Record<number, HTMLButtonElement | null>>({})
+  const userPickedMatchdayRef = useRef(false)
 
   useEffect(() => {
     return () => {
@@ -215,12 +295,14 @@ export function PredictionsPage({
         (predictionsData ?? []) as StoredPrediction[]
 
       const predictionValues: Record<number, PredictionValues> = {}
+      const loadedPoints: Record<number, number | null> = {}
 
       loadedPredictions.forEach((prediction) => {
         predictionValues[prediction.match_id] = {
           home: String(prediction.predicted_home_score),
           away: String(prediction.predicted_away_score),
         }
+        loadedPoints[prediction.match_id] = prediction.points
       })
 
       const loadedGoldenMatches =
@@ -234,10 +316,17 @@ export function PredictionsPage({
       setMatches(loadedMatches)
       setPredictions(predictionValues)
       setSavedPredictions(predictionValues)
+      setPredictionPoints(loadedPoints)
       setGoldenMatches(goldenMatchValues)
 
-      if (loadedMatches.length > 0) {
-        setSelectedMatchdayId(loadedMatches[0].matchday_id)
+      if (!userPickedMatchdayRef.current) {
+        setSelectedMatchdayId(
+          selectPreferredMatchdayId(
+            uniqueOrderedMatchdays(loadedMatches),
+            loadedMatches,
+            Date.now(),
+          ),
+        )
       }
 
       setLoading(false)
@@ -251,17 +340,21 @@ export function PredictionsPage({
     return () => window.clearInterval(timer)
   }, [])
 
-  const matchdays = useMemo(() => {
-    const uniqueMatchdays = new Map<number, Matchday>()
+  useEffect(() => {
+    if (selectedMatchdayId === null) {
+      return
+    }
 
-    matches.forEach((match) => {
-      uniqueMatchdays.set(match.matchday.id, match.matchday)
+    matchdayTabRefs.current[selectedMatchdayId]?.scrollIntoView({
+      block: 'nearest',
+      inline: 'nearest',
     })
+  }, [selectedMatchdayId])
 
-    return Array.from(uniqueMatchdays.values()).sort((a, b) => {
-      return (a.matchday_number ?? 0) - (b.matchday_number ?? 0)
-    })
-  }, [matches])
+  const matchdays = useMemo(
+    () => uniqueOrderedMatchdays(matches),
+    [matches],
+  )
 
   const selectedMatches = useMemo(() => {
     if (selectedMatchdayId === null) {
@@ -277,8 +370,14 @@ export function PredictionsPage({
     (matchday) => matchday.id === selectedMatchdayId,
   )
 
-  const goldenMatchIsAvailable =
-    (selectedMatchday?.matchday_number ?? 0) >= 2
+  const selectedStage = selectedMatchday?.stage ?? ''
+  const showGoldenMatchGuide = isGoldenMatchStage(selectedStage)
+  const goldenMatchIsAvailable = isGoldenMatchAvailable(
+    selectedStage,
+    selectedMatchday?.matchday_number ?? null,
+  )
+  const showKnockoutScoringNote = isKnockoutPredictionStage(selectedStage)
+  const showFinalScoringNote = isFinalStage(selectedStage)
   const selectedGoldenMatchId = selectedMatchdayId === null
     ? null
     : (goldenMatches[selectedMatchdayId] ?? null)
@@ -368,7 +467,11 @@ export function PredictionsPage({
   const handleGoldenMatchSelection = async (match: Match) => {
     if (!goldenMatchIsAvailable) {
       setMessageType('error')
-      setMessage('Το Golden Match ενεργοποιείται από τη 2η αγωνιστική.')
+      setMessage(
+        isGoldenMatchStage(selectedStage)
+          ? 'Το Golden Match ενεργοποιείται από τη 2η αγωνιστική της League Phase.'
+          : 'Το Golden Match ισχύει μόνο στη League Phase.',
+      )
       return
     }
 
@@ -396,7 +499,9 @@ export function PredictionsPage({
     if (error) {
       const knownMessages: Record<string, string> = {
         'Golden Match is available from Matchday 2':
-          'Το Golden Match ενεργοποιείται από τη 2η αγωνιστική.',
+          'Το Golden Match ενεργοποιείται από τη 2η αγωνιστική της League Phase.',
+        'Golden Match is available only during the League Phase':
+          'Το Golden Match ισχύει μόνο στη League Phase.',
         'Golden Match must be selected before kickoff':
           'Η επιλογή πρέπει να γίνει πριν από το kickoff.',
         'Golden Match is locked after its kickoff':
@@ -612,43 +717,81 @@ export function PredictionsPage({
           <>
             <section className="matchday-selector">
               <div className="matchday-tabs" role="tablist">
-                {matchdays.map((matchday) => (
-                  <button
-                    key={matchday.id}
-                    type="button"
-                    className={`matchday-tab ${
-                      selectedMatchdayId === matchday.id
-                        ? 'active'
-                        : ''
-                    }`}
-                    onClick={() =>
-                      setSelectedMatchdayId(matchday.id)
-                    }
-                  >
-                    {matchday.matchday_number
-                      ? `${matchday.matchday_number}η αγωνιστική`
-                      : matchday.name}
-                  </button>
-                ))}
+                {matchdays.map((matchday) => {
+                  const isSelected = selectedMatchdayId === matchday.id
+
+                  return (
+                    <button
+                      key={matchday.id}
+                      ref={(element) => {
+                        matchdayTabRefs.current[matchday.id] = element
+                      }}
+                      type="button"
+                      role="tab"
+                      aria-selected={isSelected}
+                      aria-label={formatMatchdayLabel(
+                        matchday.stage,
+                        matchday.matchday_number,
+                        matchday.name,
+                      )}
+                      className={`matchday-tab ${isSelected ? 'active' : ''}`}
+                      onClick={() => {
+                        userPickedMatchdayRef.current = true
+                        setSelectedMatchdayId(matchday.id)
+                      }}
+                    >
+                      {formatMatchdayTabLabel(
+                        matchday.stage,
+                        matchday.matchday_number,
+                        matchday.name,
+                      )}
+                    </button>
+                  )
+                })}
               </div>
             </section>
 
             <section className="selected-matchday-info">
               <div>
-                <span>League Phase</span>
+                <span>{getMatchdayHeadingEyebrow(selectedStage)}</span>
 
                 <h2>
-                  {selectedMatchday?.name ??
-                    'Επιλεγμένη αγωνιστική'}
+                  {selectedMatchday
+                    ? getMatchdayRoundLabel(
+                        selectedMatchday.stage,
+                        selectedMatchday.matchday_number,
+                        selectedMatchday.name,
+                      )
+                    : 'Επιλεγμένη φάση'}
                 </h2>
               </div>
 
-              <p className="matchday-timezone-note">
-                Οι ώρες εμφανίζονται αυτόματα στην τοπική ώρα
-                της συσκευής σου.
-              </p>
+              <div className="selected-matchday-notes">
+                <p className="matchday-timezone-note">
+                  Οι ώρες εμφανίζονται αυτόματα στην τοπική ώρα
+                  της συσκευής σου.
+                </p>
+                {showKnockoutScoringNote && (
+                  <>
+                    <p className="prediction-knockout-note">
+                      Η πρόβλεψη αφορά το σκορ μετά τα 90 λεπτά + τις
+                      καθυστερήσεις.
+                    </p>
+                    <p className="prediction-knockout-note">
+                      Παράταση και πέναλτι δεν υπολογίζονται.
+                    </p>
+                  </>
+                )}
+                {showFinalScoringNote && (
+                  <p className="prediction-final-note">
+                    Ο Τελικός βαθμολογείται x2: 10 βαθμοί για ακριβές σκορ,
+                    4 για σωστό αποτέλεσμα, 0 για λάθος.
+                  </p>
+                )}
+              </div>
             </section>
 
+            {showGoldenMatchGuide && (
             <section
               className={`golden-match-guide ${
                 goldenMatchIsAvailable ? '' : 'inactive'
@@ -663,12 +806,12 @@ export function PredictionsPage({
                 <h3>
                   {goldenMatchIsAvailable
                     ? 'Διάλεξε ένα παιχνίδι της αγωνιστικής'
-                    : 'Διαθέσιμο από τη 2η αγωνιστική'}
+                    : 'Διαθέσιμο από τη 2η αγωνιστική της League Phase'}
                 </h3>
                 <p>
                   {goldenMatchIsAvailable
                     ? 'Ακριβές σκορ 10 βαθμοί, σωστό 1-X-2 4 βαθμοί. Μπορείς να αλλάξεις επιλογή πριν από το kickoff του επιλεγμένου αγώνα· η νέα επιλογή αντικαθιστά την προηγούμενη.'
-                    : 'Το δικαίωμα της 1ης αγωνιστικής δεν μεταφέρεται. Από τη 2η αγωνιστική έχεις μία ανεξάρτητη επιλογή ανά αγωνιστική.'}
+                    : 'Το δικαίωμα της 1ης αγωνιστικής δεν μεταφέρεται. Το Golden Match ισχύει μόνο στη League Phase, από τη 2η αγωνιστική και μετά.'}
                 </p>
               </div>
 
@@ -698,9 +841,18 @@ export function PredictionsPage({
                 </p>
               )}
             </section>
+            )}
 
             <section className="matches-list">
-              {selectedMatches.map((match) => {
+              {selectedMatches.length === 0 ? (
+                <div className="empty-state">
+                  <h2>Δεν υπάρχουν αγώνες</h2>
+                  <p>
+                    Οι αγώνες αυτής της φάσης θα εμφανιστούν όταν
+                    προστεθούν από τη διαχείριση.
+                  </p>
+                </div>
+              ) : selectedMatches.map((match) => {
                 const prediction = predictions[match.id] ?? {
                   home: '',
                   away: '',
@@ -710,9 +862,17 @@ export function PredictionsPage({
                 const complete = hasCompletePrediction(match.id)
                 const saved = hasSavedPrediction(match.id)
                 const changed = hasUnsavedChanges(match.id)
-                const goldenSelected =
-                  selectedGoldenMatchId === match.id
-                const matchLocked = isMatchLocked(match)
+                const goldenSelected = selectedGoldenMatchId === match.id
+                const matchLocked = locked
+                const points = predictionPoints[match.id]
+                const isFinished = match.status === 'finished'
+                const officialScore =
+                  match.home_score !== null && match.away_score !== null
+                    ? `${match.home_score}–${match.away_score}`
+                    : null
+                const savedScore = saved
+                  ? `${savedPredictions[match.id].home}–${savedPredictions[match.id].away}`
+                  : null
 
                 return (
                   <article
@@ -873,10 +1033,28 @@ export function PredictionsPage({
                     </div>
 
                     <div className="prediction-status">
-                      {locked ? (
+                      {isFinished ? (
+                        <div className="prediction-result-summary">
+                          {officialScore && (
+                            <p>Τελικό σκορ: {officialScore}</p>
+                          )}
+                          {savedScore ? (
+                            <>
+                              <p>Η πρόβλεψή σου: {savedScore}</p>
+                              {points !== undefined && points !== null && (
+                                <p>Βαθμοί: {points}</p>
+                              )}
+                            </>
+                          ) : (
+                            <span className="status-locked">
+                              Ο αγώνας έχει κλειδώσει χωρίς πρόβλεψη
+                            </span>
+                          )}
+                        </div>
+                      ) : locked ? (
                         saved ? (
                           <span className="status-locked">
-                            Η αποθηκευμένη πρόβλεψη έχει κλειδώσει
+                            Η πρόβλεψη έχει κλειδώσει.
                           </span>
                         ) : (
                           <span className="status-locked">

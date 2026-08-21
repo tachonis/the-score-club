@@ -6,6 +6,12 @@ import {
 import { AdminCupPanel } from '../components/cup/AdminCupPanel'
 import { AdminNotificationsPanel } from '../components/AdminNotificationsPanel'
 import { LongTermOutcomesPanel } from '../components/LongTermOutcomesPanel'
+import {
+  compareMatchdays,
+  formatMatchdayLabel,
+  isFinalStage,
+  isLeaguePhaseStage,
+} from '../lib/stages'
 import { supabase } from '../lib/supabase'
 
 type AdminPageProps = {
@@ -126,14 +132,21 @@ export function AdminPage({
     setMatches(loadedMatches)
     setDrafts(loadedDrafts)
 
-    const matchdayIds = new Set(
-      loadedMatches.map((match) => match.matchday_id),
+    const uniqueMatchdays = new Map<number, Matchday>()
+
+    loadedMatches.forEach((match) => {
+      uniqueMatchdays.set(match.matchday.id, match.matchday)
+    })
+
+    const orderedMatchdays = Array.from(uniqueMatchdays.values()).sort(
+      compareMatchdays,
     )
+    const matchdayIds = new Set(orderedMatchdays.map((matchday) => matchday.id))
 
     if (preferredMatchdayId && matchdayIds.has(preferredMatchdayId)) {
       setSelectedMatchdayId(preferredMatchdayId)
     } else {
-      setSelectedMatchdayId(loadedMatches[0]?.matchday_id ?? null)
+      setSelectedMatchdayId(orderedMatchdays[0]?.id ?? null)
     }
 
     setLoading(false)
@@ -150,9 +163,7 @@ export function AdminPage({
       uniqueMatchdays.set(match.matchday.id, match.matchday)
     })
 
-    return Array.from(uniqueMatchdays.values()).sort((a, b) => {
-      return (a.matchday_number ?? 0) - (b.matchday_number ?? 0)
-    })
+    return Array.from(uniqueMatchdays.values()).sort(compareMatchdays)
   }, [matches])
 
   const selectedMatches = useMemo(() => {
@@ -182,7 +193,7 @@ export function AdminPage({
 
     if (!draft || draft.home === '' || draft.away === '') {
       setMessageType('error')
-      setMessage('Συμπλήρωσε και τα δύο πεδία τελικού σκορ.')
+      setMessage('Συμπλήρωσε και τα δύο πεδία σκορ 90 λεπτών.')
       return
     }
 
@@ -216,6 +227,15 @@ export function AdminPage({
     setSavingMatchId(null)
   }
 
+  const selectedMatchday = matchdays.find(
+    (matchday) => matchday.id === selectedMatchdayId,
+  )
+  const selectedStage = selectedMatchday?.stage ?? null
+  const showKnockoutScoringNote =
+    selectedStage !== null && !isLeaguePhaseStage(selectedStage)
+  const showFinalScoringNote =
+    selectedStage !== null && isFinalStage(selectedStage)
+
   const formatKickoff = (dateValue: string) => {
     return new Intl.DateTimeFormat('el-GR', {
       weekday: 'short',
@@ -243,14 +263,14 @@ export function AdminPage({
             <p className="dashboard-eyebrow">Ασφαλής καταχώριση</p>
             <h1>Διαχείριση αποτελεσμάτων</h1>
             <p>
-              Καταχώρισε ή διόρθωσε τελικά σκορ. Η βαθμολογία
-              επανυπολογίζεται αυτόματα.
+              Καταχώρισε ή διόρθωσε σκορ. Η βαθμολογία επανυπολογίζεται
+              αυτόματα.
             </p>
           </div>
 
           {matchdays.length > 0 && (
             <label className="admin-matchday-select">
-              <span>Αγωνιστική</span>
+              <span>Φάση</span>
               <select
                 value={selectedMatchdayId ?? ''}
                 onChange={(event) =>
@@ -259,9 +279,11 @@ export function AdminPage({
               >
                 {matchdays.map((matchday) => (
                   <option key={matchday.id} value={matchday.id}>
-                    {matchday.matchday_number
-                      ? `${matchday.matchday_number}η αγωνιστική — ${matchday.name}`
-                      : matchday.name}
+                    {formatMatchdayLabel(
+                      matchday.stage,
+                      matchday.matchday_number,
+                      matchday.name,
+                    )}
                   </option>
                 ))}
               </select>
@@ -293,10 +315,25 @@ export function AdminPage({
         ) : selectedMatches.length === 0 ? (
           <section className="empty-state">
             <h2>Δεν υπάρχουν αγώνες</h2>
-            <p>Δεν βρέθηκαν αγώνες για την επιλεγμένη αγωνιστική.</p>
+            <p>Δεν βρέθηκαν αγώνες για την επιλεγμένη φάση.</p>
           </section>
         ) : (
           <section className="admin-matches-list">
+            <div className="admin-scoring-notes">
+              <p>Καταχώρησε το σκορ των 90 λεπτών + καθυστερήσεων.</p>
+              {showKnockoutScoringNote && (
+                <p>
+                  Σε νοκ-άουτ αγώνες δεν υπολογίζονται παράταση ή πέναλτι.
+                </p>
+              )}
+              {showFinalScoringNote && (
+                <p className="admin-final-note">
+                  Ο Τελικός βαθμολογείται x2: 10 βαθμοί για ακριβές σκορ, 4
+                  για σωστό αποτέλεσμα, 0 για λάθος.
+                </p>
+              )}
+            </div>
+
             {selectedMatches.map((match) => {
               const draft = drafts[match.id] ?? { home: '', away: '' }
               const isSaving = savingMatchId === match.id
@@ -321,7 +358,7 @@ export function AdminPage({
                         onChange={(event) =>
                           handleScoreChange(match.id, 'home', event.target.value)
                         }
-                        aria-label={`Τελικό σκορ ${match.home_team.name}`}
+                        aria-label={`Σκορ 90 λεπτών ${match.home_team.name}`}
                       />
                       <span>:</span>
                       <input
@@ -332,7 +369,7 @@ export function AdminPage({
                         onChange={(event) =>
                           handleScoreChange(match.id, 'away', event.target.value)
                         }
-                        aria-label={`Τελικό σκορ ${match.away_team.name}`}
+                        aria-label={`Σκορ 90 λεπτών ${match.away_team.name}`}
                       />
                     </div>
                     <strong>{match.away_team.name}</strong>

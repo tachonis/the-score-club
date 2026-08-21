@@ -396,6 +396,12 @@ button {
   font-size: 1.03rem;
 }
 
+.rules-content h4 {
+  margin: 16px 0 8px;
+  color: #102c32;
+  font-size: 0.92rem;
+}
+
 .rules-content p {
   margin: 0;
 }
@@ -839,6 +845,15 @@ button {
   margin: 0;
   color: #102c32;
   font-size: clamp(1.4rem, 3vw, 2rem);
+  overflow-wrap: anywhere;
+}
+
+.matchday-round-label {
+  margin: 4px 0 0;
+  color: #5f7376;
+  font-size: 1rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
 }
 
 .matchday-status {
@@ -1133,6 +1148,10 @@ button {
     overflow-wrap: anywhere;
   }
 
+  .matchday-round-label {
+    font-size: 0.92rem;
+  }
+
   .matchday-info > p:last-child {
     font-size: 0.95rem;
   }
@@ -1248,8 +1267,11 @@ button {
 
 .matchday-selector {
   margin-bottom: 18px;
+  max-width: 100%;
+  min-width: 0;
   overflow-x: auto;
   scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
 }
 
 .matchday-tabs {
@@ -1260,6 +1282,8 @@ button {
 }
 
 .matchday-tab {
+  flex: 0 0 auto;
+  white-space: nowrap;
   border: 1px solid rgba(16, 44, 50, 0.13);
   border-radius: 10px;
   padding: 9px 14px;
@@ -1281,6 +1305,11 @@ button {
   color: #ffffff;
 }
 
+.matchday-tab:focus-visible {
+  outline: 2px solid #d28b45;
+  outline-offset: 2px;
+}
+
 .selected-matchday-info {
   display: flex;
   align-items: center;
@@ -1299,6 +1328,7 @@ button {
   font-weight: 850;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+  overflow-wrap: anywhere;
 }
 
 .selected-matchday-info h2 {
@@ -1313,6 +1343,23 @@ button {
   font-size: 0.82rem;
   line-height: 1.45;
   text-align: right;
+}
+
+.selected-matchday-notes {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  max-width: 520px;
+}
+
+.prediction-knockout-note,
+.prediction-final-note {
+  overflow-wrap: anywhere;
+}
+
+.prediction-final-note {
+  color: #f0c98a;
+  font-weight: 750;
 }
 
 .matches-list {
@@ -1439,6 +1486,20 @@ button {
   padding: 0 14px 10px;
   font-size: 0.68rem;
   font-weight: 750;
+}
+
+.prediction-result-summary {
+  display: grid;
+  gap: 3px;
+  justify-items: center;
+  min-width: 0;
+  text-align: center;
+}
+
+.prediction-result-summary p {
+  margin: 0;
+  color: #4d5f62;
+  overflow-wrap: anywhere;
 }
 
 .status-pending {
@@ -1586,6 +1647,15 @@ button {
   .selected-matchday-info p {
     font-size: 0.84rem;
     text-align: left;
+  }
+
+  .selected-matchday-notes {
+    max-width: 100%;
+  }
+
+  .prediction-result-summary {
+    font-size: 0.76rem;
+    line-height: 1.35;
   }
 
   .selected-matchday-info > *,
@@ -3471,17 +3541,36 @@ button {
 
 .tsc-tiebreak-note {
   margin-top: 14px;
+  min-width: 0;
   padding: 13px 16px;
   border-left: 3px solid #d28b45;
   border-radius: 0 9px 9px 0;
   background: rgba(255, 255, 255, 0.6);
   color: #758486;
   font-size: 0.76rem;
-  line-height: 1.45;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
-.tsc-tiebreak-note strong {
+.tsc-tiebreak-note h2 {
+  margin: 0 0 6px;
   color: #102c32;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.tsc-tiebreak-note p,
+.tsc-tiebreak-note ol {
+  margin: 0 0 8px;
+}
+
+.tsc-tiebreak-note p:last-child,
+.tsc-tiebreak-note ol:last-child {
+  margin-bottom: 0;
+}
+
+.tsc-tiebreak-note ol {
+  padding-left: 1.2em;
 }
 
 @media (min-width: 761px) {
@@ -3519,6 +3608,11 @@ button {
 
   .tsc-leaderboard-top strong {
     font-size: 1rem;
+  }
+
+  .tsc-tiebreak-note {
+    padding: 12px 14px;
+    font-size: 0.8rem;
   }
 
   .tsc-table-header,
@@ -3598,7 +3692,12 @@ button {
   align-items: flex-end;
   justify-content: space-between;
   gap: 28px;
+  min-width: 0;
   margin-bottom: 26px;
+}
+
+.admin-heading > div {
+  min-width: 0;
 }
 
 .admin-heading h1 {
@@ -3616,7 +3715,9 @@ button {
 }
 
 .admin-matchday-select {
-  min-width: 260px;
+  min-width: min(280px, 100%);
+  max-width: min(420px, 100%);
+  flex: 1 1 240px;
   display: grid;
   gap: 7px;
 }
@@ -3631,6 +3732,8 @@ button {
 
 .admin-matchday-select select {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   border: 1px solid rgba(16, 44, 50, 0.17);
   border-radius: 10px;
   padding: 11px 36px 11px 12px;
@@ -3639,11 +3742,32 @@ button {
   font: inherit;
   font-size: 0.86rem;
   font-weight: 750;
+  overflow-wrap: anywhere;
 }
 
 .admin-matches-list {
   display: grid;
   gap: 14px;
+}
+
+.admin-scoring-notes {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  margin: 0 0 4px;
+  color: #5c6c6e;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.admin-scoring-notes p {
+  margin: 0;
+}
+
+.admin-final-note {
+  color: #8a5a28;
+  font-weight: 750;
 }
 
 .admin-match-card {
@@ -3977,6 +4101,12 @@ button {
   font-size: 1.08rem;
 }
 
+.rules-page-content h4 {
+  margin: 16px 0 8px;
+  color: #102c32;
+  font-size: 0.95rem;
+}
+
 .rules-page-content p {
   margin: 0;
 }
@@ -4059,6 +4189,7 @@ button {
 
   .admin-heading {
     min-width: 0;
+    align-items: stretch;
     display: grid;
     gap: 16px;
     margin-bottom: 20px;
@@ -4082,6 +4213,12 @@ button {
 
   .admin-matchday-select {
     min-width: 0;
+    max-width: 100%;
+    flex: none;
+  }
+
+  .admin-scoring-notes {
+    font-size: 0.84rem;
   }
 
   .admin-match-card {
