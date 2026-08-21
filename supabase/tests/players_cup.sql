@@ -1767,12 +1767,12 @@ select public.create_players_cup();
 
 select pg_temp.cup_assert(
   (
-    select competition.winner_points = 30
-      and competition.finalist_points = 20
-      and competition.semi_finalist_points = 10
+    select competition.winner_points = 50
+      and competition.finalist_points = 30
+      and competition.semi_finalist_points = 15
     from public.cup_competitions as competition
   ),
-  'reward configuration defaults to 30, 20 and 10'
+  'reward configuration defaults to 50, 30 and 15'
 );
 
 do $test$

@@ -348,8 +348,10 @@ button {
 }
 
 .rules-close {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   flex: 0 0 auto;
   display: grid;
   place-items: center;
@@ -367,9 +369,16 @@ button {
   background: #dce2dd;
 }
 
+.rules-close:focus-visible {
+  outline: 2px solid #d28b45;
+  outline-offset: 2px;
+}
+
 .rules-content {
   min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
   padding: 21px 24px;
   color: #435456;
   line-height: 1.55;
@@ -391,10 +400,20 @@ button {
   margin: 0;
 }
 
+.rules-content p + p,
+.rules-page-content p + p {
+  margin-top: 10px;
+}
+
 .rules-content ul,
 .rules-content ol {
   margin: 10px 0;
   padding-left: 22px;
+}
+
+.rules-content li,
+.rules-page-content li {
+  overflow-wrap: break-word;
 }
 
 .rules-content li + li {
@@ -421,6 +440,11 @@ button {
 
 .rules-done:hover {
   background: #183e45;
+}
+
+.rules-done:focus-visible {
+  outline: 2px solid #d28b45;
+  outline-offset: 2px;
 }
 
 @media (max-width: 820px) {
@@ -487,6 +511,7 @@ button {
   }
 
   .rules-modal {
+    width: 100%;
     max-height: calc(100vh - 20px);
     border-radius: 16px;
   }
@@ -496,6 +521,24 @@ button {
   .rules-footer {
     padding-left: 17px;
     padding-right: 17px;
+  }
+}
+
+@media (max-width: 390px) {
+  .rules-overlay {
+    padding: 8px;
+  }
+
+  .rules-modal {
+    max-height: calc(100vh - 16px);
+    border-radius: 14px;
+  }
+
+  .rules-header,
+  .rules-content,
+  .rules-footer {
+    padding-left: 14px;
+    padding-right: 14px;
   }
 }
 
@@ -4428,6 +4471,38 @@ button {
   min-width: 0;
 }
 
+.cup-page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.cup-rules-button {
+  min-height: 44px;
+  border: 1px solid rgba(16, 44, 50, 0.22);
+  border-radius: 9px;
+  padding: 8px 14px;
+  background: #ffffff;
+  color: #102c32;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.cup-rules-button:hover {
+  border-color: #d28b45;
+  background: #faf6f0;
+}
+
+.cup-rules-button:focus-visible {
+  outline: 2px solid #d28b45;
+  outline-offset: 2px;
+}
+
 .cup-page-intro .league-refresh-button {
   flex: 0 0 auto;
 }
@@ -5058,6 +5133,16 @@ button {
     display: grid;
     gap: 16px;
     margin-bottom: 20px;
+  }
+
+  .cup-page-actions {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .cup-rules-button {
+    flex: 1 1 160px;
+    min-width: 0;
   }
 
   .cup-status-card,

@@ -9,7 +9,9 @@ import { CupPersonalPath } from '../components/cup/CupPersonalPath'
 import { CupPersonalTieCard } from '../components/cup/CupPersonalTieCard'
 import { CupRoundStrip } from '../components/cup/CupRoundStrip'
 import { CupRoundTies } from '../components/cup/CupRoundTies'
+import { CupRulesModal } from '../components/cup/CupRulesModal'
 import {
+  DEFAULT_CUP_REWARDS,
   MINIMUM_CUP_PARTICIPANTS,
   cupLiveDataIsComplete,
   defaultSelectedRoundNumber,
@@ -45,6 +47,7 @@ export function PlayersCupPage({
   const [manualRoundNumber, setManualRoundNumber] = useState<number | null>(
     null,
   )
+  const [rulesOpen, setRulesOpen] = useState(false)
   const snapshotRef = useRef<PlayersCupSnapshot | null>(null)
   const inFlightRef = useRef(false)
   const loadGenerationRef = useRef(0)
@@ -382,14 +385,23 @@ export function PlayersCupPage({
             </p>
           </div>
 
-          <button
-            type="button"
-            className="league-refresh-button"
-            onClick={() => void loadPage('manual')}
-            disabled={loading || refreshing}
-          >
-            {refreshing ? 'Ανανέωση...' : 'Ανανέωση'}
-          </button>
+          <div className="cup-page-actions">
+            <button
+              type="button"
+              className="cup-rules-button"
+              onClick={() => setRulesOpen(true)}
+            >
+              Κανόνες Κυπέλλου
+            </button>
+            <button
+              type="button"
+              className="league-refresh-button"
+              onClick={() => void loadPage('manual')}
+              disabled={loading || refreshing}
+            >
+              {refreshing ? 'Ανανέωση...' : 'Ανανέωση'}
+            </button>
+          </div>
         </section>
 
         {refreshNotice ? (
@@ -400,6 +412,13 @@ export function PlayersCupPage({
 
         {renderBody()}
       </main>
+
+      {rulesOpen ? (
+        <CupRulesModal
+          rewards={snapshot?.rewards ?? DEFAULT_CUP_REWARDS}
+          onClose={() => setRulesOpen(false)}
+        />
+      ) : null}
     </div>
   )
 }

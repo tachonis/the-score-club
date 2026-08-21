@@ -1416,7 +1416,7 @@ select pg_temp.cup_assert(
     join public.cup_participants as participant
       on participant.id = award.participant_id
     where participant.rank_position = current_setting('test.champion')::integer
-  ) = 'winner:30',
+  ) = 'winner:50',
   'the champion receives the winner award only'
 );
 
@@ -1520,9 +1520,9 @@ select pg_temp.cup_assert(
 
 update public.cup_competitions as competition
 set
-  winner_points = 30,
-  finalist_points = 20,
-  semi_finalist_points = 10
+  winner_points = 50,
+  finalist_points = 30,
+  semi_finalist_points = 15
 where competition.id = pg_temp.cup_id();
 
 select pg_temp.cup_recompute();

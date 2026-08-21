@@ -1,4 +1,4 @@
-import { DEFAULT_CUP_REWARDS } from '../lib/cup'
+import { CupRulesContent } from '../components/cup/CupRulesContent'
 
 export function RulesContent() {
   return (
@@ -76,27 +76,7 @@ export function RulesContent() {
         </p>
       </section>
 
-      <section className="rule-section">
-        <h3>Players Cup</h3>
-        <p>
-          Από την 3η αγωνιστική ξεκινά παράλληλα το Players Cup με νοκ άουτ
-          αναμετρήσεις μεταξύ των ενεργών παικτών.
-        </p>
-        <ul>
-          <li>
-            <strong>{DEFAULT_CUP_REWARDS.winner} βαθμοί</strong> για τον νικητή.
-          </li>
-          <li>
-            <strong>{DEFAULT_CUP_REWARDS.finalist} βαθμοί</strong> για τον
-            φιναλίστ.
-          </li>
-          <li>
-            <strong>{DEFAULT_CUP_REWARDS.semiFinalist} βαθμοί</strong> για κάθε
-            ημιφιναλίστ.
-          </li>
-        </ul>
-        <p>Οι ανταμοιβές δεν προστίθενται μεταξύ τους.</p>
-      </section>
+      <CupRulesContent />
 
       <section className="rule-section">
         <h3>Τελικός Champions League</h3>

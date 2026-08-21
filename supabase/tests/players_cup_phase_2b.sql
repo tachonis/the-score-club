@@ -1149,7 +1149,7 @@ select pg_temp.cup_assert(
     join public.cup_participants as participant
       on participant.id = award.participant_id
     where award.award_type = 'winner'
-  ) = 'winner:30',
+  ) = 'winner:50',
   'the champion award is exactly the configured winner_points'
 );
 
@@ -1334,7 +1334,7 @@ select pg_temp.cup_assert(
       on pg_temp.cup_user_id(player.index) = participant.user_id
     where award.award_type = 'finalist'
   ) = 60,
-  'the leaderboard reads the live Cup honour values, not hardcoded 30/20/10'
+  'the leaderboard reads the live Cup honour values, not hardcoded published defaults'
 );
 
 rollback to savepoint reward_config;

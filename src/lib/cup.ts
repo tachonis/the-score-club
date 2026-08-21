@@ -1,9 +1,9 @@
 import { supabase } from './supabase'
 
 export const DEFAULT_CUP_REWARDS = {
-  winner: 30,
-  finalist: 20,
-  semiFinalist: 10,
+  winner: 50,
+  finalist: 30,
+  semiFinalist: 15,
 } as const
 
 export const MINIMUM_CUP_PARTICIPANTS = 8
