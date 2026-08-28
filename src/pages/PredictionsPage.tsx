@@ -3,6 +3,7 @@ import {
   AppHeader,
   type AppDestination,
 } from '../components/AppHeader'
+import { LoadingMark } from '../components/BrandAssets'
 import { LongTermPredictionsSection } from '../components/LongTermPredictionsSection'
 import {
   compareMatchdays,
@@ -701,7 +702,7 @@ export function PredictionsPage({
 
         {loading ? (
           <section className="app-loading-inline">
-            <div className="loading-mark">TSC</div>
+            <LoadingMark />
             <p>Φόρτωση αγώνων...</p>
           </section>
         ) : matches.length === 0 ? (

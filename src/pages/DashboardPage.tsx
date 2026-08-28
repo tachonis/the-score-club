@@ -4,6 +4,7 @@ import {
   type AppDestination,
 } from '../components/AppHeader'
 import { PushNotificationsCard } from '../components/PushNotificationsCard'
+import { LoadingMark } from '../components/BrandAssets'
 import {
   compareMatchdays,
   getMatchdayRoundLabel,
@@ -417,7 +418,7 @@ export function DashboardPage({
 
         {loading ? (
           <section className="dashboard-loading-card">
-            <div className="loading-mark">TSC</div>
+            <LoadingMark />
             <p>Φόρτωση αγώνων...</p>
           </section>
         ) : nextMatchday ? (

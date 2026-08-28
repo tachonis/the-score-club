@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import {
-  AppHeader,
-  type AppDestination,
-} from '../components/AppHeader'
+import { AppHeader, type AppDestination } from '../components/AppHeader'
+import { LoadingMark } from '../components/BrandAssets'
 import { supabase } from '../lib/supabase'
 
 type LeaguePhasePageProps = {
@@ -136,7 +134,7 @@ export function LeaguePhasePage({
 
         {loading ? (
           <section className="app-loading-inline">
-            <div className="loading-mark">TSC</div>
+            <LoadingMark />
             <p>Υπολογισμός κατάταξης...</p>
           </section>
         ) : (

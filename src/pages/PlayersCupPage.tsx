@@ -3,6 +3,7 @@ import {
   AppHeader,
   type AppDestination,
 } from '../components/AppHeader'
+import { LoadingMark } from '../components/BrandAssets'
 import { CupExcludedNote } from '../components/cup/CupExcludedNote'
 import { CupHonours } from '../components/cup/CupHonours'
 import { CupPersonalPath } from '../components/cup/CupPersonalPath'
@@ -152,7 +153,7 @@ export function PlayersCupPage({
     if (loading && !snapshot) {
       return (
         <section className="app-loading-inline">
-          <div className="loading-mark">TSC</div>
+          <LoadingMark />
           <p>Φόρτωση Κυπέλλου...</p>
         </section>
       )

@@ -15,6 +15,7 @@ import { PredictionsPage } from './pages/PredictionsPage'
 import { PlayerProfilePage } from './pages/PlayerProfilePage'
 import { PlayersCupPage } from './pages/PlayersCupPage'
 import { StandingsPage } from './pages/StandingsPage'
+import { AuthLogo, LoadingSplashLogo } from './components/BrandAssets'
 import './auth.css'
 
 type UserProfile = {
@@ -181,7 +182,7 @@ function App() {
   if (loadingSession) {
     return (
       <main className="app-loading">
-        <div className="loading-mark">TSC</div>
+        <LoadingSplashLogo />
         <p>Φόρτωση The Score Club...</p>
       </main>
     )
@@ -190,7 +191,7 @@ function App() {
   if (session && !profile && !profileError) {
     return (
       <main className="app-loading">
-        <div className="loading-mark">TSC</div>
+        <LoadingSplashLogo />
         <p>Φόρτωση προφίλ...</p>
       </main>
     )
@@ -292,20 +293,7 @@ function App() {
     <div className="auth-shell">
       <section className="auth-brand">
         <div className="brand-content">
-          <div className="brand-badge" aria-hidden="true">
-            <span>
-              TSC
-              <br />
-              2:1
-            </span>
-          </div>
-
-          <h1 className="brand-title">
-            <span>THE SCORE</span>
-            <span>CLUB</span>
-          </h1>
-
-          <p className="brand-subtitle">Football prediction game</p>
+          <AuthLogo />
 
           <div className="brand-rules">
             <p>

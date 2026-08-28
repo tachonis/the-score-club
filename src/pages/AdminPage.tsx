@@ -3,6 +3,7 @@ import {
   AppHeader,
   type AppDestination,
 } from '../components/AppHeader'
+import { LoadingMark } from '../components/BrandAssets'
 import { AdminCupPanel } from '../components/cup/AdminCupPanel'
 import { AdminNotificationsPanel } from '../components/AdminNotificationsPanel'
 import { LongTermOutcomesPanel } from '../components/LongTermOutcomesPanel'
@@ -309,7 +310,7 @@ export function AdminPage({
 
         {loading ? (
           <section className="app-loading-inline">
-            <div className="loading-mark">TSC</div>
+            <LoadingMark />
             <p>Φόρτωση αγώνων...</p>
           </section>
         ) : selectedMatches.length === 0 ? (

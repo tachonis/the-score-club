@@ -79,39 +79,18 @@ button {
   width: min(100%, 470px);
 }
 
-.brand-badge {
-  width: 92px;
-  height: 106px;
-  margin: 0 auto 18px;
-  display: grid;
-  place-items: center;
-  border: 3px solid #d28b45;
-  border-radius: 20px 20px 30px 30px;
-  color: #e7b875;
-  font-size: 24px;
-  font-weight: 800;
-  line-height: 1.05;
-  box-shadow: 0 0 0 8px rgba(210, 139, 69, 0.08);
-}
-
-.brand-title {
-  margin: 0;
-  font-size: clamp(2rem, 3.6vw, 3.35rem);
-  line-height: 1.2;
-  letter-spacing: 0.045em;
-}
-
-.brand-title span {
+.auth-logo {
   display: block;
+  margin: 0 auto;
 }
 
-.brand-subtitle {
-  margin: 12px 0 0;
-  color: #d6e0df;
-  font-size: 0.82rem;
-  font-weight: 600;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
+.auth-logo-image {
+  display: block;
+  width: min(100%, 420px);
+  height: auto;
+  max-height: 148px;
+  margin: 0 auto;
+  object-fit: contain;
 }
 
 .brand-rules {
@@ -465,22 +444,10 @@ button {
     padding: 28px 20px 24px;
   }
 
-  .brand-badge {
-    width: 72px;
-    height: 82px;
-    margin-bottom: 13px;
-    border-radius: 16px 16px 23px 23px;
-    font-size: 19px;
-  }
-
-  .brand-title {
-    font-size: 2rem;
-    line-height: 1.17;
-  }
-
-  .brand-subtitle {
-    margin-top: 8px;
-    font-size: 0.7rem;
+  .auth-logo-image {
+    width: auto;
+    max-width: min(100%, 200px);
+    max-height: 168px;
   }
 
   .brand-rules {
@@ -563,16 +530,21 @@ button {
   color: #c8d3d2;
 }
 
+.loading-logo-stacked {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(100%, 240px);
+  max-height: 220px;
+  object-fit: contain;
+}
+
 .loading-mark {
-  width: 72px;
-  height: 82px;
-  display: grid;
-  place-items: center;
-  border: 2px solid #d28b45;
-  border-radius: 16px 16px 24px 24px;
-  color: #e7b875;
-  font-size: 1.2rem;
-  font-weight: 900;
+  display: block;
+  width: 56px;
+  height: auto;
+  aspect-ratio: 620 / 635;
+  object-fit: contain;
 }
 
 .app-shell {
@@ -619,34 +591,17 @@ button {
   cursor: pointer;
 }
 
-.app-logo-mark {
-  width: 42px;
+.app-logo-picture {
+  display: block;
+  line-height: 0;
+}
+
+.app-logo-image {
+  display: block;
   height: 48px;
-  display: grid;
-  place-items: center;
-  border: 2px solid #d28b45;
-  border-radius: 9px 9px 14px 14px;
-  color: #e7b875;
-  font-size: 0.8rem;
-  font-weight: 900;
-}
-
-.app-logo-text {
-  display: grid;
-  gap: 2px;
-}
-
-.app-logo-text strong {
-  font-size: 0.94rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.app-logo-text small {
-  color: #9fb1b3;
-  font-size: 0.61rem;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
+  width: auto;
+  max-width: 200px;
+  object-fit: contain;
 }
 
 .desktop-navigation {
@@ -695,8 +650,9 @@ button {
     gap: 14px;
   }
 
-  .app-logo-text small {
-    display: none;
+  .app-logo-image {
+    height: 40px;
+    max-width: 168px;
   }
 
   .nav-link {
@@ -1095,8 +1051,9 @@ button {
     gap: 10px;
   }
 
-  .app-logo-text small {
-    display: none;
+  .app-logo-image {
+    height: 40px;
+    max-width: 150px;
   }
 
   .user-details {
@@ -2933,7 +2890,7 @@ button {
 }
 
 .app-loading-inline .loading-mark {
-  background: #102c32;
+  width: 52px;
 }
 
 .app-loading-inline p {
@@ -3219,7 +3176,7 @@ button {
 }
 
 .dashboard-loading-card .loading-mark {
-  background: #102c32;
+  width: 52px;
 }
 
 .dashboard-loading-card p {
@@ -5650,11 +5607,14 @@ button.cup-player-name:focus-visible {
   }
 }
 
-@media (max-width: 380px) {
-  .app-logo-text {
-    display: none;
+@media (max-width: 429px) {
+  .app-logo-image {
+    height: 36px;
+    max-width: 36px;
   }
+}
 
+@media (max-width: 380px) {
   .app-header-inner {
     min-width: 0;
   }

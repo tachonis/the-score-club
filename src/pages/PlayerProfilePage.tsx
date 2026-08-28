@@ -5,6 +5,7 @@ import {
 } from '../components/AppHeader'
 import { BadgeGrid } from '../components/BadgeGrid'
 import { BadgeModal } from '../components/BadgeModal'
+import { LoadingMark } from '../components/BrandAssets'
 import {
   fetchEarnedBadges,
   type GroupedBadge,
@@ -163,7 +164,7 @@ export function PlayerProfilePage({
 
           {loadingProfile ? (
             <section className="app-loading-inline">
-              <div className="loading-mark">TSC</div>
+              <LoadingMark />
               <p>Φόρτωση προφίλ...</p>
             </section>
           ) : profileError ? (
@@ -190,7 +191,7 @@ export function PlayerProfilePage({
               <p className="auth-message error">{badgesError}</p>
             ) : loadingBadges ? (
               <section className="app-loading-inline">
-                <div className="loading-mark">TSC</div>
+                <LoadingMark />
                 <p>Φόρτωση badges...</p>
               </section>
             ) : badges.length === 0 ? (

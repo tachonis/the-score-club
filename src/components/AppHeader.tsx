@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { usePlayerProfileNav } from '../lib/playerProfileNav'
+import { HeaderLogo } from './BrandAssets'
 
 export type AppDestination =
   | 'home'
@@ -140,11 +141,7 @@ export function AppHeader({
             onClick={() => navigate('home')}
             aria-label="Μετάβαση στην αρχική σελίδα"
           >
-            <span className="app-logo-mark">TSC</span>
-            <span className="app-logo-text">
-              <strong>The Score Club</strong>
-              <small>Football prediction game</small>
-            </span>
+            <HeaderLogo />
           </button>
 
           <nav className="desktop-navigation" aria-label="Κύρια πλοήγηση">

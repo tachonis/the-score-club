@@ -3,6 +3,7 @@ import {
   AppHeader,
   type AppDestination,
 } from '../components/AppHeader'
+import { LoadingMark } from '../components/BrandAssets'
 import { usePlayerProfileNav } from '../lib/playerProfileNav'
 import { supabase } from '../lib/supabase'
 
@@ -108,7 +109,7 @@ export function StandingsPage({
 
         {loading ? (
           <section className="app-loading-inline">
-            <div className="loading-mark">TSC</div>
+            <LoadingMark />
             <p>Φόρτωση βαθμολογίας...</p>
           </section>
         ) : (
