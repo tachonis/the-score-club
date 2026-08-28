@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
+import { PlayerProfileNavContext } from './lib/playerProfileNav'
 import { readDestinationFromHash, type PushDestination } from './lib/push'
 import type { AppDestination } from './components/AppHeader'
 import { AdminPage } from './pages/AdminPage'
@@ -11,6 +12,7 @@ import { RegisterPage } from './pages/RegisterPage'
 import { RulesModal } from './pages/RulesModal'
 import { RulesPage } from './pages/RulesPage'
 import { PredictionsPage } from './pages/PredictionsPage'
+import { PlayerProfilePage } from './pages/PlayerProfilePage'
 import { PlayersCupPage } from './pages/PlayersCupPage'
 import { StandingsPage } from './pages/StandingsPage'
 import './auth.css'
@@ -25,6 +27,7 @@ function App() {
   const [page, setPage] = useState<'login' | 'register'>('login')
   const [showRules, setShowRules] = useState(false)
   const [appPage, setAppPage] = useState<AppDestination>('home')
+  const [profileUserId, setProfileUserId] = useState<string | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loadingSession, setLoadingSession] = useState(true)
@@ -55,6 +58,7 @@ function App() {
 
       if (!nextSession) {
         setProfile(null)
+        setProfileUserId(null)
       }
     })
 
@@ -161,6 +165,7 @@ function App() {
       return
     }
 
+    setProfileUserId(null)
     setPage('login')
   }
 
@@ -169,6 +174,7 @@ function App() {
       return
     }
 
+    setProfileUserId(null)
     setAppPage(destination)
   }
 
@@ -191,18 +197,40 @@ function App() {
   }
 
   if (session && profile) {
-    if (appPage === 'admin' && profile.role === 'admin') {
-      return (
+    const currentPage =
+      appPage === 'admin' && profile.role !== 'admin' ? 'home' : appPage
+
+    let page = (
+      <DashboardPage
+        username={profile.username}
+        role={profile.role}
+        onNavigate={handleNavigate}
+        onLogout={handleLogout}
+      />
+    )
+
+    if (profileUserId) {
+      page = (
+        <PlayerProfilePage
+          profileUserId={profileUserId}
+          currentPage={currentPage}
+          username={profile.username}
+          role={profile.role}
+          onNavigate={handleNavigate}
+          onLogout={handleLogout}
+          onBack={() => setProfileUserId(null)}
+        />
+      )
+    } else if (appPage === 'admin' && profile.role === 'admin') {
+      page = (
         <AdminPage
           username={profile.username}
           onNavigate={handleNavigate}
           onLogout={handleLogout}
         />
       )
-    }
-
-    if (appPage === 'standings') {
-      return (
+    } else if (appPage === 'standings') {
+      page = (
         <StandingsPage
           username={profile.username}
           role={profile.role}
@@ -210,10 +238,8 @@ function App() {
           onLogout={handleLogout}
         />
       )
-    }
-
-    if (appPage === 'players-cup') {
-      return (
+    } else if (appPage === 'players-cup') {
+      page = (
         <PlayersCupPage
           username={profile.username}
           role={profile.role}
@@ -221,10 +247,8 @@ function App() {
           onLogout={handleLogout}
         />
       )
-    }
-
-    if (appPage === 'league-phase') {
-      return (
+    } else if (appPage === 'league-phase') {
+      page = (
         <LeaguePhasePage
           username={profile.username}
           role={profile.role}
@@ -232,10 +256,8 @@ function App() {
           onLogout={handleLogout}
         />
       )
-    }
-
-    if (appPage === 'rules') {
-      return (
+    } else if (appPage === 'rules') {
+      page = (
         <RulesPage
           username={profile.username}
           role={profile.role}
@@ -243,10 +265,8 @@ function App() {
           onLogout={handleLogout}
         />
       )
-    }
-
-    if (appPage === 'predictions') {
-      return (
+    } else if (appPage === 'predictions') {
+      page = (
         <PredictionsPage
           username={profile.username}
           role={profile.role}
@@ -257,12 +277,14 @@ function App() {
     }
 
     return (
-      <DashboardPage
-        username={profile.username}
-        role={profile.role}
-        onNavigate={handleNavigate}
-        onLogout={handleLogout}
-      />
+      <PlayerProfileNavContext.Provider
+        value={{
+          viewerUserId: session.user.id,
+          openProfile: setProfileUserId,
+        }}
+      >
+        {page}
+      </PlayerProfileNavContext.Provider>
     )
   }
 

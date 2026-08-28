@@ -1,3 +1,4 @@
+import { usePlayerProfileNav } from '../../lib/playerProfileNav'
 import {
   decidedByRuleLabel,
   isSeededRank,
@@ -33,18 +34,38 @@ export function CupPlayerName({
   isMe?: boolean
 }) {
   const name = participantDisplayName(participant)
+  const { openProfile } = usePlayerProfileNav()
+  const userId = participant?.user_id ?? null
+  const className = `cup-player-name ${isWinner ? 'is-winner' : ''} ${
+    isLoser ? 'is-loser' : ''
+  } ${isMe ? 'is-me' : ''}`
+  const content = (
+    <>
+      <span className="cup-player-name-text">{name}</span>
+      {participant ? (
+        <CupSeedBadge rankPosition={participant.rank_position} />
+      ) : null}
+      {isMe ? <span className="cup-me-tag">Εσύ</span> : null}
+    </>
+  )
+
+  if (userId) {
+    return (
+      <button
+        type="button"
+        className={className}
+        title={name}
+        aria-label={`Προφίλ ${name}`}
+        onClick={() => openProfile(userId)}
+      >
+        {content}
+      </button>
+    )
+  }
 
   return (
-    <span
-      className={`cup-player-name ${isWinner ? 'is-winner' : ''} ${
-        isLoser ? 'is-loser' : ''
-      } ${isMe ? 'is-me' : ''}`}
-      title={name}
-      aria-label={name}
-    >
-      <span className="cup-player-name-text">{name}</span>
-      {participant ? <CupSeedBadge rankPosition={participant.rank_position} /> : null}
-      {isMe ? <span className="cup-me-tag">Εσύ</span> : null}
+    <span className={className} title={name} aria-label={name}>
+      {content}
     </span>
   )
 }

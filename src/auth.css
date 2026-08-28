@@ -706,19 +706,43 @@ button {
 }
 
 .user-menu {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
   display: flex;
   align-items: center;
   gap: 13px;
+  min-width: 0;
 }
 
 .user-details {
   display: grid;
   text-align: right;
+  min-width: 0;
 }
 
-.user-details strong {
+.user-profile-button {
+  appearance: none;
+  max-width: 160px;
+  overflow: hidden;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
   font-size: 0.85rem;
+  font-weight: 700;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.user-profile-button:hover,
+.user-profile-button:focus-visible {
+  color: #e7b875;
+}
+
+.user-profile-button:focus-visible {
+  outline: 2px solid #d28b45;
+  outline-offset: 3px;
 }
 
 .user-details span {
@@ -990,7 +1014,8 @@ button {
 
   .dashboard-main,
   .predictions-main,
-  .cup-page-main {
+  .cup-page-main,
+  .profile-main {
     padding-bottom: 100px;
   }
 
@@ -1075,7 +1100,20 @@ button {
   }
 
   .user-details {
+    display: grid;
+    min-width: 0;
+  }
+
+  .user-details span {
     display: none;
+  }
+
+  .user-profile-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-height: 44px;
+    max-width: 28vw;
   }
 
   .logout-button {
@@ -3505,17 +3543,40 @@ button {
   font-weight: 900;
 }
 
-.tsc-player > div:last-child {
+.tsc-player-name {
+  appearance: none;
   display: grid;
   gap: 2px;
-}
-
-.tsc-player strong {
+  align-content: center;
+  min-width: 0;
+  min-height: 44px;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
   color: #102c32;
   font-size: 0.94rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
 }
 
-.tsc-player small {
+.tsc-player-name:hover,
+.tsc-player-name:focus-visible {
+  color: #a76325;
+}
+
+.tsc-player-name:focus-visible {
+  outline: 2px solid #d28b45;
+  outline-offset: 2px;
+}
+
+.tsc-player-name span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.tsc-player-name small {
   color: #b96f2d;
   font-size: 0.68rem;
   font-weight: 850;
@@ -3653,11 +3714,11 @@ button {
     font-size: 0.68rem;
   }
 
-  .tsc-player > div:last-child {
+  .tsc-player-name {
     min-width: 0;
   }
 
-  .tsc-player strong {
+  .tsc-player-name span {
     overflow-wrap: anywhere;
     font-size: 0.78rem;
   }
@@ -5025,6 +5086,27 @@ button {
   font-weight: 750;
 }
 
+button.cup-player-name {
+  appearance: none;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+button.cup-player-name:hover,
+button.cup-player-name:focus-visible {
+  color: #a76325;
+}
+
+button.cup-player-name:focus-visible {
+  outline: 2px solid #d28b45;
+  outline-offset: 2px;
+}
+
 .cup-player-name.is-winner {
   font-weight: 850;
 }
@@ -5312,5 +5394,302 @@ button {
   .admin-cup-panel-heading {
     display: grid;
     gap: 10px;
+  }
+}
+
+/* =========================================
+   Player profile + badges
+   ========================================= */
+
+.profile-main {
+  padding-bottom: 100px;
+}
+
+.profile-hero {
+  margin-bottom: 28px;
+}
+
+.profile-back {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin: 0 0 8px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #b96f2d;
+  font-size: 0.82rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.profile-back:hover,
+.profile-back:focus-visible {
+  color: #a76121;
+}
+
+.profile-back:focus-visible {
+  outline: 2px solid #d28b45;
+  outline-offset: 3px;
+}
+
+.profile-hero h1 {
+  margin: 0;
+  color: #102c32;
+  font-size: clamp(1.85rem, 4vw, 2.6rem);
+  line-height: 1.12;
+  overflow-wrap: anywhere;
+}
+
+.profile-meta {
+  margin: 8px 0 0;
+  color: #6f7e80;
+  font-size: 0.95rem;
+  font-weight: 650;
+}
+
+.profile-badges h2 {
+  margin: 0 0 16px;
+  color: #102c32;
+  font-size: 1.05rem;
+  font-weight: 850;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.profile-badges-empty {
+  margin: 0;
+  padding: 28px 20px;
+  border: 1px solid rgba(16, 44, 50, 0.09);
+  border-radius: 16px;
+  background: #ffffff;
+  color: #708083;
+  text-align: center;
+}
+
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.badge-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 16px 10px 12px;
+  border: 1px solid rgba(231, 184, 117, 0.22);
+  border-radius: 16px;
+  background: #102c32;
+  box-shadow: 0 8px 18px rgba(16, 44, 50, 0.12);
+  color: #f4f1e9;
+  cursor: pointer;
+  text-align: center;
+}
+
+.badge-tile:hover,
+.badge-tile:focus-visible {
+  border-color: rgba(231, 184, 117, 0.48);
+}
+
+.badge-tile:focus-visible {
+  outline: 2px solid #d28b45;
+  outline-offset: 2px;
+}
+
+.badge-tile-image {
+  width: 100%;
+  max-width: 118px;
+  aspect-ratio: 1;
+  object-fit: contain;
+}
+
+.badge-tile-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.5em;
+  color: #f4f1e9;
+  font-size: 0.74rem;
+  font-weight: 750;
+  line-height: 1.25;
+}
+
+.badge-repeat-chip {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  min-width: 28px;
+  padding: 2px 7px;
+  border: 1px solid rgba(231, 184, 117, 0.42);
+  border-radius: 999px;
+  background: rgba(16, 44, 50, 0.9);
+  color: #e7b875;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.badge-modal {
+  width: min(100%, 480px);
+  max-height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(231, 184, 117, 0.25);
+  border-radius: 20px;
+  background: #faf8f3;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.35);
+}
+
+.badge-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex: 0 0 auto;
+  padding: 18px 20px 8px;
+}
+
+.badge-modal-body {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 24px 28px;
+  text-align: center;
+}
+
+.badge-modal-image {
+  width: min(100%, 220px);
+  aspect-ratio: 1;
+  object-fit: contain;
+  margin: 0 auto 12px;
+}
+
+.badge-modal-body h2 {
+  margin: 0 0 8px;
+  color: #102c32;
+  font-size: 1.45rem;
+  line-height: 1.2;
+}
+
+.badge-modal-description {
+  margin: 0 0 20px;
+  color: #5f7173;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.badge-modal-earned {
+  padding-top: 16px;
+  border-top: 1px solid #e1ddd4;
+  text-align: left;
+}
+
+.badge-modal-unlock {
+  margin: 0 0 6px;
+  color: #102c32;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.badge-modal-date,
+.badge-modal-context {
+  margin: 0;
+  color: #6f7e80;
+  font-size: 0.9rem;
+}
+
+.badge-modal-context {
+  margin-top: 6px;
+}
+
+.badge-history {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.badge-history li {
+  display: grid;
+  gap: 3px;
+  padding: 12px 14px;
+  border: 1px solid rgba(16, 44, 50, 0.08);
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.badge-history strong {
+  color: #102c32;
+  font-size: 0.88rem;
+  font-weight: 750;
+}
+
+.badge-history span {
+  color: #6f7e80;
+  font-size: 0.82rem;
+}
+
+.badge-history small {
+  color: #a76121;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+@media (max-width: 359px) {
+  .badge-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 380px) {
+  .app-logo-text {
+    display: none;
+  }
+
+  .app-header-inner {
+    min-width: 0;
+  }
+
+  .user-profile-button {
+    max-width: 96px;
+  }
+}
+
+@media (min-width: 768px) {
+  .badge-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .badge-tile {
+    padding: 18px 12px 14px;
+  }
+
+  .badge-tile-title {
+    font-size: 0.78rem;
+  }
+}
+
+@media (min-width: 1100px) {
+  .badge-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .badge-tile,
+  .user-profile-button,
+  .tsc-player-name,
+  button.cup-player-name {
+    transition: none;
   }
 }

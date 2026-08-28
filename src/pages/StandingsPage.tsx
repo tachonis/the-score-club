@@ -3,6 +3,7 @@ import {
   AppHeader,
   type AppDestination,
 } from '../components/AppHeader'
+import { usePlayerProfileNav } from '../lib/playerProfileNav'
 import { supabase } from '../lib/supabase'
 
 type StandingsPageProps = {
@@ -29,6 +30,7 @@ export function StandingsPage({
   onNavigate,
   onLogout,
 }: StandingsPageProps) {
+  const { openProfile } = usePlayerProfileNav()
   const [rows, setRows] = useState<LeaderboardRow[]>([])
   const [currentUserId, setCurrentUserId] = useState('')
   const [loading, setLoading] = useState(true)
@@ -161,13 +163,15 @@ export function StandingsPage({
                               .toUpperCase()}
                           </div>
 
-                          <div>
-                            <strong>{row.username}</strong>
-
-                            {isCurrentUser && (
-                              <small>Εσύ</small>
-                            )}
-                          </div>
+                          <button
+                            type="button"
+                            className="tsc-player-name"
+                            onClick={() => openProfile(row.user_id)}
+                            aria-label={`Προφίλ ${row.username}`}
+                          >
+                            <span>{row.username}</span>
+                            {isCurrentUser ? <small>Εσύ</small> : null}
+                          </button>
                         </div>
 
                         <div className="tsc-points">

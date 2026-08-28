@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { usePlayerProfileNav } from '../lib/playerProfileNav'
 
 export type AppDestination =
   | 'home'
@@ -92,6 +93,7 @@ export function AppHeader({
   onLogout,
 }: AppHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const { viewerUserId, openProfile } = usePlayerProfileNav()
 
   const availableItems = navigationItems.filter(
     (item) => !item.adminOnly || role === 'admin',
@@ -167,7 +169,14 @@ export function AppHeader({
 
           <div className="user-menu">
             <div className="user-details">
-              <strong>{username}</strong>
+              <button
+                type="button"
+                className="user-profile-button"
+                onClick={() => openProfile(viewerUserId)}
+                aria-label={`Προφίλ ${username}`}
+              >
+                {username}
+              </button>
               <span>{role === 'admin' ? 'Administrator' : 'Player'}</span>
             </div>
             <button
