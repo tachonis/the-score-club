@@ -8,6 +8,7 @@ type BroadcastResult = {
   delivered: number
   gone: number
   failed: number
+  self_only?: boolean
 }
 
 const destinationOptions: Array<{
@@ -23,6 +24,7 @@ const destinationOptions: Array<{
 
 const titleLimit = 80
 const messageLimit = 250
+const testDestination: PushDestination = 'predictions'
 
 const readErrorDetail = async (error: unknown) => {
   const context = (error as { context?: unknown }).context
@@ -66,13 +68,27 @@ const describeResult = (result: BroadcastResult) => {
   return parts.join(' ')
 }
 
+const describeTestResult = (result: BroadcastResult) => {
+  if (result.attempted === 0) {
+    return 'Δεν υπάρχει ενεργή συνδρομή στον λογαριασμό σου. Ενεργοποίησε τις ειδοποιήσεις στην Αρχική και δοκίμασε ξανά.'
+  }
+
+  if (result.delivered === 0) {
+    return 'Η δοκιμαστική ειδοποίηση δεν έφτασε στις συσκευές σου. Δοκίμασε ξανά.'
+  }
+
+  return 'Η δοκιμαστική ειδοποίηση στάλθηκε στις συσκευές σου.'
+}
+
 export function AdminNotificationsPanel() {
   const [title, setTitle] = useState('The Score Club')
   const [body, setBody] = useState('')
   const [destination, setDestination] =
     useState<PushDestination>('predictions')
   const [confirming, setConfirming] = useState(false)
-  const [sending, setSending] = useState(false)
+  const [sendingKind, setSendingKind] = useState<'broadcast' | 'test' | null>(
+    null,
+  )
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState<'success' | 'error'>(
     'success',
@@ -81,9 +97,10 @@ export function AdminNotificationsPanel() {
   const trimmedTitle = title.trim()
   const trimmedBody = body.trim()
   const canSend = trimmedTitle !== '' && trimmedBody !== ''
+  const sending = sendingKind !== null
 
   const handleSend = async () => {
-    setSending(true)
+    setSendingKind('broadcast')
     setMessage('')
 
     const { data, error } = await supabase.functions.invoke(
@@ -102,7 +119,7 @@ export function AdminNotificationsPanel() {
       setMessage(
         `Δεν στάλθηκε η ειδοποίηση: ${await readErrorDetail(error)}`,
       )
-      setSending(false)
+      setSendingKind(null)
       setConfirming(false)
       return
     }
@@ -110,8 +127,39 @@ export function AdminNotificationsPanel() {
     setMessageType('success')
     setMessage(describeResult(data as BroadcastResult))
     setBody('')
-    setSending(false)
+    setSendingKind(null)
     setConfirming(false)
+  }
+
+  const handleTestSend = async () => {
+    setSendingKind('test')
+    setMessage('')
+
+    const { data, error } = await supabase.functions.invoke(
+      'send-broadcast-push',
+      {
+        body: {
+          title: trimmedTitle || 'The Score Club',
+          message: trimmedBody || 'Δοκιμαστική ειδοποίηση.',
+          destination: testDestination,
+          self_only: true,
+        },
+      },
+    )
+
+    if (error) {
+      setMessageType('error')
+      setMessage('Δεν στάλθηκε η δοκιμαστική ειδοποίηση. Δοκίμασε ξανά.')
+      setSendingKind(null)
+      return
+    }
+
+    const result = data as BroadcastResult
+    const failed = result.attempted === 0 || result.delivered === 0
+
+    setMessageType(failed ? 'error' : 'success')
+    setMessage(describeTestResult(result))
+    setSendingKind(null)
   }
 
   return (
@@ -207,7 +255,9 @@ export function AdminNotificationsPanel() {
               disabled={sending}
               onClick={() => void handleSend()}
             >
-              {sending ? 'Αποστολή...' : 'Επιβεβαίωση αποστολής'}
+              {sendingKind === 'broadcast'
+                ? 'Αποστολή...'
+                : 'Επιβεβαίωση αποστολής'}
             </button>
             <button
               type="button"
@@ -232,6 +282,22 @@ export function AdminNotificationsPanel() {
           Αποστολή ειδοποίησης
         </button>
       )}
+
+      <div className="admin-notifications-test">
+        <button
+          type="button"
+          className="admin-notifications-test-button"
+          disabled={sending || confirming}
+          onClick={() => void handleTestSend()}
+        >
+          {sendingKind === 'test'
+            ? 'Αποστολή δοκιμής...'
+            : 'Αποστολή δοκιμαστικής ειδοποίησης σε εμένα'}
+        </button>
+        <p className="admin-notifications-test-note">
+          Στέλνεται μόνο στις δικές σου συσκευές. Δεν ειδοποιεί τους παίκτες.
+        </p>
+      </div>
     </section>
   )
 }

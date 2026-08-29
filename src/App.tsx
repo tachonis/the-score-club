@@ -9,7 +9,7 @@ import {
   mapAuthError,
   subscribePasswordRecovery,
 } from './lib/passwordRecovery'
-import { readDestinationFromHash, type PushDestination } from './lib/push'
+import { readDestinationFromHash, syncPushSubscription, type PushDestination } from './lib/push'
 import type { AppDestination } from './components/AppHeader'
 import { AdminPage } from './pages/AdminPage'
 import { DashboardPage } from './pages/DashboardPage'
@@ -122,6 +122,24 @@ function App() {
 
     void loadProfile()
   }, [session])
+
+  // Rebind this browser's existing push endpoint to the signed-in account.
+  // Does not prompt for permission or create a new subscription. Logout does
+  // not unsubscribe, so the same user can log back in still subscribed; a
+  // different user on this device picks up the endpoint here, even if they
+  // never open Home.
+  const signedInUserId = session?.user.id ?? null
+  const canSyncPush = Boolean(signedInUserId && profile && !passwordRecovery)
+
+  useEffect(() => {
+    if (!canSyncPush) {
+      return
+    }
+
+    void syncPushSubscription().catch(() => {
+      // A failed rebind must never block login or the rest of the app.
+    })
+  }, [canSyncPush, signedInUserId])
 
   // A tapped notification either opens /#<destination> or, when a window is
   // already open, arrives as a message from the push worker.

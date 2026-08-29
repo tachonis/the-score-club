@@ -5031,6 +5031,44 @@ button {
   outline-offset: 2px;
 }
 
+.admin-notifications-test {
+  margin-top: 16px;
+  display: grid;
+  gap: 8px;
+}
+
+.admin-notifications-test-button {
+  width: 100%;
+  border: 1px solid rgba(16, 44, 50, 0.18);
+  border-radius: 10px;
+  padding: 12px 16px;
+  background: #ffffff;
+  color: #102c32;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-notifications-test-button:hover {
+  background: #f4f1e9;
+}
+
+.admin-notifications-test-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-notifications-test-button:focus-visible {
+  outline: 2px solid #d28b45;
+  outline-offset: 2px;
+}
+
+.admin-notifications-test-note {
+  margin: 0;
+  color: #5d6a6c;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
 @media (max-width: 760px) {
   .admin-notifications-panel {
     margin-bottom: 14px;

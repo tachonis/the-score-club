@@ -3,6 +3,8 @@
 // The gateway verifies that a JWT is present, but that alone is not enough:
 // the anonymous key is also a valid JWT. Every request is therefore resolved
 // to a real user and rejected unless that user is an active administrator.
+// Optional body.self_only === true sends only to that administrator's own
+// devices. Recipients are never taken from a client-supplied user id.
 
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import * as webpush from 'jsr:@negrel/webpush@0.5.0'
@@ -19,7 +21,7 @@ const allowedDestinations = [
   'rules',
 ]
 
-const allowedFields = ['title', 'message', 'destination']
+const allowedFields = ['title', 'message', 'destination', 'self_only']
 
 const titleLimit = 80
 const messageLimit = 250
@@ -88,6 +90,14 @@ type BroadcastRequest = {
   title: string
   message: string
   destination: string
+  selfOnly: boolean
+}
+
+type PushDevice = {
+  subscription_id: string
+  endpoint: string
+  p256dh: string
+  auth_secret: string
 }
 
 const readRequest = (payload: unknown): BroadcastRequest | string => {
@@ -109,6 +119,12 @@ const readRequest = (payload: unknown): BroadcastRequest | string => {
   const destination =
     typeof body.destination === 'string' ? body.destination : ''
 
+  if ('self_only' in body && typeof body.self_only !== 'boolean') {
+    return 'self_only must be a boolean'
+  }
+
+  const selfOnly = body.self_only === true
+
   if (title.length < 1 || title.length > titleLimit) {
     return `The title must be between 1 and ${titleLimit} characters`
   }
@@ -121,7 +137,7 @@ const readRequest = (payload: unknown): BroadcastRequest | string => {
     return 'An allowed destination is required'
   }
 
-  return { title, message, destination }
+  return { title, message, destination, selfOnly }
 }
 
 const readPushStatus = (error: unknown) => {
@@ -211,22 +227,41 @@ Deno.serve(async (request: Request) => {
     })
   }
 
-  const { data: subscriptions, error: subscriptionsError } = await admin.rpc(
-    'get_active_push_subscriptions',
-  )
+  let devices: PushDevice[] = []
 
-  if (subscriptionsError) {
-    return jsonResponse(500, {
-      error: 'The subscribed devices could not be read',
-    })
+  if (parsed.selfOnly) {
+    // Recipients come from the verified JWT user id, never from the body.
+    const { data: ownSubscriptions, error: ownSubscriptionsError } =
+      await admin
+        .from('push_subscriptions')
+        .select('id, endpoint, p256dh, auth')
+        .eq('user_id', user.id)
+
+    if (ownSubscriptionsError) {
+      return jsonResponse(500, {
+        error: 'The subscribed devices could not be read',
+      })
+    }
+
+    devices = (ownSubscriptions ?? []).map((row) => ({
+      subscription_id: row.id,
+      endpoint: row.endpoint,
+      p256dh: row.p256dh,
+      auth_secret: row.auth,
+    }))
+  } else {
+    const { data: subscriptions, error: subscriptionsError } = await admin.rpc(
+      'get_active_push_subscriptions',
+    )
+
+    if (subscriptionsError) {
+      return jsonResponse(500, {
+        error: 'The subscribed devices could not be read',
+      })
+    }
+
+    devices = (subscriptions ?? []) as PushDevice[]
   }
-
-  const devices = (subscriptions ?? []) as Array<{
-    subscription_id: string
-    endpoint: string
-    p256dh: string
-    auth_secret: string
-  }>
 
   let applicationServer: webpush.ApplicationServer
 
@@ -304,5 +339,6 @@ Deno.serve(async (request: Request) => {
     delivered,
     gone: goneIds.length,
     failed,
+    self_only: parsed.selfOnly,
   })
 })
