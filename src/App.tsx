@@ -2,6 +2,13 @@ import { useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
 import { PlayerProfileNavContext } from './lib/playerProfileNav'
+import {
+  clearPasswordRecovery,
+  isPasswordRecoveryActive,
+  isRecoveryLinkError,
+  mapAuthError,
+  subscribePasswordRecovery,
+} from './lib/passwordRecovery'
 import { readDestinationFromHash, type PushDestination } from './lib/push'
 import type { AppDestination } from './components/AppHeader'
 import { AdminPage } from './pages/AdminPage'
@@ -9,6 +16,7 @@ import { DashboardPage } from './pages/DashboardPage'
 import { LoginPage } from './pages/LoginPage'
 import { LeaguePhasePage } from './pages/LeaguePhasePage'
 import { RegisterPage } from './pages/RegisterPage'
+import { ResetPasswordPage } from './pages/ResetPasswordPage'
 import { RulesModal } from './pages/RulesModal'
 import { RulesPage } from './pages/RulesPage'
 import { PredictionsPage } from './pages/PredictionsPage'
@@ -33,6 +41,9 @@ function App() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loadingSession, setLoadingSession] = useState(true)
   const [profileError, setProfileError] = useState('')
+  const [passwordRecovery, setPasswordRecovery] = useState(
+    isPasswordRecoveryActive,
+  )
   const [pendingDestination, setPendingDestination] =
     useState<PushDestination | null>(() =>
       readDestinationFromHash(window.location.hash),
@@ -40,9 +51,12 @@ function App() {
 
   useEffect(() => {
     const loadInitialSession = async () => {
+      const { error: initError } = await supabase.auth.initialize()
       const { data, error } = await supabase.auth.getSession()
 
-      if (error) {
+      if (initError && isRecoveryLinkError(initError)) {
+        setProfileError(mapAuthError(initError))
+      } else if (error) {
         setProfileError('Δεν ήταν δυνατός ο έλεγχος της σύνδεσης.')
       }
 
@@ -51,6 +65,10 @@ function App() {
     }
 
     void loadInitialSession()
+
+    const unsubscribeRecovery = subscribePasswordRecovery(
+      setPasswordRecovery,
+    )
 
     const {
       data: { subscription },
@@ -64,6 +82,7 @@ function App() {
     })
 
     return () => {
+      unsubscribeRecovery()
       subscription.unsubscribe()
     }
   }, [])
@@ -144,7 +163,14 @@ function App() {
   // The requested page is kept until the session and profile are ready, so a
   // notification tap survives the login screen.
   useEffect(() => {
-    if (!pendingDestination || !session || !profile) return
+    if (
+      !pendingDestination ||
+      !session ||
+      !profile ||
+      passwordRecovery
+    ) {
+      return
+    }
 
     setAppPage(pendingDestination)
     setPendingDestination(null)
@@ -156,7 +182,7 @@ function App() {
         window.location.pathname + window.location.search,
       )
     }
-  }, [pendingDestination, session, profile])
+  }, [pendingDestination, session, profile, passwordRecovery])
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut()
@@ -185,6 +211,47 @@ function App() {
         <LoadingSplashLogo />
         <p>Φόρτωση The Score Club...</p>
       </main>
+    )
+  }
+
+  if (passwordRecovery) {
+    return (
+      <div className="auth-shell">
+        <section className="auth-brand">
+          <div className="brand-content">
+            <AuthLogo />
+
+            <div className="brand-rules">
+              <p>
+                Διάβασε πώς παίζεται το The Score Club και δες τους
+                επίσημους κανόνες πριν ξεκινήσεις.
+              </p>
+
+              <button
+                type="button"
+                className="brand-rules-button"
+                onClick={() => setShowRules(true)}
+              >
+                Προβολή κανόνων
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section className="auth-content">
+          <div className="auth-card">
+            {profileError && (
+              <p className="auth-message error">{profileError}</p>
+            )}
+
+            <ResetPasswordPage onCompleted={clearPasswordRecovery} />
+          </div>
+        </section>
+
+        {showRules && (
+          <RulesModal onClose={() => setShowRules(false)} />
+        )}
+      </div>
     )
   }
 
