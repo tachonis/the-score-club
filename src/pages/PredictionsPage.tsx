@@ -17,6 +17,10 @@ import {
   isGoldenMatchStage,
   isKnockoutPredictionStage,
 } from '../lib/stages'
+import {
+  buildPredictionSaveFeedback,
+  classifyPredictionSaveError,
+} from '../lib/predictionSave'
 import { supabase } from '../lib/supabase'
 import { getCompactTeamName } from '../lib/teamDisplayName'
 import { formatGreekAllCaps } from '../lib/greekAllCaps'
@@ -174,6 +178,9 @@ export function PredictionsPage({
     number | null
   >(null)
   const [now, setNow] = useState(() => Date.now())
+  const [locallyLockedMatchIds, setLocallyLockedMatchIds] = useState<
+    ReadonlySet<number>
+  >(() => new Set())
   const [message, setMessage] = useState('')
 
   const [messageType, setMessageType] = useState<
@@ -385,11 +392,16 @@ export function PredictionsPage({
     ? null
     : (goldenMatches[selectedMatchdayId] ?? null)
 
-  const isMatchLocked = (match: Match) => {
+  const isMatchLockedAt = (match: Match, at: number) => {
     return (
+      locallyLockedMatchIds.has(match.id) ||
       match.status !== 'scheduled' ||
-      now >= new Date(match.kickoff_at).getTime()
+      at >= new Date(match.kickoff_at).getTime()
     )
+  }
+
+  const isMatchLocked = (match: Match) => {
+    return isMatchLockedAt(match, now)
   }
 
   const selectedGoldenMatch = selectedMatches.find(
@@ -569,23 +581,15 @@ export function PredictionsPage({
       return
     }
 
-    const predictionsToSave = selectedMatches
-      .filter((match) => !isMatchLocked(match))
-      .filter((match) => hasCompletePrediction(match.id))
-      .filter((match) => hasUnsavedChanges(match.id))
-      .map((match) => ({
-        user_id: user.id,
-        match_id: match.id,
-        predicted_home_score: Number(
-          predictions[match.id].home,
-        ),
-        predicted_away_score: Number(
-          predictions[match.id].away,
-        ),
-        updated_at: new Date().toISOString(),
-      }))
+    const saveNow = Date.now()
+    setNow(saveNow)
 
-    if (predictionsToSave.length === 0) {
+    const dirtyCompleteMatches = selectedMatches.filter(
+      (match) =>
+        hasCompletePrediction(match.id) && hasUnsavedChanges(match.id),
+    )
+
+    if (dirtyCompleteMatches.length === 0) {
       setMessageType('error')
 
       if (completedPredictions === 0) {
@@ -600,46 +604,158 @@ export function PredictionsPage({
       return
     }
 
-    const { error } = await supabase
-      .from('predictions')
-      .upsert(predictionsToSave, {
-        onConflict: 'user_id,match_id',
-      })
+    const alreadyLockedMatches = dirtyCompleteMatches.filter((match) =>
+      isMatchLockedAt(match, saveNow),
+    )
+    const matchesToSave = dirtyCompleteMatches.filter(
+      (match) => !isMatchLockedAt(match, saveNow),
+    )
 
-    if (error) {
+    const lockMatch = (match: Match) => ({
+      homeName: match.home_team.name,
+      awayName: match.away_team.name,
+    })
+
+    const revertLockedDrafts = (lockedMatches: Match[]) => {
+      if (lockedMatches.length === 0) {
+        return
+      }
+
+      setPredictions((currentPredictions) => {
+        const nextPredictions = { ...currentPredictions }
+
+        lockedMatches.forEach((match) => {
+          const saved = savedPredictions[match.id]
+
+          nextPredictions[match.id] = saved
+            ? { home: saved.home, away: saved.away }
+            : { home: '', away: '' }
+        })
+
+        return nextPredictions
+      })
+    }
+
+    const markMatchesLocallyLocked = (lockedMatches: Match[]) => {
+      if (lockedMatches.length === 0) {
+        return
+      }
+
+      setLocallyLockedMatchIds((current) => {
+        const next = new Set(current)
+
+        lockedMatches.forEach((match) => {
+          next.add(match.id)
+        })
+
+        return next
+      })
+    }
+
+    if (matchesToSave.length === 0) {
+      revertLockedDrafts(alreadyLockedMatches)
+      markMatchesLocallyLocked(alreadyLockedMatches)
       setMessageType('error')
-      setMessage(`Δεν αποθηκεύτηκαν οι προβλέψεις: ${error.message}`)
+      setMessage(
+        buildPredictionSaveFeedback({
+          savedCount: 0,
+          lockedLabels: alreadyLockedMatches.map(lockMatch),
+          genericFailureCount: 0,
+        }).text,
+      )
       setSaving(false)
       return
     }
 
-    const updatedSavedPredictions = {
-      ...savedPredictions,
-    }
+    const settledResults = await Promise.allSettled(
+      matchesToSave.map(async (match) => {
+        const payload = {
+          user_id: user.id,
+          match_id: match.id,
+          predicted_home_score: Number(predictions[match.id].home),
+          predicted_away_score: Number(predictions[match.id].away),
+          updated_at: new Date().toISOString(),
+        }
 
-    predictionsToSave.forEach((prediction) => {
-      updatedSavedPredictions[prediction.match_id] = {
-        home: String(prediction.predicted_home_score),
-        away: String(prediction.predicted_away_score),
-      }
-    })
+        const { error } = await supabase.from('predictions').upsert(payload, {
+          onConflict: 'user_id,match_id',
+        })
 
-    setSavedPredictions(updatedSavedPredictions)
-
-    setMessageType('success')
-    setMessage(
-      `Αποθηκεύτηκαν ${predictionsToSave.length} προβλέψεις.`,
+        return { match, payload, error }
+      }),
     )
 
-    setRecentSaveFlash(true)
-    if (saveFlashTimeoutRef.current !== null) {
-      window.clearTimeout(saveFlashTimeoutRef.current)
+    setNow(Date.now())
+
+    const succeeded: Array<{
+      match: Match
+      payload: {
+        match_id: number
+        predicted_home_score: number
+        predicted_away_score: number
+      }
+    }> = []
+    const raceLockedMatches: Match[] = []
+    let genericFailureCount = 0
+
+    settledResults.forEach((result) => {
+      if (result.status === 'rejected') {
+        genericFailureCount += 1
+        return
+      }
+
+      if (result.value.error) {
+        if (classifyPredictionSaveError(result.value.error) === 'locked') {
+          raceLockedMatches.push(result.value.match)
+        } else {
+          genericFailureCount += 1
+        }
+        return
+      }
+
+      succeeded.push(result.value)
+    })
+
+    const lockedMatches = [...alreadyLockedMatches, ...raceLockedMatches]
+
+    if (succeeded.length > 0) {
+      const updatedSavedPredictions = {
+        ...savedPredictions,
+      }
+
+      succeeded.forEach(({ payload }) => {
+        updatedSavedPredictions[payload.match_id] = {
+          home: String(payload.predicted_home_score),
+          away: String(payload.predicted_away_score),
+        }
+      })
+
+      setSavedPredictions(updatedSavedPredictions)
     }
-    saveFlashTimeoutRef.current = window.setTimeout(() => {
-      setRecentSaveFlash(false)
-      setMessage('')
-      saveFlashTimeoutRef.current = null
-    }, 2600)
+
+    revertLockedDrafts(lockedMatches)
+    markMatchesLocallyLocked(lockedMatches)
+
+    const feedback = buildPredictionSaveFeedback({
+      savedCount: succeeded.length,
+      lockedLabels: lockedMatches.map(lockMatch),
+      genericFailureCount,
+    })
+
+    setMessageType(feedback.tone)
+    setMessage(feedback.text)
+
+    if (feedback.tone === 'success') {
+      setRecentSaveFlash(true)
+      if (saveFlashTimeoutRef.current !== null) {
+        window.clearTimeout(saveFlashTimeoutRef.current)
+      }
+      saveFlashTimeoutRef.current = window.setTimeout(() => {
+        setRecentSaveFlash(false)
+        setMessage('')
+        saveFlashTimeoutRef.current = null
+      }, 2600)
+    }
 
     setSaving(false)
   }
