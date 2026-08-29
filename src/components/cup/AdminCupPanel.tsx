@@ -8,7 +8,11 @@ import { supabase } from '../../lib/supabase'
 
 type ConfirmingAction = 'draw' | 'recompute' | null
 
-export function AdminCupPanel() {
+type AdminCupPanelProps = {
+  refreshKey?: number
+}
+
+export function AdminCupPanel({ refreshKey = 0 }: AdminCupPanelProps) {
   const [snapshot, setSnapshot] = useState<PlayersCupSnapshot | null>(null)
   const [loading, setLoading] = useState(true)
   const [busyAction, setBusyAction] = useState<ConfirmingAction>(null)
@@ -36,7 +40,7 @@ export function AdminCupPanel() {
 
   useEffect(() => {
     void loadPanel()
-  }, [loadPanel])
+  }, [loadPanel, refreshKey])
 
   const reloadSnapshot = async () => {
     const { snapshot: nextSnapshot, error } = await loadPlayersCupSnapshot()

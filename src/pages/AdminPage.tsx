@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   AppHeader,
   type AppDestination,
@@ -6,7 +6,14 @@ import {
 import { LoadingMark } from '../components/BrandAssets'
 import { AdminCupPanel } from '../components/cup/AdminCupPanel'
 import { AdminNotificationsPanel } from '../components/AdminNotificationsPanel'
+import { AdminResultConfirmModal } from '../components/AdminResultConfirmModal'
 import { LongTermOutcomesPanel } from '../components/LongTermOutcomesPanel'
+import {
+  classifySetMatchResultError,
+  isAllowedAdminScoreDraft,
+  parseAdminScore,
+  type PendingAdminResult,
+} from '../lib/adminResult'
 import {
   compareMatchdays,
   formatMatchdayLabel,
@@ -76,15 +83,26 @@ export function AdminPage({
   )
   const [drafts, setDrafts] = useState<Record<number, ScoreDraft>>({})
   const [savingMatchId, setSavingMatchId] = useState<number | null>(null)
+  const [correctingMatchId, setCorrectingMatchId] = useState<number | null>(
+    null,
+  )
+  const [pendingResult, setPendingResult] =
+    useState<PendingAdminResult | null>(null)
   const [outcomesRefreshKey, setOutcomesRefreshKey] = useState(0)
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState<'success' | 'error'>(
     'success',
   )
+  const submitLockRef = useRef(false)
 
-  const loadMatches = async (preferredMatchdayId?: number | null) => {
-    setLoading(true)
+  const loadMatches = async (
+    preferredMatchdayId?: number | null,
+    options?: { quiet?: boolean },
+  ) => {
+    if (!options?.quiet) {
+      setLoading(true)
+    }
 
     const { data, error } = await supabase
       .from('matches')
@@ -158,6 +176,11 @@ export function AdminPage({
     void loadMatches()
   }, [])
 
+  useEffect(() => {
+    setCorrectingMatchId(null)
+    setPendingResult(null)
+  }, [selectedMatchdayId])
+
   const matchdays = useMemo(() => {
     const uniqueMatchdays = new Map<number, Matchday>()
 
@@ -179,7 +202,7 @@ export function AdminPage({
     side: keyof ScoreDraft,
     value: string,
   ) => {
-    if (!/^\d{0,2}$/.test(value)) return
+    if (!isAllowedAdminScoreDraft(value)) return
 
     setDrafts((current) => ({
       ...current,
@@ -190,27 +213,106 @@ export function AdminPage({
     }))
   }
 
-  const handleSaveResult = async (match: AdminMatch) => {
-    const draft = drafts[match.id]
-
-    if (!draft || draft.home === '' || draft.away === '') {
-      setMessageType('error')
-      setMessage('Συμπλήρωσε και τα δύο πεδία σκορ 90 λεπτών.')
+  const closePendingResult = () => {
+    if (submitLockRef.current) {
       return
     }
 
-    setSavingMatchId(match.id)
+    setPendingResult(null)
+  }
+
+  const beginCorrection = (match: AdminMatch) => {
+    setMessage('')
+    setCorrectingMatchId(match.id)
+    setDrafts((current) => ({
+      ...current,
+      [match.id]: {
+        home: match.home_score === null ? '' : String(match.home_score),
+        away: match.away_score === null ? '' : String(match.away_score),
+      },
+    }))
+  }
+
+  const cancelCorrection = (match: AdminMatch) => {
+    setCorrectingMatchId(null)
+    setPendingResult(null)
+    setDrafts((current) => ({
+      ...current,
+      [match.id]: {
+        home: match.home_score === null ? '' : String(match.home_score),
+        away: match.away_score === null ? '' : String(match.away_score),
+      },
+    }))
+  }
+
+  const handleSaveResult = (match: AdminMatch) => {
+    if (submitLockRef.current || savingMatchId !== null) {
+      return
+    }
+
+    if (match.status === 'finished' && correctingMatchId !== match.id) {
+      beginCorrection(match)
+      return
+    }
+
+    const draft = drafts[match.id] ?? { home: '', away: '' }
+    const homeScore = parseAdminScore(draft.home)
+    const awayScore = parseAdminScore(draft.away)
+
+    if (!homeScore.ok) {
+      setMessageType('error')
+      setMessage(homeScore.message)
+      return
+    }
+
+    if (!awayScore.ok) {
+      setMessageType('error')
+      setMessage(awayScore.message)
+      return
+    }
+
+    if (
+      match.status === 'finished' &&
+      homeScore.value === match.home_score &&
+      awayScore.value === match.away_score
+    ) {
+      setMessageType('error')
+      setMessage('Δεν υπάρχει αλλαγή στο αποτέλεσμα.')
+      return
+    }
+
+    setMessage('')
+    setPendingResult({
+      matchId: match.id,
+      homeName: match.home_team.name,
+      awayName: match.away_team.name,
+      homeScore: homeScore.value,
+      awayScore: awayScore.value,
+      storedHomeScore: match.home_score,
+      storedAwayScore: match.away_score,
+      kind: match.status === 'finished' ? 'correction' : 'entry',
+    })
+  }
+
+  const submitPendingResult = async () => {
+    if (!pendingResult || submitLockRef.current || savingMatchId !== null) {
+      return
+    }
+
+    submitLockRef.current = true
+    setSavingMatchId(pendingResult.matchId)
     setMessage('')
 
     const { data, error } = await supabase.rpc('set_match_result', {
-      p_match_id: match.id,
-      p_home_score: Number(draft.home),
-      p_away_score: Number(draft.away),
+      p_match_id: pendingResult.matchId,
+      p_home_score: pendingResult.homeScore,
+      p_away_score: pendingResult.awayScore,
     })
 
     if (error) {
       setMessageType('error')
-      setMessage(`Δεν αποθηκεύτηκε το αποτέλεσμα: ${error.message}`)
+      setMessage(classifySetMatchResultError(error))
+      submitLockRef.current = false
       setSavingMatchId(null)
       return
     }
@@ -219,13 +321,16 @@ export function AdminPage({
 
     setMessageType('success')
     setMessage(
-      `Το ${match.home_team.name} – ${match.away_team.name} αποθηκεύτηκε. ` +
+      `Το ${pendingResult.homeName} – ${pendingResult.awayName} αποθηκεύτηκε. ` +
         `${result?.scored_predictions ?? 0} προβλέψεις ελέγχθηκαν, ` +
         `${result?.changed_predictions ?? 0} βαθμολογίες άλλαξαν.`,
     )
 
-    await loadMatches(selectedMatchdayId)
+    setPendingResult(null)
+    setCorrectingMatchId(null)
+    await loadMatches(selectedMatchdayId, { quiet: true })
     setOutcomesRefreshKey((current) => current + 1)
+    submitLockRef.current = false
     setSavingMatchId(null)
   }
 
@@ -277,6 +382,7 @@ export function AdminPage({
               <span>{formatGreekAllCaps('Φάση')}</span>
               <select
                 value={selectedMatchdayId ?? ''}
+                disabled={savingMatchId !== null || pendingResult !== null}
                 onChange={(event) =>
                   setSelectedMatchdayId(Number(event.target.value))
                 }
@@ -305,7 +411,7 @@ export function AdminPage({
           </p>
         )}
 
-        <AdminCupPanel />
+        <AdminCupPanel refreshKey={outcomesRefreshKey} />
 
         <AdminNotificationsPanel />
 
@@ -341,9 +447,16 @@ export function AdminPage({
             {selectedMatches.map((match) => {
               const draft = drafts[match.id] ?? { home: '', away: '' }
               const isSaving = savingMatchId === match.id
+              const isFinished = match.status === 'finished'
+              const isCorrecting = correctingMatchId === match.id
+              const scoresLocked = isFinished && !isCorrecting
+              const actionsBusy = savingMatchId !== null || pendingResult !== null
 
               return (
-                <article className="admin-match-card" key={match.id}>
+                <article
+                  className={`admin-match-card${isCorrecting ? ' correcting' : ''}`}
+                  key={match.id}
+                >
                   <div className="admin-match-meta">
                     <span>{formatKickoff(match.kickoff_at)}</span>
                     <span className={`admin-status ${match.status}`}>
@@ -359,6 +472,7 @@ export function AdminPage({
                         inputMode="numeric"
                         maxLength={2}
                         value={draft.home}
+                        disabled={scoresLocked || isSaving}
                         onChange={(event) =>
                           handleScoreChange(match.id, 'home', event.target.value)
                         }
@@ -370,6 +484,7 @@ export function AdminPage({
                         inputMode="numeric"
                         maxLength={2}
                         value={draft.away}
+                        disabled={scoresLocked || isSaving}
                         onChange={(event) =>
                           handleScoreChange(match.id, 'away', event.target.value)
                         }
@@ -379,24 +494,48 @@ export function AdminPage({
                     <strong>{match.away_team.name}</strong>
                   </div>
 
-                  <button
-                    type="button"
-                    className="admin-save-button"
-                    disabled={savingMatchId !== null}
-                    onClick={() => void handleSaveResult(match)}
-                  >
-                    {isSaving
-                      ? 'Αποθήκευση...'
-                      : match.status === 'finished'
-                        ? 'Διόρθωση αποτελέσματος'
-                        : 'Αποθήκευση αποτελέσματος'}
-                  </button>
+                  <div className="admin-match-actions">
+                    <button
+                      type="button"
+                      className="admin-save-button"
+                      disabled={actionsBusy}
+                      onClick={() => handleSaveResult(match)}
+                    >
+                      {isSaving
+                        ? 'Αποθήκευση...'
+                        : scoresLocked
+                          ? 'Διόρθωση αποτελέσματος'
+                          : isFinished
+                            ? 'Επιβεβαίωση διόρθωσης'
+                            : 'Αποθήκευση αποτελέσματος'}
+                    </button>
+                    {isCorrecting ? (
+                      <button
+                        type="button"
+                        className="admin-notifications-cancel"
+                        disabled={actionsBusy}
+                        onClick={() => cancelCorrection(match)}
+                      >
+                        Ακύρωση διόρθωσης
+                      </button>
+                    ) : null}
+                  </div>
                 </article>
               )
             })}
           </section>
         )}
       </main>
+
+      {pendingResult ? (
+        <AdminResultConfirmModal
+          pending={pendingResult}
+          saving={savingMatchId === pendingResult.matchId}
+          errorText={messageType === 'error' ? message : ''}
+          onCancel={closePendingResult}
+          onConfirm={() => void submitPendingResult()}
+        />
+      ) : null}
 
     </div>
   )
