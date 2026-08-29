@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { supabase } from '../lib/supabase'
+import { mapRegisterError, validateUsername } from '../lib/username'
 
 export function RegisterPage() {
   const [username, setUsername] = useState('')
@@ -21,12 +22,11 @@ export function RegisterPage() {
     setMessage('')
 
     const cleanUsername = username.trim()
+    const usernameError = validateUsername(cleanUsername)
 
-    if (cleanUsername.length < 3) {
+    if (usernameError) {
       setMessageType('error')
-      setMessage(
-        'Το username πρέπει να έχει τουλάχιστον 3 χαρακτήρες.',
-      )
+      setMessage(usernameError)
       setLoading(false)
       return
     }
@@ -59,7 +59,7 @@ export function RegisterPage() {
 
     if (error) {
       setMessageType('error')
-      setMessage(`Δεν ολοκληρώθηκε η εγγραφή: ${error.message}`)
+      setMessage(mapRegisterError(error))
       setLoading(false)
       return
     }
@@ -94,7 +94,6 @@ export function RegisterPage() {
             value={username}
             onChange={(event) => setUsername(event.target.value)}
             autoComplete="username"
-            minLength={3}
             required
           />
         </div>
