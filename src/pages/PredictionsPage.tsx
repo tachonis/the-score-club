@@ -705,7 +705,16 @@ export function PredictionsPage({
       }
 
       if (result.value.error) {
-        if (classifyPredictionSaveError(result.value.error) === 'locked') {
+        const looksLocked =
+          classifyPredictionSaveError(result.value.error) === 'locked'
+        const matchLockedNow = isMatchLockedAt(
+          result.value.match,
+          Date.now(),
+        )
+
+        // Disabled-account RLS looks like any other policy denial. Only treat
+        // it as a kickoff lock when this match is actually locked client-side.
+        if (looksLocked && matchLockedNow) {
           raceLockedMatches.push(result.value.match)
         } else {
           genericFailureCount += 1
