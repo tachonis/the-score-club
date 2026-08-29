@@ -3,6 +3,7 @@ import {
   AppHeader,
   type AppDestination,
 } from '../components/AppHeader'
+import { DashboardBadgesCard } from '../components/DashboardBadgesCard'
 import { PushNotificationsCard } from '../components/PushNotificationsCard'
 import { LoadingMark } from '../components/BrandAssets'
 import { formatGreekAllCaps } from '../lib/greekAllCaps'
@@ -414,6 +415,8 @@ export function DashboardPage({
             </small>
           </article>
         </section>
+
+        <DashboardBadgesCard />
 
         <PushNotificationsCard />
 

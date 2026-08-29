@@ -11,6 +11,7 @@ import {
   type GroupedBadge,
 } from '../lib/badges'
 import { formatGreekAllCaps } from '../lib/greekAllCaps'
+import { usePlayerProfileNav } from '../lib/playerProfileNav'
 import { supabase } from '../lib/supabase'
 
 type PlayerProfilePageProps = {
@@ -27,6 +28,8 @@ type LeaderboardRow = {
   user_id: string
   rank_position: number
   total_points: number
+  exact_scores: number
+  correct_results: number
 }
 
 type ProfileHeader = {
@@ -34,6 +37,22 @@ type ProfileHeader = {
   rankPosition: number | null
   totalPoints: number | null
 }
+
+type ProfileStats = {
+  totalPoints: number
+  exactScores: number
+  correctResults: number
+}
+
+type StatsState =
+  | { status: 'loading' }
+  | { status: 'unavailable' }
+  | { status: 'ready'; stats: ProfileStats }
+
+type PredictionsState =
+  | { status: 'loading' }
+  | { status: 'unavailable' }
+  | { status: 'ready'; count: number }
 
 export function PlayerProfilePage({
   profileUserId,
@@ -44,7 +63,14 @@ export function PlayerProfilePage({
   onLogout,
   onBack,
 }: PlayerProfilePageProps) {
+  const { viewerUserId } = usePlayerProfileNav()
   const [header, setHeader] = useState<ProfileHeader | null>(null)
+  const [statsState, setStatsState] = useState<StatsState>({
+    status: 'loading',
+  })
+  const [predictionsState, setPredictionsState] = useState<PredictionsState>({
+    status: 'loading',
+  })
   const [badges, setBadges] = useState<GroupedBadge[]>([])
   const [selectedBadge, setSelectedBadge] = useState<GroupedBadge | null>(null)
   const [loadingProfile, setLoadingProfile] = useState(true)
@@ -61,6 +87,8 @@ export function PlayerProfilePage({
       setProfileError('')
       setNotFound(false)
       setHeader(null)
+      setStatsState({ status: 'loading' })
+      setPredictionsState({ status: 'loading' })
 
       const { data: profileRow, error: profileLookupError } = await supabase
         .from('profiles')
@@ -73,40 +101,84 @@ export function PlayerProfilePage({
       if (profileLookupError) {
         setProfileError('Δεν φορτώθηκε το προφίλ.')
         setLoadingProfile(false)
+        setStatsState({ status: 'unavailable' })
+        setPredictionsState({ status: 'unavailable' })
         return
       }
 
       if (!profileRow) {
         setNotFound(true)
         setLoadingProfile(false)
+        setStatsState({ status: 'unavailable' })
+        setPredictionsState({ status: 'unavailable' })
         return
       }
 
-      const nextHeader: ProfileHeader = {
+      setHeader({
         username: profileRow.username as string,
         rankPosition: null,
         totalPoints: null,
-      }
+      })
+      setLoadingProfile(false)
 
-      const { data: board, error: boardError } = await supabase.rpc(
-        'get_leaderboard',
-      )
+      const canReadPredictions =
+        profileUserId === viewerUserId || role === 'admin'
 
-      if (!cancelled && !boardError) {
-        const row = ((board ?? []) as LeaderboardRow[]).find(
+      const boardPromise = supabase.rpc('get_leaderboard')
+      const predictionsPromise = canReadPredictions
+        ? supabase
+            .from('predictions')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', profileUserId)
+        : Promise.resolve(null)
+
+      const [boardResult, predictionsResult] = await Promise.all([
+        boardPromise,
+        predictionsPromise,
+      ])
+
+      if (cancelled) return
+
+      if (boardResult.error) {
+        setStatsState({ status: 'unavailable' })
+      } else {
+        const row = ((boardResult.data ?? []) as LeaderboardRow[]).find(
           (entry) => entry.user_id === profileUserId,
         )
 
         if (row) {
-          nextHeader.rankPosition = row.rank_position
-          nextHeader.totalPoints = row.total_points
+          setHeader((current) =>
+            current
+              ? {
+                  ...current,
+                  rankPosition: row.rank_position,
+                  totalPoints: row.total_points,
+                }
+              : current,
+          )
+          setStatsState({
+            status: 'ready',
+            stats: {
+              totalPoints: row.total_points,
+              exactScores: row.exact_scores,
+              correctResults: row.correct_results,
+            },
+          })
+        } else {
+          setStatsState({ status: 'unavailable' })
         }
       }
 
-      if (cancelled) return
-
-      setHeader(nextHeader)
-      setLoadingProfile(false)
+      if (!predictionsResult) {
+        setPredictionsState({ status: 'unavailable' })
+      } else if (predictionsResult.error) {
+        setPredictionsState({ status: 'unavailable' })
+      } else {
+        setPredictionsState({
+          status: 'ready',
+          count: predictionsResult.count ?? 0,
+        })
+      }
     }
 
     const loadBadges = async () => {
@@ -138,7 +210,7 @@ export function PlayerProfilePage({
     return () => {
       cancelled = true
     }
-  }, [profileUserId])
+  }, [profileUserId, role, viewerUserId])
 
   const rankLine =
     header &&
@@ -146,6 +218,15 @@ export function PlayerProfilePage({
     header.totalPoints !== null
       ? `#${header.rankPosition} · ${header.totalPoints} βαθμοί`
       : null
+
+  const pointsValue =
+    statsState.status === 'ready' ? statsState.stats.totalPoints : '—'
+  const exactValue =
+    statsState.status === 'ready' ? statsState.stats.exactScores : '—'
+  const correctValue =
+    statsState.status === 'ready' ? statsState.stats.correctResults : '—'
+  const predictionsValue =
+    predictionsState.status === 'ready' ? predictionsState.count : '—'
 
   return (
     <div className="app-shell">
@@ -185,6 +266,37 @@ export function PlayerProfilePage({
             </>
           ) : null}
         </section>
+
+        {!notFound && !profileError && header ? (
+          <section
+            className="profile-stats"
+            aria-label="Στατιστικά παίκτη"
+            aria-busy={
+              statsState.status === 'loading' ||
+              predictionsState.status === 'loading'
+            }
+          >
+            <article className="summary-card">
+              <span>Συνολικοί βαθμοί</span>
+              <strong>{pointsValue}</strong>
+            </article>
+            <article className="summary-card">
+              <span>Ακριβή σκορ</span>
+              <strong>{exactValue}</strong>
+            </article>
+            <article className="summary-card">
+              <span>Σωστά αποτελέσματα</span>
+              <strong>{correctValue}</strong>
+            </article>
+            <article className="summary-card">
+              <span>Προβλέψεις</span>
+              <strong>{predictionsValue}</strong>
+              {predictionsState.status === 'ready' ? (
+                <small>συνολικά</small>
+              ) : null}
+            </article>
+          </section>
+        ) : null}
 
         {!notFound && !profileError ? (
           <section className="profile-badges" aria-labelledby="profile-badges-heading">

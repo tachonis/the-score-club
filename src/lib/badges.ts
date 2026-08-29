@@ -223,6 +223,21 @@ export async function fetchBadgeDefinitions() {
   return definitionsInFlight
 }
 
+export async function fetchUniqueEarnedBadgeCount(userId: string) {
+  const { data, error } = await supabase
+    .from('badge_awards')
+    .select('badge_code')
+    .eq('user_id', userId)
+
+  if (error) {
+    throw error
+  }
+
+  return new Set(
+    (data ?? []).map((row) => row.badge_code).filter(Boolean),
+  ).size
+}
+
 export async function fetchEarnedBadges(userId: string): Promise<GroupedBadge[]> {
   const [definitions, awardsResult] = await Promise.all([
     fetchBadgeDefinitions(),

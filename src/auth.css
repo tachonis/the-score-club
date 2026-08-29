@@ -815,6 +815,82 @@ button {
   font-size: 0.72rem;
 }
 
+.dashboard-badges-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-width: 0;
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  border: 1px solid rgba(16, 44, 50, 0.09);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 8px 25px rgba(16, 44, 50, 0.06);
+  appearance: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dashboard-badges-card--loading {
+  cursor: default;
+}
+
+.dashboard-badges-card:hover:not(.dashboard-badges-card--loading) {
+  border-color: rgba(210, 139, 69, 0.35);
+}
+
+.dashboard-badges-card:focus-visible {
+  outline: 2px solid #d28b45;
+  outline-offset: 3px;
+}
+
+.dashboard-badges-icon {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #f5eadc;
+  color: #d28b45;
+}
+
+.dashboard-badges-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.dashboard-badges-copy .dashboard-eyebrow {
+  margin-bottom: 4px;
+}
+
+.dashboard-badges-copy > p:last-child {
+  margin: 0;
+  color: #102c32;
+  font-size: 0.92rem;
+  font-weight: 650;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.dashboard-badges-action {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: #b96f2d;
+  font-size: 0.82rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.dashboard-badges-action::after {
+  content: ' →';
+}
+
 .next-matchday-card {
   min-width: 0;
   max-width: 100%;
@@ -1157,6 +1233,34 @@ button {
 
   .summary-card small {
     display: none;
+  }
+
+  .dashboard-badges-card {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr);
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 2px;
+    padding: 12px 14px;
+  }
+
+  .dashboard-badges-icon {
+    grid-row: 1 / span 2;
+  }
+
+  .dashboard-badges-copy {
+    min-width: 0;
+  }
+
+  .dashboard-badges-copy > p:last-child {
+    font-size: 0.88rem;
+  }
+
+  .dashboard-badges-action {
+    width: auto;
+    max-width: 100%;
+    min-height: 40px;
+    padding-left: 0;
   }
 
   .next-matchday-card {
@@ -5573,6 +5677,43 @@ button.cup-player-name:focus-visible {
   color: #6f7e80;
   font-size: 0.95rem;
   font-weight: 650;
+}
+
+.profile-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 20px;
+}
+
+.profile-stats .summary-card {
+  padding: 16px 14px;
+}
+
+.profile-stats .summary-card strong {
+  font-size: 1.55rem;
+}
+
+@media (max-width: 760px) {
+  .profile-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .profile-stats .summary-card {
+    padding: 12px 10px;
+  }
+
+  .profile-stats .summary-card strong {
+    font-size: 1.28rem;
+  }
+
+  .profile-stats .summary-card small {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.64rem;
+  }
 }
 
 .profile-badges h2 {
