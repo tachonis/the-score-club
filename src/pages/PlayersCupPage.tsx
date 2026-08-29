@@ -396,7 +396,7 @@ export function PlayersCupPage({
             </button>
             <button
               type="button"
-              className="league-refresh-button"
+              className="cup-utility-button"
               onClick={() => void loadPage('manual')}
               disabled={loading || refreshing}
             >

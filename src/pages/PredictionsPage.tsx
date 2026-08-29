@@ -5,6 +5,7 @@ import {
 } from '../components/AppHeader'
 import { LoadingMark } from '../components/BrandAssets'
 import { LongTermPredictionsSection } from '../components/LongTermPredictionsSection'
+import { ScoreStepper } from '../components/ScoreStepper'
 import {
   compareMatchdays,
   formatMatchdayLabel,
@@ -18,6 +19,7 @@ import {
 } from '../lib/stages'
 import { supabase } from '../lib/supabase'
 import { getCompactTeamName } from '../lib/teamDisplayName'
+import { formatGreekAllCaps } from '../lib/greekAllCaps'
 
 type PredictionsPageProps = {
   username: string
@@ -440,6 +442,7 @@ export function PredictionsPage({
     matchId: number,
     team: 'home' | 'away',
     value: string,
+    options?: { skipAutoAdvance?: boolean },
   ) => {
     if (value !== '' && !/^\d{1,2}$/.test(value)) {
       return
@@ -460,7 +463,11 @@ export function PredictionsPage({
       },
     }))
 
-    if (team === 'home' && value.length === 1) {
+    if (
+      !options?.skipAutoAdvance &&
+      team === 'home' &&
+      value.length === 1
+    ) {
       awayInputRefs.current[matchId]?.focus()
     }
   }
@@ -754,7 +761,11 @@ export function PredictionsPage({
 
             <section className="selected-matchday-info">
               <div>
-                <span>{getMatchdayHeadingEyebrow(selectedStage)}</span>
+                <span>
+                  {formatGreekAllCaps(
+                    getMatchdayHeadingEyebrow(selectedStage),
+                  )}
+                </span>
 
                 <h2>
                   {selectedMatchday
@@ -980,41 +991,35 @@ export function PredictionsPage({
                       </div>
 
                       <div className="score-prediction-inputs">
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          maxLength={2}
+                        <ScoreStepper
                           value={prediction.home}
                           disabled={locked}
-                          onFocus={(e) => e.target.select()}
-                          onChange={(event) =>
-                            handleScoreChange(
-                              match.id,
-                              'home',
-                              event.target.value,
-                            )
+                          inputLabel={`Γκολ ${match.home_team.name}`}
+                          incrementLabel={`Αύξηση γκολ ${match.home_team.name}`}
+                          decrementLabel={`Μείωση γκολ ${match.home_team.name}`}
+                          onChange={(next, source) =>
+                            handleScoreChange(match.id, 'home', next, {
+                              skipAutoAdvance: source === 'stepper',
+                            })
                           }
-                          aria-label={`Γκολ ${match.home_team.name}`}
                         />
 
                         <span>:</span>
 
-                        <input
-                          ref={(el) => { awayInputRefs.current[match.id] = el }}
-                          type="text"
-                          inputMode="numeric"
-                          maxLength={2}
+                        <ScoreStepper
                           value={prediction.away}
                           disabled={locked}
-                          onFocus={(e) => e.target.select()}
-                          onChange={(event) =>
-                            handleScoreChange(
-                              match.id,
-                              'away',
-                              event.target.value,
-                            )
+                          inputRef={(el) => {
+                            awayInputRefs.current[match.id] = el
+                          }}
+                          inputLabel={`Γκολ ${match.away_team.name}`}
+                          incrementLabel={`Αύξηση γκολ ${match.away_team.name}`}
+                          decrementLabel={`Μείωση γκολ ${match.away_team.name}`}
+                          onChange={(next, source) =>
+                            handleScoreChange(match.id, 'away', next, {
+                              skipAutoAdvance: source === 'stepper',
+                            })
                           }
-                          aria-label={`Γκολ ${match.away_team.name}`}
                         />
                       </div>
 

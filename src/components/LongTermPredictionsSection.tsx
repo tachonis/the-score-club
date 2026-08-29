@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { formatGreekAllCaps } from '../lib/greekAllCaps'
 import { supabase } from '../lib/supabase'
 
 type PredictionType = 'winner' | 'league_phase_first'
@@ -251,14 +252,18 @@ export function LongTermPredictionsSection() {
         <div className="long-term-compact">
           <div className="long-term-compact-main">
             <div className="long-term-compact-heading">
-              <p className="dashboard-eyebrow">Μακροχρόνιες προβλέψεις</p>
+              <p className="dashboard-eyebrow">
+                {formatGreekAllCaps('Μακροχρόνιες προβλέψεις')}
+              </p>
               <span
                 className={`long-term-lock-badge ${
                   isLocked ? 'locked' : 'saved'
                 }`}
               >
                 <span aria-hidden="true">●</span>
-                {isLocked ? 'Κλειδωμένες' : 'Αποθηκευμένες'}
+                {isLocked
+                  ? formatGreekAllCaps('Κλειδωμένες')
+                  : formatGreekAllCaps('Αποθηκευμένες')}
               </span>
             </div>
 
@@ -275,8 +280,8 @@ export function LongTermPredictionsSection() {
 
             {isLocked && status?.is_configured && (
               <p className="long-term-compact-note">
-                {status.finished_count}/{status.match_count} αγώνες της Matchday
-                3 ολοκληρώθηκαν.
+                {status.finished_count}/{status.match_count} αγώνες της 3ης
+                αγωνιστικής ολοκληρώθηκαν.
               </p>
             )}
           </div>
@@ -301,7 +306,7 @@ export function LongTermPredictionsSection() {
           <div className="long-term-header">
             <div className="long-term-header-primary">
               <p className="dashboard-eyebrow long-term-header-eyebrow">
-                Μακροχρόνιες προβλέψεις
+                {formatGreekAllCaps('Μακροχρόνιες προβλέψεις')}
               </p>
 
               <div className="long-term-header-title-row">
@@ -363,7 +368,7 @@ export function LongTermPredictionsSection() {
               <div className="long-term-header-actions">
                 <div className="long-term-lock-badge locked">
                   <span aria-hidden="true">●</span>
-                  Κλειδωμένες
+                  {formatGreekAllCaps('Κλειδωμένες')}
                 </div>
               </div>
             )}
@@ -372,8 +377,8 @@ export function LongTermPredictionsSection() {
           {status?.is_configured && (
             <p className="long-term-deadline">
               {status.is_locked
-                ? `Οι μακροχρόνιες προβλέψεις κλειδώθηκαν. ${status.finished_count}/${status.match_count} αγώνες της Matchday 3 ολοκληρώθηκαν.`
-                : `${status.finished_count}/${status.match_count} αγώνες της Matchday 3 ολοκληρώθηκαν.`}
+                ? `Οι μακροχρόνιες προβλέψεις κλειδώθηκαν. ${status.finished_count}/${status.match_count} αγώνες της 3ης αγωνιστικής ολοκληρώθηκαν.`
+                : `${status.finished_count}/${status.match_count} αγώνες της 3ης αγωνιστικής ολοκληρώθηκαν.`}
             </p>
           )}
 
@@ -402,7 +407,9 @@ export function LongTermPredictionsSection() {
                   </div>
 
                   <label>
-                    <span className="long-term-choice-label">Η επιλογή σου</span>
+                    <span className="long-term-choice-label">
+                      {formatGreekAllCaps('Η επιλογή σου')}
+                    </span>
                     <select
                       value={drafts[option.type] ?? ''}
                       disabled={loading || isLocked || savingType !== null}

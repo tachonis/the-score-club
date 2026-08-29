@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
+import { formatGreekAllCaps } from '../lib/greekAllCaps'
 import { usePlayerProfileNav } from '../lib/playerProfileNav'
 import { HeaderLogo } from './BrandAssets'
+import { NavIcon, type NavIconName } from './NavIcons'
 
 export type AppDestination =
   | 'home'
@@ -23,7 +25,7 @@ type NavigationItem = {
   destination: AppDestination
   desktopLabel: string
   mobileLabel: string
-  icon: string
+  icon: NavIconName
   adminOnly?: boolean
 }
 
@@ -32,43 +34,43 @@ const navigationItems: NavigationItem[] = [
     destination: 'home',
     desktopLabel: 'Αρχική',
     mobileLabel: 'Αρχική',
-    icon: '⌂',
+    icon: 'home',
   },
   {
     destination: 'predictions',
     desktopLabel: 'Αγώνες & Προβλέψεις',
     mobileLabel: 'Αγώνες',
-    icon: '⚽',
+    icon: 'matches',
   },
   {
     destination: 'standings',
     desktopLabel: 'Βαθμολογία',
     mobileLabel: 'Βαθμοί',
-    icon: '🏆',
+    icon: 'standings',
   },
   {
     destination: 'players-cup',
     desktopLabel: 'Players Cup',
     mobileLabel: 'Κύπελλο',
-    icon: '◈',
+    icon: 'cup',
   },
   {
     destination: 'league-phase',
     desktopLabel: 'League Phase',
     mobileLabel: 'League Phase',
-    icon: '▦',
+    icon: 'league',
   },
   {
     destination: 'rules',
     desktopLabel: 'Κανόνες',
     mobileLabel: 'Κανόνες',
-    icon: '≡',
+    icon: 'rules',
   },
   {
     destination: 'admin',
     desktopLabel: 'Διαχείριση',
     mobileLabel: 'Διαχείριση',
-    icon: '⚙',
+    icon: 'admin',
     adminOnly: true,
   },
 ]
@@ -174,7 +176,7 @@ export function AppHeader({
               >
                 {username}
               </button>
-              <span>{role === 'admin' ? 'Administrator' : 'Player'}</span>
+              <span>{role === 'admin' ? 'Διαχειριστής' : 'Παίκτης'}</span>
             </div>
             <button
               type="button"
@@ -201,7 +203,7 @@ export function AppHeader({
             aria-label="Περισσότερες σελίδες"
           >
             <div className="mobile-menu-heading">
-              <span>Περισσότερα</span>
+              <span>{formatGreekAllCaps('Περισσότερα')}</span>
               <button
                 type="button"
                 onClick={() => setMenuOpen(false)}
@@ -223,7 +225,7 @@ export function AppHeader({
                   onClick={() => navigate(item.destination)}
                   aria-current={isActive ? 'page' : undefined}
                 >
-                  <span aria-hidden="true">{item.icon}</span>
+                  <NavIcon name={item.icon} />
                   <strong>{item.mobileLabel}</strong>
                   <small aria-hidden="true">›</small>
                 </button>
@@ -245,7 +247,7 @@ export function AppHeader({
               onClick={() => navigate(item.destination)}
               aria-current={isActive ? 'page' : undefined}
             >
-              <span aria-hidden="true">{item.icon}</span>
+              <NavIcon name={item.icon} />
               {item.mobileLabel}
             </button>
           )
@@ -260,7 +262,7 @@ export function AppHeader({
           aria-controls="mobile-overflow-navigation"
           aria-expanded={menuOpen}
         >
-          <span aria-hidden="true">☰</span>
+          <NavIcon name="menu" />
           Μενού
         </button>
       </nav>

@@ -5,6 +5,7 @@ import {
 } from '../components/AppHeader'
 import { PushNotificationsCard } from '../components/PushNotificationsCard'
 import { LoadingMark } from '../components/BrandAssets'
+import { formatGreekAllCaps } from '../lib/greekAllCaps'
 import {
   compareMatchdays,
   getMatchdayRoundLabel,
@@ -427,7 +428,7 @@ export function DashboardPage({
               <div className="matchday-heading-row">
                 <div>
                   <p className="dashboard-eyebrow">
-                    {eyebrowLabel()}
+                    {formatGreekAllCaps(eyebrowLabel())}
                   </p>
 
                   <h2>{stageLabel}</h2>

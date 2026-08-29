@@ -7,6 +7,7 @@ import {
   type CupRoundStatus,
   type CupTie,
 } from '../../lib/cup'
+import { formatGreekAllCaps } from '../../lib/greekAllCaps'
 
 type ParticipantMap = Map<number, CupParticipant>
 
@@ -45,7 +46,9 @@ export function CupPlayerName({
       {participant ? (
         <CupSeedBadge rankPosition={participant.rank_position} />
       ) : null}
-      {isMe ? <span className="cup-me-tag">Εσύ</span> : null}
+      {isMe ? (
+        <span className="cup-me-tag">{formatGreekAllCaps('Εσύ')}</span>
+      ) : null}
     </>
   )
 
@@ -251,7 +254,9 @@ function CupScoreRow({
       <strong className="cup-tie-score" aria-label={`${points} βαθμοί`}>
         {points}
       </strong>
-      {isWinner ? <span className="cup-winner-mark">Νικητής</span> : null}
+      {isWinner ? (
+        <span className="cup-winner-mark">{formatGreekAllCaps('Νικητής')}</span>
+      ) : null}
     </div>
   )
 }

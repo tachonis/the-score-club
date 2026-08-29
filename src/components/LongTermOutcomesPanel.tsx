@@ -120,7 +120,7 @@ export function LongTermOutcomesPanel({
       setMessageType('error')
       setMessage(
         error.message === 'Long-term outcomes require completed Matchday 3'
-          ? 'Τα outcomes μπορούν να καταχωριστούν μόνο μετά την ολοκλήρωση της Matchday 3.'
+          ? 'Τα outcomes μπορούν να καταχωριστούν μόνο μετά την ολοκλήρωση της 3ης αγωνιστικής.'
           : `Δεν αποθηκεύτηκε το outcome: ${error.message}`,
       )
       setSavingType(null)
@@ -152,13 +152,13 @@ export function LongTermOutcomesPanel({
           </p>
         </div>
         <span className={outcomesEnabled ? 'ready' : 'waiting'}>
-          {outcomesEnabled ? 'Διαθέσιμο' : 'Αναμονή Matchday 3'}
+          {outcomesEnabled ? 'Διαθέσιμο' : 'Αναμονή 3ης αγωνιστικής'}
         </span>
       </div>
 
       {status && !outcomesEnabled && (
         <p className="admin-outcomes-gate">
-          {status.finished_count}/{status.match_count} αγώνες της Matchday 3
+          {status.finished_count}/{status.match_count} αγώνες της 3ης αγωνιστικής
           έχουν ολοκληρωθεί. Η server-side καταχώριση παραμένει κλειδωμένη.
         </p>
       )}

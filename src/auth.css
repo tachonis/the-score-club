@@ -441,27 +441,28 @@ button {
 
   .auth-brand {
     min-height: auto;
-    padding: 28px 20px 24px;
+    padding: 14px 16px 10px;
   }
 
   .auth-logo-image {
     width: auto;
-    max-width: min(100%, 200px);
-    max-height: 168px;
+    max-width: min(100%, 148px);
+    max-height: 112px;
   }
 
   .brand-rules {
-    margin-top: 21px;
-    padding-top: 17px;
+    margin-top: 12px;
+    padding-top: 10px;
   }
 
   .brand-rules p {
-    margin-bottom: 11px;
-    font-size: 0.84rem;
+    margin-bottom: 8px;
+    font-size: 0.8rem;
+    line-height: 1.4;
   }
 
   .brand-rules-button {
-    padding: 10px 14px;
+    padding: 9px 12px;
   }
 
   .auth-content {
@@ -602,6 +603,20 @@ button {
   width: auto;
   max-width: 200px;
   object-fit: contain;
+}
+
+@media (min-width: 1281px) {
+  .app-logo-image {
+    height: 56px;
+    max-width: 240px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .app-logo-image {
+    height: 60px;
+    max-width: 264px;
+  }
 }
 
 .desktop-navigation {
@@ -750,8 +765,10 @@ button {
 .dashboard-welcome h1 {
   margin: 0;
   color: #102c32;
-  font-size: clamp(2rem, 4vw, 3rem);
-  line-height: 1.1;
+  font-size: clamp(1.65rem, 2.8vw, 2.2rem);
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+  max-width: 100%;
 }
 
 .dashboard-welcome > div > p:last-child {
@@ -972,7 +989,7 @@ button {
   .predictions-main,
   .cup-page-main,
   .profile-main {
-    padding-bottom: 100px;
+    padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
   }
 
   .mobile-navigation {
@@ -983,6 +1000,7 @@ button {
     z-index: 60;
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     border-top: 1px solid rgba(16, 44, 50, 0.12);
     background: rgba(250, 248, 243, 0.97);
     box-shadow: 0 -10px 30px rgba(16, 44, 50, 0.08);
@@ -1004,8 +1022,15 @@ button {
     cursor: pointer;
   }
 
-  .mobile-nav-link span {
+  .mobile-nav-link span,
+  .mobile-nav-link .nav-icon {
     font-size: 1.1rem;
+  }
+
+  .nav-icon {
+    display: block;
+    width: 20px;
+    height: 20px;
   }
 
   .mobile-nav-link.active {
@@ -1030,8 +1055,14 @@ button {
     text-align: center;
   }
 
-  .mobile-nav-link span {
+  .mobile-nav-link span,
+  .mobile-nav-link .nav-icon {
     font-size: 0.98rem;
+  }
+
+  .mobile-nav-link .nav-icon {
+    width: 18px;
+    height: 18px;
   }
 
   .cup-path-detail,
@@ -1047,7 +1078,7 @@ button {
 @media (max-width: 760px) {
   .app-header-inner {
     width: calc(100% - 24px);
-    min-height: 64px;
+    min-height: 56px;
     gap: 10px;
   }
 
@@ -1082,12 +1113,12 @@ button {
     width: calc(100% - 24px);
     max-width: calc(100vw - 24px);
     min-width: 0;
-    padding: 24px 0 100px;
+    padding: 24px 0 calc(100px + env(safe-area-inset-bottom, 0px));
   }
 
   .dashboard-welcome {
     min-width: 0;
-    margin-bottom: 18px;
+    margin-bottom: 16px;
   }
 
   .dashboard-welcome > div {
@@ -1095,17 +1126,20 @@ button {
   }
 
   .dashboard-welcome h1 {
-    font-size: clamp(2rem, 6vw, 2.25rem);
+    font-size: clamp(1.5rem, 5.4vw, 1.75rem);
     overflow-wrap: anywhere;
   }
 
   .dashboard-welcome > div > p:last-child {
-    font-size: 0.98rem;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    margin-top: 8px;
     overflow-wrap: anywhere;
   }
 
   .dashboard-eyebrow {
-    font-size: 0.78rem;
+    font-size: 0.66rem;
+    margin-bottom: 5px;
   }
 
   .player-summary {
@@ -1212,7 +1246,7 @@ button {
   max-width: 100%;
   min-width: 0;
   margin: 0 auto;
-  padding: 46px 0 110px;
+  padding: 46px 0 calc(110px + env(safe-area-inset-bottom, 0px));
 }
 
 .predictions-heading {
@@ -1451,6 +1485,53 @@ button {
   gap: 7px;
 }
 
+.score-stepper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.score-stepper-button {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 28px;
+  height: 20px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0;
+  background: transparent;
+  color: #4d6264;
+  cursor: pointer;
+}
+
+.score-stepper-button svg {
+  display: block;
+  width: 11px;
+  height: 7px;
+}
+
+.score-stepper-button:hover:not(:disabled) {
+  color: #102c32;
+  background: rgba(16, 44, 50, 0.07);
+}
+
+.score-stepper-button:active:not(:disabled) {
+  color: #102c32;
+  background: rgba(16, 44, 50, 0.12);
+}
+
+.score-stepper-button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.score-stepper-button:focus-visible {
+  outline: 2px solid #d28b45;
+  outline-offset: 1px;
+}
+
 .score-prediction-inputs input {
   width: 48px;
   height: 48px;
@@ -1569,11 +1650,11 @@ button {
     width: calc(100% - 24px);
     max-width: calc(100vw - 24px);
     min-width: 0;
-    padding: 24px 0 100px;
+    padding: 24px 0 calc(100px + env(safe-area-inset-bottom, 0px));
   }
 
   .predictions-main--floating-save {
-    padding-bottom: 140px;
+    padding-bottom: calc(140px + env(safe-area-inset-bottom, 0px));
   }
 
   .predictions-heading {
@@ -1588,13 +1669,14 @@ button {
   }
 
   .predictions-heading h1 {
-    font-size: clamp(2rem, 6vw, 2.25rem);
+    font-size: clamp(1.5rem, 5.4vw, 1.75rem);
     overflow-wrap: anywhere;
   }
 
   .predictions-heading > div:first-child > p:last-child {
-    font-size: 0.98rem;
-    line-height: 1.5;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    margin-top: 8px;
   }
 
   .predictions-counter {
@@ -1727,9 +1809,30 @@ button {
     gap: 5px;
   }
 
+  .score-stepper-button {
+    width: 32px;
+    height: 32px;
+    margin-block: -2px;
+    color: #102c32;
+    background: #f3efe6;
+    box-shadow: inset 0 0 0 1px rgba(16, 44, 50, 0.18);
+  }
+
+  .score-stepper-button svg {
+    width: 14px;
+    height: 9px;
+    stroke-width: 2.25;
+  }
+
+  .score-stepper-button:hover:not(:disabled),
+  .score-stepper-button:active:not(:disabled) {
+    background: #ece6d8;
+    box-shadow: inset 0 0 0 1px rgba(16, 44, 50, 0.28);
+  }
+
   .score-prediction-inputs input {
-    width: 42px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
     font-size: 1.05rem;
   }
 
@@ -1756,7 +1859,7 @@ button {
   .predictions-actions--saved-flash {
     position: fixed;
     right: 10px;
-    bottom: 76px;
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px));
     left: 10px;
     z-index: 35;
     margin: 0;
@@ -2536,7 +2639,7 @@ button {
   max-width: 100%;
   min-width: 0;
   margin: 0 auto;
-  padding: 44px 0 100px;
+  padding: 44px 0 calc(100px + env(safe-area-inset-bottom, 0px));
 }
 
 .league-phase-intro {
@@ -2792,22 +2895,24 @@ button {
     width: calc(100% - 24px);
     max-width: calc(100vw - 24px);
     min-width: 0;
-    padding: 24px 0 100px;
+    padding: 24px 0 calc(100px + env(safe-area-inset-bottom, 0px));
   }
 
   .league-phase-intro {
     align-items: stretch;
     flex-direction: column;
     gap: 14px;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
   }
 
   .league-phase-intro h1 {
-    font-size: clamp(2rem, 6vw, 2.25rem);
+    font-size: clamp(1.5rem, 5.4vw, 1.75rem);
   }
 
   .league-phase-intro > div:first-child > p:last-child {
-    font-size: 0.98rem;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    margin-top: 8px;
   }
 
   .league-phase-summary {
@@ -3359,7 +3464,7 @@ button {
   max-width: 100%;
   min-width: 0;
   margin: 0 auto;
-  padding: 44px 0 100px;
+  padding: 44px 0 calc(100px + env(safe-area-inset-bottom, 0px));
 }
 
 .tsc-standings-intro {
@@ -3603,20 +3708,22 @@ button {
     width: calc(100% - 24px);
     max-width: calc(100vw - 24px);
     min-width: 0;
-    padding: 24px 0 100px;
+    padding: 24px 0 calc(100px + env(safe-area-inset-bottom, 0px));
   }
 
   .tsc-standings-intro {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
   }
 
   .tsc-standings-intro h1 {
-    font-size: clamp(2rem, 6vw, 2.25rem);
+    font-size: clamp(1.5rem, 5.4vw, 1.75rem);
     overflow-wrap: anywhere;
   }
 
   .tsc-standings-intro > p:last-child {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    margin-top: 8px;
   }
 
   .tsc-leaderboard-top {
@@ -3702,7 +3809,7 @@ button {
   max-width: 100%;
   min-width: 0;
   margin: 0 auto;
-  padding: 44px 0 100px;
+  padding: 44px 0 calc(100px + env(safe-area-inset-bottom, 0px));
 }
 
 .admin-heading {
@@ -3737,7 +3844,7 @@ button {
   max-width: min(420px, 100%);
   flex: 1 1 240px;
   display: grid;
-  gap: 7px;
+  gap: 10px;
 }
 
 .admin-matchday-select span {
@@ -3996,10 +4103,9 @@ button {
     box-shadow: inset 3px 0 #d28b45;
   }
 
-  .mobile-menu-item > span {
+  .mobile-menu-item .nav-icon {
     color: #a76325;
-    font-size: 1.05rem;
-    text-align: center;
+    justify-self: center;
   }
 
   .mobile-menu-item strong {
@@ -4025,7 +4131,7 @@ button {
   max-width: 100%;
   min-width: 0;
   margin: 0 auto;
-  padding: 44px 0 100px;
+  padding: 44px 0 calc(100px + env(safe-area-inset-bottom, 0px));
 }
 
 .rules-page-intro {
@@ -4144,16 +4250,18 @@ button {
     width: calc(100% - 24px);
     max-width: calc(100vw - 24px);
     min-width: 0;
-    padding: 24px 0 100px;
+    padding: 24px 0 calc(100px + env(safe-area-inset-bottom, 0px));
   }
 
   .rules-page-intro h1 {
-    font-size: clamp(2rem, 6vw, 2.25rem);
+    font-size: clamp(1.5rem, 5.4vw, 1.75rem);
     overflow-wrap: anywhere;
   }
 
   .rules-page-intro > p:last-child {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    margin-top: 8px;
   }
 
   .rules-page-card {
@@ -4193,7 +4301,7 @@ button {
 
 @media (max-width: 1050px) {
   .admin-main {
-    padding-bottom: 100px;
+    padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -4202,15 +4310,15 @@ button {
     width: calc(100% - 24px);
     max-width: calc(100vw - 24px);
     min-width: 0;
-    padding: 24px 0 100px;
+    padding: 24px 0 calc(100px + env(safe-area-inset-bottom, 0px));
   }
 
   .admin-heading {
     min-width: 0;
     align-items: stretch;
     display: grid;
-    gap: 16px;
-    margin-bottom: 20px;
+    gap: 14px;
+    margin-bottom: 16px;
   }
 
   .admin-heading > div,
@@ -4221,12 +4329,14 @@ button {
   }
 
   .admin-heading h1 {
-    font-size: clamp(2rem, 6vw, 2.25rem);
+    font-size: clamp(1.5rem, 5.4vw, 1.75rem);
     overflow-wrap: anywhere;
   }
 
   .admin-heading > div > p:last-child {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    margin-top: 8px;
   }
 
   .admin-matchday-select {
@@ -4379,6 +4489,22 @@ button {
 
 .push-row-action:hover {
   color: #6d4416;
+}
+
+.push-row-action--quiet {
+  text-decoration: none;
+  border: 1px solid rgba(16, 44, 50, 0.16);
+  background: #f4f1e9;
+  color: #5c6e70;
+  padding: 0 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.push-row-action--quiet:hover {
+  border-color: rgba(16, 44, 50, 0.28);
+  background: #efebe3;
+  color: #3f5052;
 }
 
 .push-row-action[aria-disabled='true'] {
@@ -4602,7 +4728,7 @@ button {
   max-width: 100%;
   min-width: 0;
   margin: 0 auto;
-  padding: 44px 0 100px;
+  padding: 44px 0 calc(100px + env(safe-area-inset-bottom, 0px));
   overflow-x: clip;
 }
 
@@ -4658,8 +4784,34 @@ button {
   outline-offset: 2px;
 }
 
-.cup-page-intro .league-refresh-button {
+.cup-page-intro .league-refresh-button,
+.cup-utility-button {
   flex: 0 0 auto;
+}
+
+.cup-utility-button {
+  min-height: 44px;
+  border: 0;
+  padding: 8px 10px;
+  background: transparent;
+  color: #66787a;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cup-utility-button:hover:not(:disabled) {
+  color: #102c32;
+}
+
+.cup-utility-button:focus-visible {
+  outline: 2px solid #d28b45;
+  outline-offset: 2px;
+}
+
+.cup-utility-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 
 .cup-refresh-notice {
@@ -5302,23 +5454,40 @@ button.cup-player-name:focus-visible {
 @media (max-width: 760px) {
   .cup-page-main {
     width: calc(100% - 24px);
-    padding: 24px 0 100px;
+    padding: 24px 0 calc(100px + env(safe-area-inset-bottom, 0px));
   }
 
   .cup-page-intro {
     display: grid;
-    gap: 16px;
-    margin-bottom: 20px;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .cup-page-intro h1 {
+    font-size: clamp(1.5rem, 5.4vw, 1.75rem);
+  }
+
+  .cup-page-intro > div:first-child > p:last-child {
+    font-size: 0.9rem;
+    line-height: 1.45;
+    margin-top: 8px;
   }
 
   .cup-page-actions {
     justify-content: flex-start;
     width: 100%;
+    flex-wrap: nowrap;
+    gap: 8px;
   }
 
   .cup-rules-button {
-    flex: 1 1 160px;
+    flex: 1 1 auto;
     min-width: 0;
+  }
+
+  .cup-utility-button {
+    flex: 0 0 auto;
+    white-space: nowrap;
   }
 
   .cup-status-card,
@@ -5359,11 +5528,11 @@ button.cup-player-name:focus-visible {
    ========================================= */
 
 .profile-main {
-  padding-bottom: 100px;
+  padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
 }
 
 .profile-hero {
-  margin-bottom: 28px;
+  margin-bottom: 16px;
 }
 
 .profile-back {
@@ -5394,8 +5563,8 @@ button.cup-player-name:focus-visible {
 .profile-hero h1 {
   margin: 0;
   color: #102c32;
-  font-size: clamp(1.85rem, 4vw, 2.6rem);
-  line-height: 1.12;
+  font-size: clamp(1.4rem, 3vw, 1.85rem);
+  line-height: 1.15;
   overflow-wrap: anywhere;
 }
 
@@ -5417,12 +5586,14 @@ button.cup-player-name:focus-visible {
 
 .profile-badges-empty {
   margin: 0;
-  padding: 28px 20px;
+  padding: 12px 14px;
   border: 1px solid rgba(16, 44, 50, 0.09);
-  border-radius: 16px;
-  background: #ffffff;
+  border-radius: 12px;
+  background: #faf9f5;
   color: #708083;
-  text-align: center;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  text-align: left;
 }
 
 .badge-grid {

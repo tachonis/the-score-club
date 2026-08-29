@@ -8,6 +8,7 @@ import {
   type CupParticipant,
   type PlayersCupSnapshot,
 } from '../../lib/cup'
+import { formatGreekAllCaps } from '../../lib/greekAllCaps'
 import { CupPlayerName } from './CupTieCard'
 
 type CupPersonalTieCardProps = {
@@ -27,7 +28,9 @@ export function CupPersonalTieCard({
   if (!viewerParticipant) {
     return (
       <article className="cup-personal-card">
-        <p className="dashboard-eyebrow">Ο αγώνας σου</p>
+        <p className="dashboard-eyebrow">
+          {formatGreekAllCaps('Ο αγώνας σου')}
+        </p>
         <h2>Δεν συμμετέχεις στο φετινό Players Cup.</h2>
         <p>Μπορείς να δεις τους γύρους και τους αγώνες παρακάτω.</p>
       </article>
@@ -49,7 +52,9 @@ export function CupPersonalTieCard({
   if (!tie) {
     return (
       <article className="cup-personal-card">
-        <p className="dashboard-eyebrow">Ο αγώνας σου</p>
+        <p className="dashboard-eyebrow">
+          {formatGreekAllCaps('Ο αγώνας σου')}
+        </p>
         <h2>Η θέση σου στο bracket δεν είναι διαθέσιμη ακόμη.</h2>
       </article>
     )
@@ -77,7 +82,9 @@ export function CupPersonalTieCard({
     return (
       <article className="cup-personal-card">
         <div className="cup-personal-heading">
-          <p className="dashboard-eyebrow">Ο αγώνας σου</p>
+          <p className="dashboard-eyebrow">
+          {formatGreekAllCaps('Ο αγώνας σου')}
+        </p>
           <span className="cup-tie-badge">BYE</span>
         </div>
         <CupPlayerName participant={byeParticipant} isMe />
@@ -101,7 +108,9 @@ export function CupPersonalTieCard({
     return (
       <article className="cup-personal-card">
         <div className="cup-personal-heading">
-          <p className="dashboard-eyebrow">Ο αγώνας σου</p>
+          <p className="dashboard-eyebrow">
+          {formatGreekAllCaps('Ο αγώνας σου')}
+        </p>
           <span className="cup-tie-badge is-waiting">Αναμονή</span>
         </div>
         <h2>{cupRoundName(tieRoundNumber)}</h2>
@@ -125,7 +134,9 @@ export function CupPersonalTieCard({
     return (
       <article className="cup-personal-card">
         <div className="cup-personal-heading">
-          <p className="dashboard-eyebrow">Ο αγώνας σου</p>
+          <p className="dashboard-eyebrow">
+          {formatGreekAllCaps('Ο αγώνας σου')}
+        </p>
           <span className="cup-tie-badge is-live">Σε εξέλιξη</span>
         </div>
         <h2>{cupRoundName(tieRoundNumber)}</h2>
@@ -158,7 +169,9 @@ export function CupPersonalTieCard({
   return (
     <article className="cup-personal-card is-decided">
       <div className="cup-personal-heading">
-        <p className="dashboard-eyebrow">Ο αγώνας σου</p>
+        <p className="dashboard-eyebrow">
+          {formatGreekAllCaps('Ο αγώνας σου')}
+        </p>
         <span
           className={`cup-tie-badge ${viewerWon ? 'is-won' : 'is-lost'}`}
         >
@@ -218,7 +231,9 @@ function PersonalScoreRow({
       <strong className="cup-tie-score" aria-label={`${points} βαθμοί`}>
         {points}
       </strong>
-      {isWinner ? <span className="cup-winner-mark">Νικητής</span> : null}
+      {isWinner ? (
+        <span className="cup-winner-mark">{formatGreekAllCaps('Νικητής')}</span>
+      ) : null}
     </div>
   )
 }

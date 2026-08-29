@@ -10,6 +10,7 @@ import {
   fetchEarnedBadges,
   type GroupedBadge,
 } from '../lib/badges'
+import { formatGreekAllCaps } from '../lib/greekAllCaps'
 import { supabase } from '../lib/supabase'
 
 type PlayerProfilePageProps = {
@@ -176,7 +177,9 @@ export function PlayerProfilePage({
             </div>
           ) : header ? (
             <>
-              <p className="dashboard-eyebrow">Προφίλ Παίκτη</p>
+              <p className="dashboard-eyebrow">
+                {formatGreekAllCaps('Προφίλ Παίκτη')}
+              </p>
               <h1>@{header.username}</h1>
               {rankLine ? <p className="profile-meta">{rankLine}</p> : null}
             </>

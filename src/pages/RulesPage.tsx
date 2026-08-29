@@ -3,6 +3,7 @@ import {
   type AppDestination,
 } from '../components/AppHeader'
 import { RulesContent } from './RulesContent'
+import { formatGreekAllCaps } from '../lib/greekAllCaps'
 
 type RulesPageProps = {
   username: string
@@ -41,7 +42,7 @@ export function RulesPage({
         <section className="rules-page-card" aria-labelledby="rules-page-title">
           <header className="rules-page-card-header">
             <div>
-              <span>Επίσημοι κανόνες</span>
+              <span>{formatGreekAllCaps('Επίσημοι κανόνες')}</span>
               <h2 id="rules-page-title">Πώς παίζεται</h2>
             </div>
             <div className="rules-score-key" aria-label="Βασική βαθμολογία">

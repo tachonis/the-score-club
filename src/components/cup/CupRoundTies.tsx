@@ -6,6 +6,7 @@ import {
   visibleTiesForRound,
   type PlayersCupSnapshot,
 } from '../../lib/cup'
+import { formatGreekAllCaps } from '../../lib/greekAllCaps'
 import { CupTieCard } from './CupTieCard'
 
 type CupRoundTiesProps = {
@@ -43,7 +44,9 @@ export function CupRoundTies({
       <header className="cup-round-heading">
         <div>
           <p className="dashboard-eyebrow">
-            {cupRoundMatchdaySubtitle(selectedRoundNumber, matchday)}
+            {formatGreekAllCaps(
+              cupRoundMatchdaySubtitle(selectedRoundNumber, matchday),
+            )}
           </p>
           <h2>{cupRoundName(selectedRoundNumber)}</h2>
         </div>

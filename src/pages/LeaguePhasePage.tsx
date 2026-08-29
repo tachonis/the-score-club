@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { AppHeader, type AppDestination } from '../components/AppHeader'
 import { LoadingMark } from '../components/BrandAssets'
+import { formatGreekAllCaps } from '../lib/greekAllCaps'
 import { supabase } from '../lib/supabase'
 
 type LeaguePhasePageProps = {
@@ -123,7 +124,9 @@ export function LeaguePhasePage({
             </span>
             <span>
               <strong>{finishedMatches}</strong>
-              τελικοί αγώνες
+              {finishedMatches === 1
+                ? 'ολοκληρωμένος αγώνας'
+                : 'ολοκληρωμένοι αγώνες'}
             </span>
           </div>
         </section>
@@ -141,7 +144,7 @@ export function LeaguePhasePage({
           <section className="league-table-card">
             <div className="league-table-toolbar">
               <div>
-                <span>Επίσημη κατάταξη</span>
+                <span>{formatGreekAllCaps('Επίσημη κατάταξη')}</span>
                 <strong>{finishedMatches} / 144 αγώνες ολοκληρώθηκαν</strong>
               </div>
 

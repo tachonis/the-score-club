@@ -4,6 +4,7 @@ import {
   type AppDestination,
 } from '../components/AppHeader'
 import { LoadingMark } from '../components/BrandAssets'
+import { formatGreekAllCaps } from '../lib/greekAllCaps'
 import { usePlayerProfileNav } from '../lib/playerProfileNav'
 import { supabase } from '../lib/supabase'
 
@@ -117,7 +118,7 @@ export function StandingsPage({
             <div className="tsc-leaderboard-top">
               <div>
                 <span className="tsc-leaderboard-label">
-                  Γενική κατάταξη
+                  {formatGreekAllCaps('Γενική κατάταξη')}
                 </span>
 
                 <strong>
@@ -129,11 +130,11 @@ export function StandingsPage({
 
             <div className="tsc-table-scroll">
               <div className="tsc-table-header">
-                <span>Θέση</span>
-                <span>Παίκτης</span>
-                <span>Βαθμοί</span>
-                <span>Ακριβή</span>
-                <span>Σωστά</span>
+                <span>{formatGreekAllCaps('Θέση')}</span>
+                <span>{formatGreekAllCaps('Παίκτης')}</span>
+                <span>{formatGreekAllCaps('Βαθμοί')}</span>
+                <span>{formatGreekAllCaps('Ακριβή')}</span>
+                <span>{formatGreekAllCaps('Σωστά')}</span>
               </div>
 
               <div className="tsc-table-body">

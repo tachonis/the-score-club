@@ -8,6 +8,7 @@ import {
   type CupParticipant,
   type PlayersCupSnapshot,
 } from '../../lib/cup'
+import { formatGreekAllCaps } from '../../lib/greekAllCaps'
 import { CupPlayerName } from './CupTieCard'
 
 type CupHonoursProps = {
@@ -92,7 +93,9 @@ function HonourCard({
         isMe ? 'is-me' : ''
       }`}
     >
-      <p className="dashboard-eyebrow">{cupAwardLabel(award.award_type)}</p>
+      <p className="dashboard-eyebrow">
+        {formatGreekAllCaps(cupAwardLabel(award.award_type))}
+      </p>
       {featured ? (
         <h3 className="cup-honour-name">
           <CupPlayerName participant={participant} isMe={isMe} />

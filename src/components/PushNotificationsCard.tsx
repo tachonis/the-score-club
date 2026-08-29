@@ -142,7 +142,7 @@ export function PushNotificationsCard() {
   const action =
     uiState === 'subscribed'
       ? {
-          className: 'push-row-action',
+          className: 'push-row-action push-row-action--quiet',
           label: busy ? 'Απενεργοποίηση...' : 'Απενεργοποίηση',
           onClick: handleDisable,
         }

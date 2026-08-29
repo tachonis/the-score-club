@@ -13,6 +13,7 @@ import {
   isFinalStage,
   isLeaguePhaseStage,
 } from '../lib/stages'
+import { formatGreekAllCaps } from '../lib/greekAllCaps'
 import { supabase } from '../lib/supabase'
 
 type AdminPageProps = {
@@ -261,7 +262,9 @@ export function AdminPage({
       <main className="admin-main">
         <section className="admin-heading">
           <div>
-            <p className="dashboard-eyebrow">Ασφαλής καταχώριση</p>
+            <p className="dashboard-eyebrow">
+              {formatGreekAllCaps('Ασφαλής καταχώριση')}
+            </p>
             <h1>Διαχείριση αποτελεσμάτων</h1>
             <p>
               Καταχώρισε ή διόρθωσε σκορ. Η βαθμολογία επανυπολογίζεται
@@ -271,7 +274,7 @@ export function AdminPage({
 
           {matchdays.length > 0 && (
             <label className="admin-matchday-select">
-              <span>Φάση</span>
+              <span>{formatGreekAllCaps('Φάση')}</span>
               <select
                 value={selectedMatchdayId ?? ''}
                 onChange={(event) =>

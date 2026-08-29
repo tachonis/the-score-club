@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { formatGreekAllCaps } from '../lib/greekAllCaps'
 import { supabase } from '../lib/supabase'
 import type { PushDestination } from '../lib/push'
 
@@ -117,7 +118,9 @@ export function AdminNotificationsPanel() {
     <section className="admin-notifications-panel">
       <div className="admin-outcomes-heading">
         <div>
-          <p className="dashboard-eyebrow">Admin-only αποστολή</p>
+          <p className="dashboard-eyebrow">
+            {formatGreekAllCaps('Admin-only αποστολή')}
+          </p>
           <h2>Ειδοποιήσεις παικτών</h2>
           <p>
             Η ειδοποίηση φτάνει σε κάθε συσκευή που έχει ενεργοποιήσει
