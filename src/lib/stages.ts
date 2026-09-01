@@ -110,8 +110,14 @@ export const getMatchdayHeadingEyebrow = (stage: string) => {
   return getStageLabel(stage)
 }
 
+export const formatLeaguePhaseOrdinal = <N extends number>(
+  matchdayNumber: N,
+): `${N}η` => {
+  return `${matchdayNumber}η`
+}
+
 export const formatLeaguePhaseRound = (matchdayNumber: number) => {
-  return `${matchdayNumber}η αγωνιστική`
+  return `${formatLeaguePhaseOrdinal(matchdayNumber)} αγωνιστική`
 }
 
 export const formatKnockoutLeg = (matchdayNumber: number) => {
@@ -219,7 +225,7 @@ export const formatMatchdayTabLabel = (
   fallbackName?: string | null,
 ) => {
   if (isLeaguePhaseStage(stage) && matchdayNumber != null) {
-    return `${matchdayNumber}η αγ.`
+    return `${formatLeaguePhaseOrdinal(matchdayNumber)} αγ.`
   }
 
   if (isFinalStage(stage)) {
@@ -270,6 +276,49 @@ export const compareMatchdays = (
   return (left.id ?? 0) - (right.id ?? 0)
 }
 
+export const isMatchdayComplete = (
+  matches: { status: string }[] | null | undefined,
+) => {
+  if (!matches || matches.length === 0) {
+    return false
+  }
+
+  return matches.every((match) => match.status === 'finished')
+}
+
+export const selectDefaultLeaguePhaseMatchdayId = (
+  matchdays: Array<
+    MatchdaySortKey & { matches?: { status: string }[] | null }
+  >,
+) => {
+  const leaguePhaseMatchdays = matchdays
+    .filter(
+      (matchday) =>
+        isLeaguePhaseStage(matchday.stage) && matchday.id != null,
+    )
+    .sort(compareMatchdays)
+
+  if (leaguePhaseMatchdays.length === 0) {
+    return null
+  }
+
+  const populated = leaguePhaseMatchdays.filter(
+    (matchday) => (matchday.matches ?? []).length > 0,
+  )
+  const candidates =
+    populated.length > 0 ? populated : leaguePhaseMatchdays
+
+  const inProgress = candidates.find(
+    (matchday) => !isMatchdayComplete(matchday.matches),
+  )
+
+  if (inProgress) {
+    return inProgress.id ?? null
+  }
+
+  return candidates[candidates.length - 1]?.id ?? null
+}
+
 type StageOrderAligned =
   (typeof STAGE_ORDER)['league_phase'] extends 1
     ? (typeof STAGE_ORDER)['playoff'] extends 2
@@ -288,6 +337,7 @@ type StageOrderAligned =
 const _stageOrderOk: StageOrderAligned = true
 void _stageOrderOk
 
+const _leaguePhaseOrdinal: '3η' = formatLeaguePhaseOrdinal(3)
 const _leaguePhase3: 'League Phase — 3η αγωνιστική' =
   formatMatchdayLabel('league_phase', 3)
 const _playoffFirst: 'Knockout Play-offs — Πρώτος αγώνας' =
@@ -302,6 +352,7 @@ const _semiFirst: 'Ημιτελικά — Πρώτος αγώνας' =
   formatMatchdayLabel('semi_final', 1)
 const _final: 'Τελικός' = formatMatchdayLabel('final', 1)
 
+void _leaguePhaseOrdinal
 void _leaguePhase3
 void _playoffFirst
 void _playoffSecond
