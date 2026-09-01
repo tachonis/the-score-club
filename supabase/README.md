@@ -1,5 +1,10 @@
 # Supabase database
 
+**English bootstrap files in `english-bootstrap/` must NEVER be applied to
+Greek production** (`www.thescoreclub.gr`, project `aoprkdbqtibsnlusbbpz`).
+They are a separate clean baseline for a future English project and are
+intentionally outside `migrations/`. See `english-bootstrap/README.md`.
+
 The `migrations` directory is the versioned source of truth for The Score Club
 database schema.
 
