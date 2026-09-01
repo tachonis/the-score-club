@@ -428,13 +428,13 @@ begin
       select max(match.kickoff_at) as last_kickoff
       from public.matches as match
       where match.matchday_id = matchday.id
-    ) as window on true
+    ) as kickoff_window on true
     where matchday.starts_at is distinct from (
             select min(match.kickoff_at)
             from public.matches as match
             where match.matchday_id = matchday.id
           )
-       or matchday.ends_at is distinct from window.last_kickoff + interval '2 hours'
+       or matchday.ends_at is distinct from kickoff_window.last_kickoff + interval '2 hours'
   ) then
     raise exception 'English seed failed: starts_at/ends_at do not match kickoff window.';
   end if;

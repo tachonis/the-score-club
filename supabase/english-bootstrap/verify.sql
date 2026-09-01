@@ -182,7 +182,7 @@ begin
     raise exception 'badge_definitions still contain Greek description text.';
   end if;
 
-  select string_agg(relname, ', ' order by relname)
+  select string_agg(expected.relname, ', ' order by expected.relname)
   into v_rls_missing
   from (
     values
