@@ -1,4 +1,5 @@
 import { formatMatchdayLabel } from './stages'
+import { dateLocale, t } from '../i18n'
 import { supabase } from './supabase'
 
 export type BadgeCode =
@@ -110,7 +111,7 @@ export function formatAwardDate(iso: string) {
     return ''
   }
 
-  return new Intl.DateTimeFormat('el-GR', {
+  return new Intl.DateTimeFormat(dateLocale, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -119,10 +120,10 @@ export function formatAwardDate(iso: string) {
 
 export function formatUnlockedCount(count: number) {
   if (count === 1) {
-    return 'Ξεκλειδώθηκε 1 φορά'
+    return t('badgesUi.unlockedOnce')
   }
 
-  return `Ξεκλειδώθηκε ${count} φορές`
+  return t('badgesUi.unlockedMany', { count })
 }
 
 export function formatAwardContext(
@@ -143,35 +144,45 @@ export function formatAwardContext(
     case 'third_of_the_matchday': {
       const parts: string[] = []
 
-      if (rank !== null) parts.push(`${rank}η θέση`)
-      if (points !== null) parts.push(`${points} βαθμοί`)
+      if (rank !== null) parts.push(t('badgesUi.rankPlace', { n: rank }))
+      if (points !== null) parts.push(t('badgesUi.points', { n: points }))
 
       return parts.length > 0 ? parts.join(' · ') : null
     }
 
     case 'sharp_shooter':
-      return exactCount !== null ? `${exactCount} ακριβή σκορ` : null
+      return exactCount !== null
+        ? t('badgesUi.exactScores', { n: exactCount })
+        : null
 
     case 'on_fire':
-      return points !== null ? `${points} βαθμοί` : null
+      return points !== null ? t('badgesUi.points', { n: points }) : null
 
     case 'perfect_matchday': {
       if (matchCount !== null && exactCount !== null && correctCount !== null) {
-        return `${exactCount + correctCount}/${matchCount} σωστά αποτελέσματα`
+        return t('badgesUi.correctOf', {
+          n: exactCount + correctCount,
+          total: matchCount,
+        })
       }
 
       if (matchCount !== null && correctCount !== null) {
-        return `${correctCount}/${matchCount} σωστά αποτελέσματα`
+        return t('badgesUi.correctOf', {
+          n: correctCount,
+          total: matchCount,
+        })
       }
 
       return null
     }
 
     case 'exact_machine':
-      return exactCount !== null ? `${exactCount} ακριβή σκορ` : null
+      return exactCount !== null
+        ? t('badgesUi.exactScores', { n: exactCount })
+        : null
 
     case 'leader':
-      return '1η θέση στη γενική κατάταξη.'
+      return t('badgesUi.leader')
 
     case 'season_champion':
     case 'season_runner_up':
@@ -180,8 +191,8 @@ export function formatAwardContext(
     case 'league_phase_runner_up': {
       const parts: string[] = []
 
-      if (rank !== null) parts.push(`${rank}η θέση`)
-      if (points !== null) parts.push(`${points} βαθμοί`)
+      if (rank !== null) parts.push(t('badgesUi.rankPlace', { n: rank }))
+      if (points !== null) parts.push(t('badgesUi.points', { n: points }))
 
       return parts.length > 0 ? parts.join(' · ') : null
     }
@@ -189,7 +200,7 @@ export function formatAwardContext(
     case 'players_cup_champion':
     case 'players_cup_finalist':
     case 'players_cup_semifinalist':
-      return points !== null ? `+${points} βαθμοί` : null
+      return points !== null ? t('badgesUi.plusPoints', { n: points }) : null
 
     default:
       return null

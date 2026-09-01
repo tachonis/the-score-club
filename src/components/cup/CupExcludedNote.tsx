@@ -1,3 +1,4 @@
+import { t } from '../../i18n'
 import { getExcludedCountForRound, type CupExcludedMatch } from '../../lib/cup'
 
 type CupExcludedNoteProps = {
@@ -18,8 +19,8 @@ export function CupExcludedNote({
   return (
     <p className="cup-excluded-note">
       {count === 1
-        ? '1 αναβληθείς αγώνας δεν υπολογίστηκε σε αυτόν τον γύρο.'
-        : `${count} αναβληθέντες αγώνες δεν υπολογίστηκαν σε αυτόν τον γύρο.`}
+        ? t('cup.excludedOne')
+        : t('cup.excludedMany', { count })}
     </p>
   )
 }

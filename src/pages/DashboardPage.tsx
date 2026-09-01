@@ -7,6 +7,7 @@ import { DashboardBadgesCard } from '../components/DashboardBadgesCard'
 import { PushNotificationsCard } from '../components/PushNotificationsCard'
 import { LoadingMark } from '../components/BrandAssets'
 import { formatGreekAllCaps } from '../lib/greekAllCaps'
+import { dateLocale, t } from '../i18n'
 import {
   compareMatchdays,
   getMatchdayRoundLabel,
@@ -136,7 +137,7 @@ export function DashboardPage({
       } = await supabase.auth.getUser()
 
       if (userError || !user) {
-        setLoadError('Δεν ήταν δυνατή η αναγνώριση του χρήστη.')
+        setLoadError(t('errors.identifyUser'))
         setLoading(false)
         return
       }
@@ -146,7 +147,7 @@ export function DashboardPage({
 
       if (leaderboardError) {
         setLoadError(
-          `Δεν φορτώθηκαν τα στοιχεία βαθμολογίας: ${leaderboardError.message}`,
+          t('errors.loadStandingsStats', { detail: leaderboardError.message }),
         )
         setLoading(false)
         return
@@ -178,7 +179,7 @@ export function DashboardPage({
 
       if (matchdayError) {
         setLoadError(
-          `Δεν φορτώθηκαν οι επόμενοι αγώνες: ${matchdayError.message}`,
+          t('errors.loadUpcomingMatches', { detail: matchdayError.message }),
         )
         setLoading(false)
         return
@@ -221,7 +222,7 @@ export function DashboardPage({
 
       if (predictionsError) {
         setLoadError(
-          `Δεν φορτώθηκαν οι προβλέψεις: ${predictionsError.message}`,
+          t('errors.loadPredictions', { detail: predictionsError.message }),
         )
         setLoading(false)
         return
@@ -267,22 +268,22 @@ export function DashboardPage({
     !isFinalStage(nextMatchday?.stage ?? '')
   const eyebrowLabel = () => {
     if (!nextMatchday) {
-      return 'Επόμενοι αγώνες'
+      return t('dashboard.nextMatches')
     }
 
     if (roundComplete || allFinished) {
-      return 'Ολοκληρωμένοι αγώνες'
+      return t('dashboard.completedMatches')
     }
 
     if (isLeaguePhaseStage(nextMatchday.stage)) {
-      return 'Επόμενη αγωνιστική'
+      return t('dashboard.nextMatchday')
     }
 
-    return 'Επόμενοι αγώνες'
+    return t('dashboard.nextMatches')
   }
 
   const formatDate = (dateValue: string) => {
-    return new Intl.DateTimeFormat('el-GR', {
+    return new Intl.DateTimeFormat(dateLocale, {
       weekday: 'long',
       day: '2-digit',
       month: 'long',
@@ -291,7 +292,7 @@ export function DashboardPage({
   }
 
   const formatTime = (dateValue: string) => {
-    return new Intl.DateTimeFormat('el-GR', {
+    return new Intl.DateTimeFormat(dateLocale, {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
@@ -300,19 +301,19 @@ export function DashboardPage({
 
   const matchdayStatusLabel = () => {
     if (!nextMatchday) {
-      return 'Δεν υπάρχουν αγώνες'
+      return t('dashboard.noMatches')
     }
 
     if (matches.length === 0) {
-      return 'Δεν έχει ξεκινήσει'
+      return t('dashboard.notStarted')
     }
 
     if (allFinished) {
-      return 'Ολοκληρώθηκε'
+      return t('dashboard.finished')
     }
 
     if (allLocked) {
-      return 'Κλειδωμένο'
+      return t('dashboard.locked')
     }
 
     const allScheduled = matches.every(
@@ -320,28 +321,28 @@ export function DashboardPage({
     )
 
     if (allScheduled) {
-      return 'Δεν έχει ξεκινήσει'
+      return t('dashboard.notStarted')
     }
 
-    return 'Σε εξέλιξη'
+    return t('dashboard.inProgress')
   }
 
   const roundDescription = () => {
     if (allFinished) {
-      return 'Οι αγώνες αυτού του γύρου ολοκληρώθηκαν.'
+      return t('dashboard.roundFinished')
     }
 
     if (allLocked) {
-      return 'Οι προβλέψεις έχουν κλειδώσει.'
+      return t('dashboard.predictionsLocked')
     }
 
-    return 'Οι προβλέψεις κλειδώνουν ξεχωριστά με την έναρξη κάθε αγώνα. Μπορείς να τις αλλάξεις μέχρι τότε.'
+    return t('dashboard.lockNote')
   }
 
   const ctaLabel =
     totalMatches > 0 && (allLocked || allFinished || savedPredictions === totalMatches)
-      ? 'Έλεγξε τις προβλέψεις σου'
-      : 'Κάνε τις προβλέψεις σου'
+      ? t('dashboard.checkPredictions')
+      : t('dashboard.makePredictions')
 
   return (
     <div className="app-shell">
@@ -360,12 +361,9 @@ export function DashboardPage({
               Champions League 2026/27
             </p>
 
-            <h1>Καλώς ήρθες, {username}</h1>
+            <h1>{t('dashboard.welcome', { username })}</h1>
 
-            <p>
-              Κάνε τις προβλέψεις σου, συγκέντρωσε βαθμούς και
-              διεκδίκησε την κορυφή του The Score Club.
-            </p>
+            <p>{t('dashboard.intro')}</p>
           </div>
         </section>
 
@@ -375,35 +373,38 @@ export function DashboardPage({
 
         <section
           className="player-summary"
-          aria-label="Στοιχεία παίκτη"
+          aria-label={t('dashboard.playerSummary')}
         >
           <article className="summary-card">
-            <span>Θέση</span>
+            <span>{t('dashboard.position')}</span>
             <strong>
-              {loading ? '—' : (playerStats?.rank_position ?? '—')}
+              {loading ? t('common.dash') : (playerStats?.rank_position ?? t('common.dash'))}
             </strong>
             <small>
               {playerStats
-                ? 'Στη γενική κατάταξη'
-                : 'Δεν υπάρχει ακόμη κατάταξη'}
+                ? t('dashboard.inOverall')
+                : t('dashboard.noRankingYet')}
             </small>
           </article>
 
           <article className="summary-card">
-            <span>Συνολικοί βαθμοί</span>
-            <strong>{loading ? '—' : (playerStats?.total_points ?? 0)}</strong>
+            <span>{t('dashboard.totalPoints')}</span>
+            <strong>{loading ? t('common.dash') : (playerStats?.total_points ?? 0)}</strong>
             <small>
               {playerStats
-                ? `${playerStats.exact_scores} ακριβή · ${playerStats.correct_results} σωστά`
-                : 'Η βαθμολογία δεν έχει ξεκινήσει'}
+                ? t('dashboard.exactCorrect', {
+                    exact: playerStats.exact_scores,
+                    correct: playerStats.correct_results,
+                  })
+                : t('dashboard.scoringNotStarted')}
             </small>
           </article>
 
           <article className="summary-card">
-            <span>Προβλέψεις</span>
+            <span>{t('dashboard.predictions')}</span>
 
             <strong>
-              {loading ? '—' : `${savedPredictions} / ${totalMatches}`}
+              {loading ? t('common.dash') : `${savedPredictions} / ${totalMatches}`}
             </strong>
 
             <small>
@@ -411,7 +412,7 @@ export function DashboardPage({
                 ? showRoundSubtitle
                   ? `${stageLabel} · ${roundLabel}`
                   : stageLabel
-                : 'Δεν υπάρχει ενεργός γύρος'}
+                : t('dashboard.noActiveRound')}
             </small>
           </article>
         </section>
@@ -423,7 +424,7 @@ export function DashboardPage({
         {loading ? (
           <section className="dashboard-loading-card">
             <LoadingMark />
-            <p>Φόρτωση αγώνων...</p>
+            <p>{t('dashboard.loadingMatches')}</p>
           </section>
         ) : nextMatchday ? (
           <section className="next-matchday-card">
@@ -447,12 +448,14 @@ export function DashboardPage({
 
               {nextKickoff ? (
                 <p className="matchday-date">
-                  Έναρξη: {formatDate(nextKickoff)} στις{' '}
-                  {formatTime(nextKickoff)}
+                  {t('dashboard.kickoffAt', {
+                    date: formatDate(nextKickoff),
+                    time: formatTime(nextKickoff),
+                  })}
                 </p>
               ) : (
                 <p className="matchday-date">
-                  Δεν έχουν προστεθεί ακόμη αγώνες.
+                  {t('dashboard.noMatchesAdded')}
                 </p>
               )}
 
@@ -462,17 +465,20 @@ export function DashboardPage({
 
               <div className="prediction-progress">
                 <div className="progress-labels">
-                  <span>Πρόοδος προβλέψεων</span>
+                  <span>{t('dashboard.progress')}</span>
 
                   <strong>
-                    {savedPredictions} από {totalMatches}
+                    {t('dashboard.progressCount', {
+                      saved: savedPredictions,
+                      total: totalMatches,
+                    })}
                   </strong>
                 </div>
 
                 <div
                   className="progress-track"
                   role="progressbar"
-                  aria-label="Πρόοδος προβλέψεων"
+                  aria-label={t('dashboard.progress')}
                   aria-valuemin={0}
                   aria-valuemax={totalMatches}
                   aria-valuenow={savedPredictions}
@@ -511,12 +517,9 @@ export function DashboardPage({
           </section>
         ) : (
           <section className="empty-state">
-            <h2>Δεν υπάρχουν διαθέσιμοι αγώνες</h2>
+            <h2>{t('dashboard.emptyTitle')}</h2>
 
-            <p>
-              Ο επόμενος γύρος θα εμφανιστεί όταν προστεθούν οι
-              επίσημες αναμετρήσεις.
-            </p>
+            <p>{t('dashboard.emptyBody')}</p>
           </section>
         )}
       </main>

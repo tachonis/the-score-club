@@ -1,3 +1,4 @@
+import { t } from '../../i18n'
 import {
   cupRoundMatchdaySubtitle,
   cupRoundName,
@@ -40,7 +41,7 @@ export function CupPersonalPath({ snapshot }: CupPersonalPathProps) {
 
   return (
     <section className="cup-path-section" aria-labelledby="cup-path-heading">
-      <h2 id="cup-path-heading">Η πορεία σου</h2>
+      <h2 id="cup-path-heading">{t('cup.yourPath')}</h2>
       <ol className="cup-path-list">
         {path.map((row) => (
           <li key={row.tie.id} className="cup-path-row">
@@ -115,7 +116,7 @@ function pathPresentation(
       detail: 'BYE',
       detailTitle: 'BYE',
       score: null as string | null,
-      result: 'Πέρασε χωρίς αγώνα',
+      result: t('cup.byeAdvance'),
     }
   }
 
@@ -124,10 +125,10 @@ function pathPresentation(
 
   if (tie.outcome === 'pending' && homeKnown !== awayKnown) {
     return {
-      detail: 'Περιμένει αντίπαλο',
-      detailTitle: 'Περιμένει αντίπαλο',
+      detail: t('cup.waitingOpponent'),
+      detailTitle: t('cup.waitingOpponent'),
       score: null,
-      result: 'Αναμονή',
+      result: t('cup.statusWaiting'),
     }
   }
 
@@ -136,18 +137,18 @@ function pathPresentation(
       detail: `vs ${opponentName}`,
       detailTitle: `vs ${opponentName}`,
       score: `${viewerPoints}–${opponentPoints}`,
-      result: 'Σε εξέλιξη',
+      result: t('cup.statusLive'),
     }
   }
 
   const viewerWon = tie.winner_participant_id === viewer.id
   const result = isFinalRound
     ? viewerWon
-      ? 'Πρωταθλητής'
-      : 'Φιναλίστ'
+      ? t('cup.champion')
+      : t('cup.finalist')
     : viewerWon
-      ? 'Πρόκριση'
-      : 'Αποκλεισμός'
+      ? t('cup.qualify')
+      : t('cup.elimination')
   const tieBreak = decidedByRuleLabel(tie.decided_by_rule)
 
   return {

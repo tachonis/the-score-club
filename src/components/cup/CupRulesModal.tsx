@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { t } from '../../i18n'
 import { DEFAULT_CUP_REWARDS, type CupRewards } from '../../lib/cup'
 import { CupRulesContent } from './CupRulesContent'
 
@@ -43,14 +44,14 @@ export function CupRulesModal({
         <header className="rules-header">
           <div>
             <p className="rules-eyebrow">Players Cup</p>
-            <h2 id="cup-rules-title">Κανόνες Players Cup</h2>
+            <h2 id="cup-rules-title">{t('cup.rulesTitle')}</h2>
           </div>
 
           <button
             type="button"
             className="rules-close"
             onClick={onClose}
-            aria-label="Κλείσιμο κανόνων Κυπέλλου"
+            aria-label={t('cup.closeRules')}
           >
             ×
           </button>
@@ -66,7 +67,7 @@ export function CupRulesModal({
             className="rules-done"
             onClick={onClose}
           >
-            Κλείσιμο
+            {t('common.close')}
           </button>
         </footer>
       </section>

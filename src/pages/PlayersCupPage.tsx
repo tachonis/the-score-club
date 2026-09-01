@@ -11,6 +11,7 @@ import { CupPersonalTieCard } from '../components/cup/CupPersonalTieCard'
 import { CupRoundStrip } from '../components/cup/CupRoundStrip'
 import { CupRoundTies } from '../components/cup/CupRoundTies'
 import { CupRulesModal } from '../components/cup/CupRulesModal'
+import { t } from '../i18n'
 import {
   DEFAULT_CUP_REWARDS,
   MINIMUM_CUP_PARTICIPANTS,
@@ -81,11 +82,11 @@ export function PlayersCupPage({
     inFlightRef.current = false
 
     if (error || !nextSnapshot) {
-      const notice = error ?? 'Η ανανέωση δεν ολοκληρώθηκε.'
+      const notice = error ?? t('cup.refreshFailed')
       const hasVisibleState = snapshotRef.current !== null
 
       if (mode === 'background' && hasVisibleState) {
-        setRefreshNotice('Η αυτόματη ανανέωση απέτυχε.')
+        setRefreshNotice(t('cup.autoRefreshFailed'))
       } else if (mode === 'manual' && hasVisibleState) {
         setRefreshNotice(notice)
       } else {
@@ -154,7 +155,7 @@ export function PlayersCupPage({
       return (
         <section className="app-loading-inline">
           <LoadingMark />
-          <p>Φόρτωση Κυπέλλου...</p>
+          <p>{t('cup.loading')}</p>
         </section>
       )
     }
@@ -162,14 +163,14 @@ export function PlayersCupPage({
     if (errorMessage && !snapshot) {
       return (
         <section className="empty-state">
-          <h2>Δεν φορτώθηκε το Κύπελλο</h2>
+          <h2>{t('cup.loadFailed')}</h2>
           <p>{errorMessage}</p>
           <button
             type="button"
             className="league-refresh-button"
             onClick={() => void loadPage('initial')}
           >
-            Ανανέωση
+            {t('common.refresh')}
           </button>
         </section>
       )
@@ -178,14 +179,14 @@ export function PlayersCupPage({
     if (!snapshot) {
       return (
         <section className="empty-state">
-          <h2>Δεν φορτώθηκε το Κύπελλο</h2>
-          <p>Δοκίμασε ξανά σε λίγο.</p>
+          <h2>{t('cup.loadFailed')}</h2>
+          <p>{t('cup.trySoon')}</p>
           <button
             type="button"
             className="league-refresh-button"
             onClick={() => void loadPage('initial')}
           >
-            Ανανέωση
+            {t('common.refresh')}
           </button>
         </section>
       )
@@ -195,16 +196,16 @@ export function PlayersCupPage({
       if (!cupLiveDataIsComplete(snapshot)) {
         return (
           <section className="empty-state">
-            <h2>Τα δεδομένα του Κυπέλλου είναι ελλιπή.</h2>
+            <h2>{t('cup.incompleteTitle')}</h2>
             <p>
-              Η κλήρωση υπάρχει, αλλά δεν φορτώθηκαν οι γύροι ή οι αγώνες.
+              {t('cup.incompleteBody')}
             </p>
             <button
               type="button"
               className="league-refresh-button"
               onClick={() => void loadPage('initial')}
             >
-              Ανανέωση
+              {t('common.refresh')}
             </button>
           </section>
         )
@@ -224,14 +225,15 @@ export function PlayersCupPage({
         <>
           {isCompleted ? (
             <section className="cup-completed-banner">
-              <span className="matchday-status">Ολοκληρώθηκε</span>
+              <span className="matchday-status">{t('cup.completed')}</span>
               <h2>
-                {snapshot.cup.participant_count} παίκτες συμμετείχαν στο
-                Players Cup.
+                {t('cup.participated', {
+                  count: snapshot.cup.participant_count,
+                })}
               </h2>
               {snapshot.awards.length === 0 ? (
                 <p className="cup-helper-note">
-                  Τα στοιχεία των επάθλων δεν είναι διαθέσιμα.
+                  {t('cup.honoursUnavailable')}
                 </p>
               ) : null}
             </section>
@@ -264,22 +266,23 @@ export function PlayersCupPage({
 
           {isCompleted ? null : (
             <section className="cup-status-card cup-rewards-footer">
-              <span className="matchday-status">Η κλήρωση ολοκληρώθηκε</span>
+              <span className="matchday-status">{t('cup.drawDone')}</span>
               <h2>
-                {snapshot.cup.participant_count} παίκτες συμμετέχουν στο Players
-                Cup.
+                {t('cup.participating', {
+                  count: snapshot.cup.participant_count,
+                })}
               </h2>
               <ul className="cup-prize-list">
                 <li>
-                  <span>Νικητής</span>
+                  <span>{t('cup.winner')}</span>
                   <strong>+{snapshot.rewards.winner}</strong>
                 </li>
                 <li>
-                  <span>Φιναλίστ</span>
+                  <span>{t('cup.finalist')}</span>
                   <strong>+{snapshot.rewards.finalist}</strong>
                 </li>
                 <li>
-                  <span>Ημιτελικά</span>
+                  <span>{t('cup.semiFinalists')}</span>
                   <strong>+{snapshot.rewards.semiFinalist}</strong>
                 </li>
               </ul>
@@ -292,9 +295,9 @@ export function PlayersCupPage({
     if (!snapshot.rankingMatchdaysExist) {
       return (
         <section className="empty-state">
-          <h2>Το Κύπελλο δεν έχει ρυθμιστεί ακόμη</h2>
+          <h2>{t('cup.notConfiguredTitle')}</h2>
           <p>
-            Δεν βρέθηκαν η 1η και η 2η αγωνιστική της League Phase.
+            {t('cup.notConfiguredBody')}
           </p>
         </section>
       )
@@ -304,23 +307,21 @@ export function PlayersCupPage({
       return (
         <section className="cup-status-card">
           <span className="matchday-status">
-            Η κλήρωση δεν έχει πραγματοποιηθεί ακόμη
+            {t('cup.drawPending')}
           </span>
           <p>
-            Το Κύπελλο ξεκινά από την 3η αγωνιστική. Η κλήρωση θα
-            πραγματοποιηθεί μετά την ολοκλήρωση της 2ης αγωνιστικής. Οι 8
-            πρώτοι της βαθμολογίας θα είναι seeded.
+            {t('cup.startsAtMd3')}
           </p>
           {snapshot.viewerRank !== null && (
             <p className="cup-viewer-rank">
-              Η θέση σου τώρα:{' '}
+              {t('cup.yourRankNow')}{' '}
               <strong>{formatRankPosition(snapshot.viewerRank)}</strong>
             </p>
           )}
           <ol className="cup-timeline">
-            <li>1η–2η αγωνιστική</li>
-            <li>Κλήρωση</li>
-            <li>3η–8η αγωνιστική / νοκ-άουτ</li>
+            <li>{t('cup.timelineRanking')}</li>
+            <li>{t('cup.timelineDraw')}</li>
+            <li>{t('cup.timelineKnockout')}</li>
           </ol>
         </section>
       )
@@ -329,35 +330,33 @@ export function PlayersCupPage({
     return (
       <section className="cup-status-card">
         <span className="matchday-status">
-          Η κλήρωση δεν έχει πραγματοποιηθεί ακόμη
+          {t('cup.drawPending')}
         </span>
         <p>
-          Η 2η αγωνιστική ολοκληρώθηκε. Η κλήρωση του Players Cup δεν έχει
-          πραγματοποιηθεί ακόμη.
+          {t('cup.md2DonePendingDraw')}
         </p>
         {snapshot.activePlayerCount < MINIMUM_CUP_PARTICIPANTS && (
           <p className="cup-helper-note">
-            Απαιτούνται τουλάχιστον {MINIMUM_CUP_PARTICIPANTS} ενεργοί παίκτες
-            για να πραγματοποιηθεί η κλήρωση.
+            {t('cup.needPlayers', { count: MINIMUM_CUP_PARTICIPANTS })}
           </p>
         )}
         {snapshot.viewerRank !== null && (
           <p className="cup-viewer-rank">
-            Η θέση σου τώρα:{' '}
+            {t('cup.yourRankNow')}{' '}
             <strong>{formatRankPosition(snapshot.viewerRank)}</strong>
           </p>
         )}
         <ul className="cup-prize-list">
           <li>
-            <span>Νικητής</span>
+            <span>{t('cup.winner')}</span>
             <strong>+{snapshot.rewards.winner}</strong>
           </li>
           <li>
-            <span>Φιναλίστ</span>
+            <span>{t('cup.finalist')}</span>
             <strong>+{snapshot.rewards.finalist}</strong>
           </li>
           <li>
-            <span>Ημιτελικά</span>
+            <span>{t('cup.semiFinalists')}</span>
             <strong>+{snapshot.rewards.semiFinalist}</strong>
           </li>
         </ul>
@@ -381,8 +380,7 @@ export function PlayersCupPage({
             <p className="dashboard-eyebrow">Champions League 2026/27</p>
             <h1>Players Cup</h1>
             <p>
-              Νοκ-άουτ αναμετρήσεις μεταξύ των παικτών, από την 3η έως την
-              8η αγωνιστική.
+              {t('cup.intro')}
             </p>
           </div>
 
@@ -392,7 +390,7 @@ export function PlayersCupPage({
               className="cup-rules-button"
               onClick={() => setRulesOpen(true)}
             >
-              Κανόνες Κυπέλλου
+              {t('cup.rulesButton')}
             </button>
             <button
               type="button"
@@ -400,7 +398,7 @@ export function PlayersCupPage({
               onClick={() => void loadPage('manual')}
               disabled={loading || refreshing}
             >
-              {refreshing ? 'Ανανέωση...' : 'Ανανέωση'}
+              {refreshing ? t('common.refreshing') : t('common.refresh')}
             </button>
           </div>
         </section>

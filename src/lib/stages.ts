@@ -17,6 +17,8 @@
  *    penalty entity — next-round fixtures are entered by hand.
  */
 
+import { t } from '../i18n'
+
 export const COMPETITION_STAGE_SEQUENCE = [
   'league_phase',
   'playoff',
@@ -38,17 +40,17 @@ export const STAGE_ORDER = {
 } as const satisfies Record<CompetitionStage, number>
 
 export const STAGE_LABELS = {
-  league_phase: 'League Phase',
-  playoff: 'Knockout Play-offs',
-  round_of_16: 'Φάση των 16',
-  quarter_final: 'Προημιτελικά',
-  semi_final: 'Ημιτελικά',
-  final: 'Τελικός',
+  league_phase: t('stage.leaguePhase'),
+  playoff: t('stage.playoff'),
+  round_of_16: t('stage.roundOf16'),
+  quarter_final: t('stage.quarterFinal'),
+  semi_final: t('stage.semiFinal'),
+  final: t('stage.final'),
 } as const satisfies Record<CompetitionStage, string>
 
 export const KNOCKOUT_LEG_LABELS = {
-  1: 'Πρώτος αγώνας',
-  2: 'Δεύτερος αγώνας',
+  1: t('matchday.firstLeg'),
+  2: t('matchday.secondLeg'),
 } as const
 
 export type MatchdaySortKey = {
@@ -104,20 +106,18 @@ export const getStageLabel = (stage: string) => {
 
 export const getMatchdayHeadingEyebrow = (stage: string) => {
   if (isFinalStage(stage)) {
-    return 'Νοκ-άουτ φάση'
+    return t('stage.knockoutStage')
   }
 
   return getStageLabel(stage)
 }
 
-export const formatLeaguePhaseOrdinal = <N extends number>(
-  matchdayNumber: N,
-): `${N}η` => {
-  return `${matchdayNumber}η`
+export const formatLeaguePhaseOrdinal = (matchdayNumber: number) => {
+  return t('matchday.ordinal', { n: matchdayNumber })
 }
 
 export const formatLeaguePhaseRound = (matchdayNumber: number) => {
-  return `${formatLeaguePhaseOrdinal(matchdayNumber)} αγωνιστική`
+  return t('matchday.round', { n: matchdayNumber })
 }
 
 export const formatKnockoutLeg = (matchdayNumber: number) => {
@@ -128,39 +128,6 @@ export const formatKnockoutLeg = (matchdayNumber: number) => {
   return null
 }
 
-export function formatMatchdayLabel(
-  stage: 'league_phase',
-  matchdayNumber: 3,
-): 'League Phase — 3η αγωνιστική'
-export function formatMatchdayLabel(
-  stage: 'playoff',
-  matchdayNumber: 1,
-): 'Knockout Play-offs — Πρώτος αγώνας'
-export function formatMatchdayLabel(
-  stage: 'playoff',
-  matchdayNumber: 2,
-): 'Knockout Play-offs — Δεύτερος αγώνας'
-export function formatMatchdayLabel(
-  stage: 'round_of_16',
-  matchdayNumber: 1,
-): 'Φάση των 16 — Πρώτος αγώνας'
-export function formatMatchdayLabel(
-  stage: 'quarter_final',
-  matchdayNumber: 2,
-): 'Προημιτελικά — Δεύτερος αγώνας'
-export function formatMatchdayLabel(
-  stage: 'semi_final',
-  matchdayNumber: 1,
-): 'Ημιτελικά — Πρώτος αγώνας'
-export function formatMatchdayLabel(
-  stage: 'final',
-  matchdayNumber: 1,
-): 'Τελικός'
-export function formatMatchdayLabel(
-  stage: string,
-  matchdayNumber: number | null,
-  fallbackName?: string | null,
-): string
 export function formatMatchdayLabel(
   stage: string,
   matchdayNumber: number | null,
@@ -177,7 +144,10 @@ export function formatMatchdayLabel(
       return fallback ?? STAGE_LABELS.league_phase
     }
 
-    return `${STAGE_LABELS.league_phase} — ${formatLeaguePhaseRound(matchdayNumber)}`
+    return t('matchday.full', {
+      stage: STAGE_LABELS.league_phase,
+      round: formatLeaguePhaseRound(matchdayNumber),
+    })
   }
 
   if (stage === 'final') {
@@ -188,7 +158,10 @@ export function formatMatchdayLabel(
     const leg = formatKnockoutLeg(matchdayNumber)
 
     if (leg) {
-      return `${STAGE_LABELS[stage]} — ${leg}`
+      return t('matchday.full', {
+        stage: STAGE_LABELS[stage],
+        round: leg,
+      })
     }
   }
 
@@ -225,31 +198,32 @@ export const formatMatchdayTabLabel = (
   fallbackName?: string | null,
 ) => {
   if (isLeaguePhaseStage(stage) && matchdayNumber != null) {
-    return `${formatLeaguePhaseOrdinal(matchdayNumber)} αγ.`
+    return t('matchday.tabCompact', { n: matchdayNumber })
   }
 
   if (isFinalStage(stage)) {
     return STAGE_LABELS.final
   }
 
-  const legShort =
-    matchdayNumber === 1 ? '1ος' : matchdayNumber === 2 ? '2ος' : null
-
-  if (legShort) {
+  if (matchdayNumber === 1 || matchdayNumber === 2) {
     if (stage === 'playoff') {
-      return `Play-offs · ${legShort}`
+      return t(matchdayNumber === 1 ? 'matchday.tabPlayoff1' : 'matchday.tabPlayoff2')
     }
 
     if (stage === 'round_of_16') {
-      return `Φάση 16 · ${legShort}`
+      return t(
+        matchdayNumber === 1
+          ? 'matchday.tabRoundOf16_1'
+          : 'matchday.tabRoundOf16_2',
+      )
     }
 
     if (stage === 'quarter_final') {
-      return `Προημ. · ${legShort}`
+      return t(matchdayNumber === 1 ? 'matchday.tabQuarter1' : 'matchday.tabQuarter2')
     }
 
     if (stage === 'semi_final') {
-      return `Ημιτελικά · ${legShort}`
+      return t(matchdayNumber === 1 ? 'matchday.tabSemi1' : 'matchday.tabSemi2')
     }
   }
 
@@ -336,27 +310,3 @@ type StageOrderAligned =
 
 const _stageOrderOk: StageOrderAligned = true
 void _stageOrderOk
-
-const _leaguePhaseOrdinal: '3η' = formatLeaguePhaseOrdinal(3)
-const _leaguePhase3: 'League Phase — 3η αγωνιστική' =
-  formatMatchdayLabel('league_phase', 3)
-const _playoffFirst: 'Knockout Play-offs — Πρώτος αγώνας' =
-  formatMatchdayLabel('playoff', 1)
-const _playoffSecond: 'Knockout Play-offs — Δεύτερος αγώνας' =
-  formatMatchdayLabel('playoff', 2)
-const _roundOf16First: 'Φάση των 16 — Πρώτος αγώνας' =
-  formatMatchdayLabel('round_of_16', 1)
-const _quarterSecond: 'Προημιτελικά — Δεύτερος αγώνας' =
-  formatMatchdayLabel('quarter_final', 2)
-const _semiFirst: 'Ημιτελικά — Πρώτος αγώνας' =
-  formatMatchdayLabel('semi_final', 1)
-const _final: 'Τελικός' = formatMatchdayLabel('final', 1)
-
-void _leaguePhaseOrdinal
-void _leaguePhase3
-void _playoffFirst
-void _playoffSecond
-void _roundOf16First
-void _quarterSecond
-void _semiFirst
-void _final

@@ -24,6 +24,7 @@ import {
 import { supabase } from '../lib/supabase'
 import { getCompactTeamName } from '../lib/teamDisplayName'
 import { formatGreekAllCaps } from '../lib/greekAllCaps'
+import { dateLocale, selectPlural, t } from '../i18n'
 
 type PredictionsPageProps = {
   username: string
@@ -212,7 +213,7 @@ export function PredictionsPage({
 
       if (userError || !user) {
         setMessageType('error')
-        setMessage('Δεν ήταν δυνατή η αναγνώριση του χρήστη.')
+        setMessage(t('errors.identifyUser'))
         setLoading(false)
         return
       }
@@ -251,7 +252,7 @@ export function PredictionsPage({
       if (matchesError) {
         setMessageType('error')
         setMessage(
-          `Δεν φορτώθηκαν οι αγώνες: ${matchesError.message}`,
+          t('errors.loadMatches', { detail: matchesError.message }),
         )
         setLoading(false)
         return
@@ -286,7 +287,7 @@ export function PredictionsPage({
       if (predictionsError) {
         setMessageType('error')
         setMessage(
-          `Δεν φορτώθηκαν οι προβλέψεις: ${predictionsError.message}`,
+          t('errors.loadPredictions', { detail: predictionsError.message }),
         )
         setLoading(false)
         return
@@ -295,7 +296,7 @@ export function PredictionsPage({
       if (goldenMatchesResult.error) {
         setMessageType('error')
         setMessage(
-          `Δεν φορτώθηκαν οι επιλογές Golden Match: ${goldenMatchesResult.error.message}`,
+          t('errors.loadGoldenMatches', { detail: goldenMatchesResult.error.message }),
         )
         setLoading(false)
         return
@@ -489,22 +490,22 @@ export function PredictionsPage({
       setMessageType('error')
       setMessage(
         isGoldenMatchStage(selectedStage)
-          ? 'Το Golden Match ενεργοποιείται από τη 2η αγωνιστική της League Phase.'
-          : 'Το Golden Match ισχύει μόνο στη League Phase.',
+          ? t('golden.fromMd2')
+          : t('golden.leaguePhaseOnly'),
       )
       return
     }
 
     if (isMatchLocked(match)) {
       setMessageType('error')
-      setMessage('Το συγκεκριμένο παιχνίδι έχει ήδη κλειδώσει.')
+      setMessage(t('golden.matchAlreadyLocked'))
       return
     }
 
     if (goldenMatchIsLocked) {
       setMessageType('error')
       setMessage(
-        'Το Golden Match αυτής της αγωνιστικής έχει κλειδώσει μετά το kickoff.',
+        t('golden.lockedAfterKickoff'),
       )
       return
     }
@@ -518,20 +519,17 @@ export function PredictionsPage({
 
     if (error) {
       const knownMessages: Record<string, string> = {
-        'Golden Match is available from Matchday 2':
-          'Το Golden Match ενεργοποιείται από τη 2η αγωνιστική της League Phase.',
+        'Golden Match is available from Matchday 2': t('golden.fromMd2'),
         'Golden Match is available only during the League Phase':
-          'Το Golden Match ισχύει μόνο στη League Phase.',
-        'Golden Match must be selected before kickoff':
-          'Η επιλογή πρέπει να γίνει πριν από το kickoff.',
-        'Golden Match is locked after its kickoff':
-          'Το Golden Match έχει κλειδώσει και δεν μπορεί πλέον να αλλάξει.',
+          t('golden.leaguePhaseOnly'),
+        'Golden Match must be selected before kickoff': t('golden.beforeKickoff'),
+        'Golden Match is locked after its kickoff': t('golden.lockedCannotChange'),
       }
 
       setMessageType('error')
       setMessage(
         knownMessages[error.message] ??
-          `Δεν αποθηκεύτηκε το Golden Match: ${error.message}`,
+          t('golden.saveFailedDetail', { detail: error.message }),
       )
       setSavingGoldenMatchId(null)
       return
@@ -547,8 +545,8 @@ export function PredictionsPage({
     setMessageType('success')
     setMessage(
       selectedGoldenMatchId === null
-        ? 'Το Golden Match αποθηκεύτηκε.'
-        : 'Το Golden Match αντικαταστάθηκε επιτυχώς.',
+        ? t('golden.savedOk')
+        : t('golden.replacedOk'),
     )
     setSavingGoldenMatchId(null)
   }
@@ -576,7 +574,7 @@ export function PredictionsPage({
 
     if (userError || !user) {
       setMessageType('error')
-      setMessage('Δεν ήταν δυνατή η αναγνώριση του χρήστη.')
+      setMessage(t('errors.identifyUser'))
       setSaving(false)
       return
     }
@@ -594,10 +592,10 @@ export function PredictionsPage({
 
       if (completedPredictions === 0) {
         setMessage(
-          'Συμπλήρωσε τουλάχιστον μία πρόβλεψη πριν από την αποθήκευση.',
+          t('predictions.fillOne'),
         )
       } else {
-        setMessage('Δεν υπάρχουν νέες αλλαγές για αποθήκευση.')
+        setMessage(t('predictions.noChanges'))
       }
 
       setSaving(false)
@@ -772,7 +770,7 @@ export function PredictionsPage({
   const hasPendingSave = unsavedChangesCount > 0 || saving
 
   const formatMatchDate = (kickoffAt: string) => {
-    return new Intl.DateTimeFormat('el-GR', {
+    return new Intl.DateTimeFormat(dateLocale, {
       weekday: 'short',
       day: '2-digit',
       month: 'long',
@@ -780,7 +778,7 @@ export function PredictionsPage({
   }
 
   const formatMatchTime = (kickoffAt: string) => {
-    return new Intl.DateTimeFormat('el-GR', {
+    return new Intl.DateTimeFormat(dateLocale, {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
@@ -813,16 +811,13 @@ export function PredictionsPage({
               Champions League 2026/27
             </p>
 
-            <h1>Αγώνες &amp; Προβλέψεις</h1>
+            <h1>{t('predictions.title')}</h1>
 
-            <p>
-              Συμπλήρωσε το προβλεπόμενο σκορ κάθε αγώνα πριν
-              από την προγραμματισμένη ώρα έναρξης.
-            </p>
+            <p>{t('predictions.intro')}</p>
           </div>
 
           <div className="predictions-counter">
-            <span>Αποθηκευμένες προβλέψεις</span>
+            <span>{t('predictions.savedCount')}</span>
 
             <strong>
               {savedPredictionCount} / {selectedMatches.length}
@@ -835,16 +830,13 @@ export function PredictionsPage({
         {loading ? (
           <section className="app-loading-inline">
             <LoadingMark />
-            <p>Φόρτωση αγώνων...</p>
+            <p>{t('predictions.loading')}</p>
           </section>
         ) : matches.length === 0 ? (
           <section className="empty-state">
-            <h2>Δεν υπάρχουν αγώνες</h2>
+            <h2>{t('predictions.emptyTitle')}</h2>
 
-            <p>
-              Οι αγώνες θα εμφανιστούν όταν προστεθούν από τη
-              διαχείριση.
-            </p>
+            <p>{t('predictions.emptyBody')}</p>
           </section>
         ) : (
           <>
@@ -899,30 +891,27 @@ export function PredictionsPage({
                         selectedMatchday.matchday_number,
                         selectedMatchday.name,
                       )
-                    : 'Επιλεγμένη φάση'}
+                    : t('predictions.selectedStage')}
                 </h2>
               </div>
 
               <div className="selected-matchday-notes">
                 <p className="matchday-timezone-note">
-                  Οι ώρες εμφανίζονται αυτόματα στην τοπική ώρα
-                  της συσκευής σου.
+                  {t('predictions.localTime')}
                 </p>
                 {showKnockoutScoringNote && (
                   <>
                     <p className="prediction-knockout-note">
-                      Η πρόβλεψη αφορά το σκορ μετά τα 90 λεπτά + τις
-                      καθυστερήσεις.
+                      {t('predictions.knockout90')}
                     </p>
                     <p className="prediction-knockout-note">
-                      Παράταση και πέναλτι δεν υπολογίζονται.
+                      {t('predictions.noExtraTime')}
                     </p>
                   </>
                 )}
                 {showFinalScoringNote && (
                   <p className="prediction-final-note">
-                    Ο Τελικός βαθμολογείται x2: 10 βαθμοί για ακριβές σκορ,
-                    4 για σωστό αποτέλεσμα, 0 για λάθος.
+                    {t('predictions.finalScoring')}
                   </p>
                 )}
               </div>
@@ -939,16 +928,16 @@ export function PredictionsPage({
               </div>
 
               <div className="golden-match-guide-copy">
-                <span>GOLDEN MATCH · ΔΙΠΛΟΙ ΒΑΘΜΟΙ</span>
+                <span>{t('golden.kicker')}</span>
                 <h3>
                   {goldenMatchIsAvailable
-                    ? 'Διάλεξε ένα παιχνίδι της αγωνιστικής'
-                    : 'Διαθέσιμο από τη 2η αγωνιστική της League Phase'}
+                    ? t('golden.pickMatch')
+                    : t('golden.fromMatchday2')}
                 </h3>
                 <p>
                   {goldenMatchIsAvailable
-                    ? 'Ακριβές σκορ 10 βαθμοί, σωστό 1-X-2 4 βαθμοί. Μπορείς να αλλάξεις επιλογή πριν από το kickoff του επιλεγμένου αγώνα· η νέα επιλογή αντικαθιστά την προηγούμενη.'
-                    : 'Το δικαίωμα της 1ης αγωνιστικής δεν μεταφέρεται. Το Golden Match ισχύει μόνο στη League Phase, από τη 2η αγωνιστική και μετά.'}
+                    ? t('golden.availableHelp')
+                    : t('golden.md1Help')}
                 </p>
               </div>
 
@@ -956,13 +945,13 @@ export function PredictionsPage({
                 <div className="golden-match-current">
                   <span>
                     {goldenMatchIsLocked
-                      ? 'ΚΛΕΙΔΩΜΕΝΟ'
-                      : 'ΤΡΕΧΟΥΣΑ ΕΠΙΛΟΓΗ'}
+                      ? t('golden.locked')
+                      : t('golden.currentPick')}
                   </span>
                   <strong>
                     {selectedGoldenMatch
                       ? `${selectedGoldenMatch.home_team.name} – ${selectedGoldenMatch.away_team.name}`
-                      : 'Δεν έχει επιλεγεί αγώνας'}
+                      : t('golden.noneSelected')}
                   </strong>
                 </div>
               )}
@@ -972,9 +961,7 @@ export function PredictionsPage({
                   className="golden-match-prediction-warning"
                   role="status"
                 >
-                  Έχεις επιλέξει αυτόν τον αγώνα ως Golden Match, αλλά
-                  δεν έχεις αποθηκεύσει ακόμη πρόβλεψη σκορ. Συμπλήρωσε
-                  το σκορ και πάτησε «Αποθήκευση προβλέψεων».
+                  {t('golden.missingScore')}
                 </p>
               )}
             </section>
@@ -983,11 +970,8 @@ export function PredictionsPage({
             <section className="matches-list">
               {selectedMatches.length === 0 ? (
                 <div className="empty-state">
-                  <h2>Δεν υπάρχουν αγώνες</h2>
-                  <p>
-                    Οι αγώνες αυτής της φάσης θα εμφανιστούν όταν
-                    προστεθούν από τη διαχείριση.
-                  </p>
+                  <h2>{t('predictions.emptyTitle')}</h2>
+                  <p>{t('predictions.emptyStageBody')}</p>
                 </div>
               ) : selectedMatches.map((match) => {
                 const prediction = predictions[match.id] ?? {
@@ -1034,7 +1018,7 @@ export function PredictionsPage({
                         goldenSelected ? (
                           <span
                             className={`match-meta-golden-badge ${matchLocked ? 'locked' : ''}`}
-                            aria-label={matchLocked ? 'Golden Match κλειδωμένο' : 'Golden Match επιλεγμένο'}
+                            aria-label={matchLocked ? t('golden.selectedLocked') : t('golden.selected')}
                           >
                             ★
                           </span>
@@ -1044,7 +1028,15 @@ export function PredictionsPage({
                             className="match-meta-golden-button"
                             disabled={savingGoldenMatchId !== null}
                             onClick={() => void handleGoldenMatchSelection(match)}
-                            aria-label={`${selectedGoldenMatchId === null ? 'Επιλογή' : 'Αντικατάσταση'} Golden Match: ${match.home_team.name} - ${match.away_team.name}`}
+                            aria-label={t(
+                              selectedGoldenMatchId === null
+                                ? 'golden.selectAria'
+                                : 'golden.replaceAria',
+                              {
+                                home: match.home_team.name,
+                                away: match.away_team.name,
+                              },
+                            )}
                           >
                             {savingGoldenMatchId === match.id ? '…' : '☆'}
                           </button>
@@ -1062,8 +1054,8 @@ export function PredictionsPage({
                           >
                             <span aria-hidden="true">★</span>
                             {matchLocked
-                              ? 'Golden Match κλειδωμένο'
-                              : 'Golden Match επιλεγμένο'}
+                              ? t('golden.selectedLocked')
+                              : t('golden.selected')}
                           </span>
                         ) : (
                           <button
@@ -1073,18 +1065,22 @@ export function PredictionsPage({
                             onClick={() =>
                               void handleGoldenMatchSelection(match)
                             }
-                            aria-label={`${
+                            aria-label={t(
                               selectedGoldenMatchId === null
-                                ? 'Επιλογή'
-                                : 'Αντικατάσταση'
-                            } Golden Match: ${match.home_team.name} - ${match.away_team.name}`}
+                                ? 'golden.selectAria'
+                                : 'golden.replaceAria',
+                              {
+                                home: match.home_team.name,
+                                away: match.away_team.name,
+                              },
+                            )}
                           >
                             <span aria-hidden="true">☆</span>
                             {savingGoldenMatchId === match.id
-                              ? 'Αποθήκευση...'
+                              ? t('common.saving')
                               : selectedGoldenMatchId === null
-                                ? 'Επιλογή Golden Match'
-                                : 'Αντικατάσταση Golden Match'}
+                                ? t('golden.select')
+                                : t('golden.replace')}
                           </button>
                         )}
                       </div>
@@ -1095,8 +1091,7 @@ export function PredictionsPage({
                         className="golden-match-prediction-warning golden-match-prediction-warning--card"
                         role="status"
                       >
-                        Έχεις επιλέξει αυτόν τον αγώνα ως Golden Match,
-                        αλλά δεν έχεις αποθηκεύσει ακόμη πρόβλεψη σκορ.
+                        {t('golden.missingScoreShort')}
                       </p>
                     )}
 
@@ -1119,9 +1114,9 @@ export function PredictionsPage({
                         <ScoreStepper
                           value={prediction.home}
                           disabled={locked}
-                          inputLabel={`Γκολ ${match.home_team.name}`}
-                          incrementLabel={`Αύξηση γκολ ${match.home_team.name}`}
-                          decrementLabel={`Μείωση γκολ ${match.home_team.name}`}
+                          inputLabel={t('predictions.goals', { team: match.home_team.name })}
+                          incrementLabel={t('predictions.increaseGoals', { team: match.home_team.name })}
+                          decrementLabel={t('predictions.decreaseGoals', { team: match.home_team.name })}
                           onChange={(next, source) =>
                             handleScoreChange(match.id, 'home', next, {
                               skipAutoAdvance: source === 'stepper',
@@ -1137,9 +1132,9 @@ export function PredictionsPage({
                           inputRef={(el) => {
                             awayInputRefs.current[match.id] = el
                           }}
-                          inputLabel={`Γκολ ${match.away_team.name}`}
-                          incrementLabel={`Αύξηση γκολ ${match.away_team.name}`}
-                          decrementLabel={`Μείωση γκολ ${match.away_team.name}`}
+                          inputLabel={t('predictions.goals', { team: match.away_team.name })}
+                          incrementLabel={t('predictions.increaseGoals', { team: match.away_team.name })}
+                          decrementLabel={t('predictions.decreaseGoals', { team: match.away_team.name })}
                           onChange={(next, source) =>
                             handleScoreChange(match.id, 'away', next, {
                               skipAutoAdvance: source === 'stepper',
@@ -1167,48 +1162,48 @@ export function PredictionsPage({
                       {isFinished ? (
                         <div className="prediction-result-summary">
                           {officialScore && (
-                            <p>Τελικό σκορ: {officialScore}</p>
+                            <p>{t('predictions.officialScore', { score: officialScore })}</p>
                           )}
                           {savedScore ? (
                             <>
-                              <p>Η πρόβλεψή σου: {savedScore}</p>
+                              <p>{t('predictions.yourPrediction', { score: savedScore })}</p>
                               {points !== undefined && points !== null && (
-                                <p>Βαθμοί: {points}</p>
+                                <p>{t('predictions.points', { points })}</p>
                               )}
                             </>
                           ) : (
                             <span className="status-locked">
-                              Ο αγώνας έχει κλειδώσει χωρίς πρόβλεψη
+                              {t('predictions.lockedNoPrediction')}
                             </span>
                           )}
                         </div>
                       ) : locked ? (
                         saved ? (
                           <span className="status-locked">
-                            Η πρόβλεψη έχει κλειδώσει.
+                            {t('predictions.predictionLocked')}
                           </span>
                         ) : (
                           <span className="status-locked">
-                            Ο αγώνας έχει κλειδώσει χωρίς πρόβλεψη
+                            {t('predictions.lockedNoPrediction')}
                           </span>
                         )
                       ) : changed ? (
                         complete ? (
                           <span className="status-unsaved">
-                            Υπάρχουν μη αποθηκευμένες αλλαγές
+                            {t('predictions.unsavedChanges')}
                           </span>
                         ) : (
                           <span className="status-unsaved">
-                            Η πρόβλεψη δεν είναι ολοκληρωμένη
+                            {t('predictions.incomplete')}
                           </span>
                         )
                       ) : saved ? (
                         <span className="status-saved">
-                          Η πρόβλεψη έχει αποθηκευτεί
+                          {t('predictions.saved')}
                         </span>
                       ) : (
                         <span className="status-pending">
-                          Δεν έχει συμπληρωθεί πρόβλεψη
+                          {t('predictions.notFilled')}
                         </span>
                       )}
                     </div>
@@ -1237,18 +1232,22 @@ export function PredictionsPage({
                 <div className="predictions-actions-summary">
                   {recentSaveFlash ? (
                     <strong className="predictions-actions-confirm">
-                      ✓ Αποθηκεύτηκε
+                      {t('predictions.savedFlash')}
                     </strong>
                   ) : (
                     <>
                       <strong>
                         {unsavedChangesCount}{' '}
-                        {unsavedChangesCount === 1
-                          ? 'μη αποθηκευμένη'
-                          : 'μη αποθηκευμένες'}
+                        {t(
+                          selectPlural(
+                            unsavedChangesCount,
+                            'predictions.unsavedOne',
+                            'predictions.unsavedMany',
+                          ),
+                        )}
                       </strong>
                       <span className="predictions-actions-detail">
-                        {savedPredictionCount} αποθηκευμένες
+                        {savedPredictionCount} {t('predictions.savedMany')}
                       </span>
                     </>
                   )}
@@ -1262,8 +1261,8 @@ export function PredictionsPage({
                     onClick={() => void handleSavePredictions()}
                   >
                     {saving
-                      ? 'Αποθήκευση...'
-                      : 'Αποθήκευση προβλέψεων'}
+                      ? t('common.saving')
+                      : t('predictions.saveButton')}
                   </button>
                 )}
               </section>

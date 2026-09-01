@@ -1,3 +1,4 @@
+import { locale, t } from '../../i18n'
 import {
   cupAwardLabel,
   findViewerParticipant,
@@ -31,7 +32,7 @@ export function CupHonours({ snapshot }: CupHonoursProps) {
       lookup.get(left.participant_id),
     ).localeCompare(
       participantDisplayName(lookup.get(right.participant_id)),
-      'el',
+      locale,
     )
 
     if (byName !== 0) return byName
@@ -41,7 +42,7 @@ export function CupHonours({ snapshot }: CupHonoursProps) {
 
   return (
     <section className="cup-honours" aria-labelledby="cup-honours-heading">
-      <h2 id="cup-honours-heading">Έπαθλα</h2>
+      <h2 id="cup-honours-heading">{t('cup.honours')}</h2>
 
       {winner ? (
         <HonourCard
@@ -103,7 +104,9 @@ function HonourCard({
       ) : (
         <CupPlayerName participant={participant} isMe={isMe} />
       )}
-      <p className="cup-honour-points">+{award.points} βαθμοί</p>
+      <p className="cup-honour-points">
+        {t('cup.plusPoints', { n: award.points })}
+      </p>
     </article>
   )
 }

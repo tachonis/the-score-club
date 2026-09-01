@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { dateLocale, t } from '../i18n'
 import {
   AppHeader,
   type AppDestination,
@@ -65,11 +66,11 @@ type ResultResponse = {
 }
 
 const statusLabels: Record<AdminMatch['status'], string> = {
-  scheduled: 'Προγραμματισμένος',
-  live: 'Σε εξέλιξη',
-  finished: 'Ολοκληρωμένος',
-  postponed: 'Αναβλήθηκε',
-  cancelled: 'Ακυρώθηκε',
+  scheduled: t('admin.scheduled'),
+  live: t('admin.live'),
+  finished: t('admin.finished'),
+  postponed: t('admin.postponed'),
+  cancelled: t('admin.cancelled'),
 }
 
 export function AdminPage({
@@ -134,7 +135,7 @@ export function AdminPage({
 
     if (error) {
       setMessageType('error')
-      setMessage(`Δεν φορτώθηκαν οι αγώνες: ${error.message}`)
+      setMessage(t('admin.loadFailed', { detail: error.message }))
       setLoading(false)
       return
     }
@@ -277,7 +278,7 @@ export function AdminPage({
       awayScore.value === match.away_score
     ) {
       setMessageType('error')
-      setMessage('Δεν υπάρχει αλλαγή στο αποτέλεσμα.')
+      setMessage(t('admin.noChange'))
       return
     }
 
@@ -321,9 +322,12 @@ export function AdminPage({
 
     setMessageType('success')
     setMessage(
-      `Το ${pendingResult.homeName} – ${pendingResult.awayName} αποθηκεύτηκε. ` +
-        `${result?.scored_predictions ?? 0} προβλέψεις ελέγχθηκαν, ` +
-        `${result?.changed_predictions ?? 0} βαθμολογίες άλλαξαν.`,
+      t('admin.saved', {
+        home: pendingResult.homeName,
+        away: pendingResult.awayName,
+        scored: result?.scored_predictions ?? 0,
+        changed: result?.changed_predictions ?? 0,
+      }),
     )
 
     setPendingResult(null)
@@ -344,7 +348,7 @@ export function AdminPage({
     selectedStage !== null && isFinalStage(selectedStage)
 
   const formatKickoff = (dateValue: string) => {
-    return new Intl.DateTimeFormat('el-GR', {
+    return new Intl.DateTimeFormat(dateLocale, {
       weekday: 'short',
       day: '2-digit',
       month: '2-digit',
@@ -368,18 +372,17 @@ export function AdminPage({
         <section className="admin-heading">
           <div>
             <p className="dashboard-eyebrow">
-              {formatGreekAllCaps('Ασφαλής καταχώριση')}
+              {formatGreekAllCaps(t('admin.kicker'))}
             </p>
-            <h1>Διαχείριση αποτελεσμάτων</h1>
+            <h1>{t('admin.heading')}</h1>
             <p>
-              Καταχώρισε ή διόρθωσε σκορ. Η βαθμολογία επανυπολογίζεται
-              αυτόματα.
+              {t('admin.intro')}
             </p>
           </div>
 
           {matchdays.length > 0 && (
             <label className="admin-matchday-select">
-              <span>{formatGreekAllCaps('Φάση')}</span>
+              <span>{formatGreekAllCaps(t('admin.stage'))}</span>
               <select
                 value={selectedMatchdayId ?? ''}
                 disabled={savingMatchId !== null || pendingResult !== null}
@@ -420,26 +423,25 @@ export function AdminPage({
         {loading ? (
           <section className="app-loading-inline">
             <LoadingMark />
-            <p>Φόρτωση αγώνων...</p>
+            <p>{t('admin.loading')}</p>
           </section>
         ) : selectedMatches.length === 0 ? (
           <section className="empty-state">
-            <h2>Δεν υπάρχουν αγώνες</h2>
-            <p>Δεν βρέθηκαν αγώνες για την επιλεγμένη φάση.</p>
+            <h2>{t('admin.emptyTitle')}</h2>
+            <p>{t('admin.emptyBody')}</p>
           </section>
         ) : (
           <section className="admin-matches-list">
             <div className="admin-scoring-notes">
-              <p>Καταχώρησε το σκορ των 90 λεπτών + καθυστερήσεων.</p>
+              <p>{t('admin.score90')}</p>
               {showKnockoutScoringNote && (
                 <p>
-                  Σε νοκ-άουτ αγώνες δεν υπολογίζονται παράταση ή πέναλτι.
+                  {t('admin.knockoutNoEt')}
                 </p>
               )}
               {showFinalScoringNote && (
                 <p className="admin-final-note">
-                  Ο Τελικός βαθμολογείται x2: 10 βαθμοί για ακριβές σκορ, 4
-                  για σωστό αποτέλεσμα, 0 για λάθος.
+                  {t('admin.finalNote')}
                 </p>
               )}
             </div>
@@ -476,7 +478,9 @@ export function AdminPage({
                         onChange={(event) =>
                           handleScoreChange(match.id, 'home', event.target.value)
                         }
-                        aria-label={`Σκορ 90 λεπτών ${match.home_team.name}`}
+                        aria-label={t('admin.scoreAria', {
+                          team: match.home_team.name,
+                        })}
                       />
                       <span>:</span>
                       <input
@@ -488,7 +492,9 @@ export function AdminPage({
                         onChange={(event) =>
                           handleScoreChange(match.id, 'away', event.target.value)
                         }
-                        aria-label={`Σκορ 90 λεπτών ${match.away_team.name}`}
+                        aria-label={t('admin.scoreAria', {
+                          team: match.away_team.name,
+                        })}
                       />
                     </div>
                     <strong>{match.away_team.name}</strong>
@@ -502,12 +508,12 @@ export function AdminPage({
                       onClick={() => handleSaveResult(match)}
                     >
                       {isSaving
-                        ? 'Αποθήκευση...'
+                        ? t('common.saving')
                         : scoresLocked
-                          ? 'Διόρθωση αποτελέσματος'
+                          ? t('admin.correctResult')
                           : isFinished
-                            ? 'Επιβεβαίωση διόρθωσης'
-                            : 'Αποθήκευση αποτελέσματος'}
+                            ? t('admin.confirmCorrection')
+                            : t('admin.saveResult')}
                     </button>
                     {isCorrecting ? (
                       <button
@@ -516,7 +522,7 @@ export function AdminPage({
                         disabled={actionsBusy}
                         onClick={() => cancelCorrection(match)}
                       >
-                        Ακύρωση διόρθωσης
+                        {t('admin.cancelCorrection')}
                       </button>
                     ) : null}
                   </div>

@@ -1,3 +1,5 @@
+import { t } from '../i18n'
+
 export type PredictionSaveErrorKind = 'locked' | 'generic'
 
 export type LockedMatchLabel = {
@@ -113,21 +115,21 @@ export const buildPredictionSaveFeedback = ({
   if (genericFailureCount > 0) {
     return {
       tone: 'error',
-      text: 'Κάποιες προβλέψεις δεν αποθηκεύτηκαν. Δοκίμασε ξανά.',
+      text: t('predictions.saveSomeFailed'),
     }
   }
 
   if (savedCount > 0 && lockedCount === 0) {
     return {
       tone: 'success',
-      text: `Αποθηκεύτηκαν ${savedCount} προβλέψεις.`,
+      text: t('predictions.savedCountOk', { count: savedCount }),
     }
   }
 
   if (savedCount === 0 && lockedCount > 0) {
     return {
       tone: 'error',
-      text: 'Οι αγώνες που προσπάθησες να αλλάξεις έχουν πλέον κλειδώσει.',
+      text: t('predictions.allLockedNow'),
     }
   }
 
@@ -136,12 +138,15 @@ export const buildPredictionSaveFeedback = ({
 
     return {
       tone: 'error',
-      text: `Ο αγώνας ${match.homeName} – ${match.awayName} μόλις κλείδωσε. Οι υπόλοιπες προβλέψεις αποθηκεύτηκαν.`,
+      text: t('predictions.oneJustLocked', {
+        home: match.homeName,
+        away: match.awayName,
+      }),
     }
   }
 
   return {
     tone: 'error',
-    text: `${lockedCount} αγώνες μόλις κλείδωσαν. Οι υπόλοιπες προβλέψεις αποθηκεύτηκαν.`,
+    text: t('predictions.manyJustLocked', { count: lockedCount }),
   }
 }

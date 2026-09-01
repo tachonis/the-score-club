@@ -1,3 +1,4 @@
+import { t } from '../../i18n'
 import {
   cupRoundName,
   decidedByRuleLabel,
@@ -29,10 +30,10 @@ export function CupPersonalTieCard({
     return (
       <article className="cup-personal-card">
         <p className="dashboard-eyebrow">
-          {formatGreekAllCaps('Ο αγώνας σου')}
+          {formatGreekAllCaps(t('cup.yourTie'))}
         </p>
-        <h2>Δεν συμμετέχεις στο φετινό Players Cup.</h2>
-        <p>Μπορείς να δεις τους γύρους και τους αγώνες παρακάτω.</p>
+        <h2>{t('cup.notInCup')}</h2>
+        <p>{t('cup.watchBelow')}</p>
       </article>
     )
   }
@@ -53,9 +54,9 @@ export function CupPersonalTieCard({
     return (
       <article className="cup-personal-card">
         <p className="dashboard-eyebrow">
-          {formatGreekAllCaps('Ο αγώνας σου')}
+          {formatGreekAllCaps(t('cup.yourTie'))}
         </p>
-        <h2>Η θέση σου στο bracket δεν είναι διαθέσιμη ακόμη.</h2>
+        <h2>{t('cup.slotUnavailable')}</h2>
       </article>
     )
   }
@@ -83,14 +84,14 @@ export function CupPersonalTieCard({
       <article className="cup-personal-card">
         <div className="cup-personal-heading">
           <p className="dashboard-eyebrow">
-          {formatGreekAllCaps('Ο αγώνας σου')}
+          {formatGreekAllCaps(t('cup.yourTie'))}
         </p>
           <span className="cup-tie-badge">BYE</span>
         </div>
         <CupPlayerName participant={byeParticipant} isMe />
-        <h2>Πέρασε χωρίς αγώνα</h2>
+        <h2>{t('cup.byeAdvance')}</h2>
         {upcomingRound ? (
-          <p>Πρόκριση στον {upcomingRound}</p>
+          <p>{t('cup.advanceTo', { round: upcomingRound })}</p>
         ) : null}
       </article>
     )
@@ -109,9 +110,9 @@ export function CupPersonalTieCard({
       <article className="cup-personal-card">
         <div className="cup-personal-heading">
           <p className="dashboard-eyebrow">
-          {formatGreekAllCaps('Ο αγώνας σου')}
+          {formatGreekAllCaps(t('cup.yourTie'))}
         </p>
-          <span className="cup-tie-badge is-waiting">Αναμονή</span>
+          <span className="cup-tie-badge is-waiting">{t('cup.statusWaiting')}</span>
         </div>
         <h2>{cupRoundName(tieRoundNumber)}</h2>
         <div className="cup-tie-sides">
@@ -123,7 +124,7 @@ export function CupPersonalTieCard({
           </div>
           <p className="cup-tie-vs">vs</p>
           <div className="cup-tie-side is-waiting-slot">
-            <span className="cup-player-name-text">Περιμένει αντίπαλο</span>
+            <span className="cup-player-name-text">{t('cup.waitingOpponent')}</span>
           </div>
         </div>
       </article>
@@ -135,9 +136,9 @@ export function CupPersonalTieCard({
       <article className="cup-personal-card">
         <div className="cup-personal-heading">
           <p className="dashboard-eyebrow">
-          {formatGreekAllCaps('Ο αγώνας σου')}
+          {formatGreekAllCaps(t('cup.yourTie'))}
         </p>
-          <span className="cup-tie-badge is-live">Σε εξέλιξη</span>
+          <span className="cup-tie-badge is-live">{t('cup.statusLive')}</span>
         </div>
         <h2>{cupRoundName(tieRoundNumber)}</h2>
         <div className="cup-tie-sides">
@@ -159,18 +160,18 @@ export function CupPersonalTieCard({
   const viewerWon = tie.winner_participant_id === viewerParticipant.id
   const statusLabel = isFinal
     ? viewerWon
-      ? 'Πρωταθλητής'
-      : 'Φιναλίστ'
+      ? t('cup.champion')
+      : t('cup.finalist')
     : viewerWon
-      ? 'Προκρίθηκες'
-      : 'Αποκλείστηκες'
+      ? t('cup.advanced')
+      : t('cup.eliminated')
   const tieBreak = decidedByRuleLabel(tie.decided_by_rule)
 
   return (
     <article className="cup-personal-card is-decided">
       <div className="cup-personal-heading">
         <p className="dashboard-eyebrow">
-          {formatGreekAllCaps('Ο αγώνας σου')}
+          {formatGreekAllCaps(t('cup.yourTie'))}
         </p>
         <span
           className={`cup-tie-badge ${viewerWon ? 'is-won' : 'is-lost'}`}
@@ -196,7 +197,7 @@ export function CupPersonalTieCard({
         />
       </div>
       {viewerWon && !isFinal && upcomingRound ? (
-        <p>Στον επόμενο γύρο: {upcomingRound}</p>
+        <p>{t('cup.nextRound', { round: upcomingRound })}</p>
       ) : null}
       {tieBreak ? <p className="cup-tie-break">{tieBreak}</p> : null}
     </article>
@@ -228,11 +229,11 @@ function PersonalScoreRow({
         isLoser={isLoser}
         isMe={isMe}
       />
-      <strong className="cup-tie-score" aria-label={`${points} βαθμοί`}>
+      <strong className="cup-tie-score" aria-label={t('cup.points', { n: points })}>
         {points}
       </strong>
       {isWinner ? (
-        <span className="cup-winner-mark">{formatGreekAllCaps('Νικητής')}</span>
+        <span className="cup-winner-mark">{formatGreekAllCaps(t('cup.winner'))}</span>
       ) : null}
     </div>
   )

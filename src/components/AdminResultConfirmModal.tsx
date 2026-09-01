@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { t } from '../i18n'
 import type { PendingAdminResult } from '../lib/adminResult'
 
 type AdminResultConfirmModalProps = {
@@ -76,12 +77,14 @@ export function AdminResultConfirmModal({
       >
         <header className="admin-result-confirm-header">
           <p className="rules-eyebrow">
-            {isCorrection ? 'Διόρθωση' : 'Καταχώριση'}
+            {isCorrection
+              ? t('admin.confirmCorrectionEyebrow')
+              : t('admin.confirmEntry')}
           </p>
           <h2 id="admin-result-confirm-title">
             {isCorrection
-              ? 'Διόρθωση αποτελέσματος'
-              : 'Επιβεβαίωση αποτελέσματος'}
+              ? t('admin.correctionTitle')
+              : t('admin.confirmTitle')}
           </h2>
         </header>
 
@@ -91,7 +94,7 @@ export function AdminResultConfirmModal({
               <p className="admin-result-confirm-team">{pending.homeName}</p>
               <div className="admin-result-confirm-score-pair">
                 <div>
-                  <p className="admin-result-confirm-label">Τρέχον</p>
+                  <p className="admin-result-confirm-label">{t('admin.current')}</p>
                   <p className="admin-result-confirm-score">
                     <span>{pending.storedHomeScore ?? 0}</span>
                     <span aria-hidden="true">–</span>
@@ -99,7 +102,7 @@ export function AdminResultConfirmModal({
                   </p>
                 </div>
                 <div>
-                  <p className="admin-result-confirm-label">Νέο</p>
+                  <p className="admin-result-confirm-label">{t('admin.next')}</p>
                   <p className="admin-result-confirm-score">
                     <span>{pending.homeScore}</span>
                     <span aria-hidden="true">–</span>
@@ -120,8 +123,8 @@ export function AdminResultConfirmModal({
 
           <p className="admin-result-confirm-copy">
             {isCorrection
-              ? 'Η αλλαγή θα επανυπολογίσει τις βαθμολογίες που επηρεάζονται.'
-              : 'Το αποτέλεσμα αφορά το σκορ στα 90\' και θα υπολογιστούν οι βαθμοί όλων των προβλέψεων.'}
+              ? t('admin.correctionNote')
+              : t('admin.entryNote')}
           </p>
           {errorText ? (
             <p className="admin-result-confirm-error">{errorText}</p>
@@ -135,7 +138,7 @@ export function AdminResultConfirmModal({
             disabled={saving}
             onClick={onCancel}
           >
-            Ακύρωση
+            {t('common.cancel')}
           </button>
           <button
             type="button"
@@ -144,10 +147,10 @@ export function AdminResultConfirmModal({
             onClick={onConfirm}
           >
             {saving
-              ? 'Αποθήκευση...'
+              ? t('common.saving')
               : isCorrection
-                ? 'Καταχώριση διόρθωσης'
-                : 'Καταχώριση αποτελέσματος'}
+                ? t('admin.submitCorrection')
+                : t('admin.submitEntry')}
           </button>
         </footer>
       </section>

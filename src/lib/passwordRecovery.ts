@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { readDestinationFromHash } from './push'
+import { t } from '../i18n'
 
 const STORAGE_KEY = 'tsc-password-recovery'
 
@@ -88,15 +89,15 @@ type AuthErrorLike = {
 const includesAny = (value: string, fragments: string[]) =>
   fragments.some((fragment) => value.includes(fragment))
 
-export const mapAuthError = (error: AuthErrorLike | null | undefined) => {
+const isExpiredRecoveryLink = (error: AuthErrorLike | null | undefined) => {
   if (!error) {
-    return 'Παρουσιάστηκε πρόβλημα. Δοκίμασε ξανά.'
+    return false
   }
 
   const code = (error.code ?? '').toLowerCase()
   const message = (error.message ?? '').toLowerCase()
 
-  if (
+  return (
     code === 'otp_expired' ||
     code === 'access_denied' ||
     includesAny(message, [
@@ -110,8 +111,19 @@ export const mapAuthError = (error: AuthErrorLike | null | undefined) => {
       includesAny(message, ['link', 'token', 'otp', 'code'])) ||
     (message.includes('invalid') &&
       includesAny(message, ['link', 'token', 'otp']))
-  ) {
-    return 'Ο σύνδεσμος επαναφοράς έχει λήξει ή δεν είναι πλέον έγκυρος.'
+  )
+}
+
+export const mapAuthError = (error: AuthErrorLike | null | undefined) => {
+  if (!error) {
+    return t('auth.genericError')
+  }
+
+  const code = (error.code ?? '').toLowerCase()
+  const message = (error.message ?? '').toLowerCase()
+
+  if (isExpiredRecoveryLink(error)) {
+    return t('auth.recoverLinkExpired')
   }
 
   if (
@@ -120,14 +132,14 @@ export const mapAuthError = (error: AuthErrorLike | null | undefined) => {
     message.includes('password is known to be weak') ||
     message.includes('weak password')
   ) {
-    return 'Ο κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες.'
+    return t('auth.passwordTooShort')
   }
 
   if (
     code === 'same_password' ||
     message.includes('different from the old password')
   ) {
-    return 'Ο νέος κωδικός πρέπει να είναι διαφορετικός από τον τρέχοντα.'
+    return t('auth.passwordMustDiffer')
   }
 
   if (
@@ -137,22 +149,21 @@ export const mapAuthError = (error: AuthErrorLike | null | undefined) => {
       'over_request_rate',
     ])
   ) {
-    return 'Έγιναν πολλά αιτήματα. Περίμενε λίγο και δοκίμασε ξανά.'
+    return t('auth.tooManyRequests')
   }
 
   if (message.includes('invalid') && message.includes('email')) {
-    return 'Το email δεν είναι έγκυρο.'
+    return t('auth.invalidEmail')
   }
 
   if (
     includesAny(message, ['failed to fetch', 'network', 'fetch failed'])
   ) {
-    return 'Παρουσιάστηκε πρόβλημα. Δοκίμασε ξανά.'
+    return t('auth.genericError')
   }
 
-  return 'Παρουσιάστηκε πρόβλημα. Δοκίμασε ξανά.'
+  return t('auth.genericError')
 }
 
 export const isRecoveryLinkError = (error: AuthErrorLike | null | undefined) =>
-  mapAuthError(error) ===
-  'Ο σύνδεσμος επαναφοράς έχει λήξει ή δεν είναι πλέον έγκυρος.'
+  isExpiredRecoveryLink(error)

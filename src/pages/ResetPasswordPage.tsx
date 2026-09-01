@@ -5,6 +5,7 @@ import {
   MIN_PASSWORD_LENGTH,
   mapAuthError,
 } from '../lib/passwordRecovery'
+import { t } from '../i18n'
 
 type ResetPasswordPageProps = {
   onCompleted: () => void
@@ -38,16 +39,14 @@ export function ResetPasswordPage({
 
     if (password.length < MIN_PASSWORD_LENGTH) {
       setMessageType('error')
-      setMessage(
-        'Ο κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες.',
-      )
+      setMessage(t('auth.passwordTooShort'))
       setLoading(false)
       return
     }
 
     if (password !== confirmPassword) {
       setMessageType('error')
-      setMessage('Οι δύο κωδικοί δεν ταιριάζουν.')
+      setMessage(t('auth.passwordsMismatch'))
       setLoading(false)
       return
     }
@@ -64,7 +63,7 @@ export function ResetPasswordPage({
     }
 
     setMessageType('success')
-    setMessage('Ο κωδικός σου ενημερώθηκε επιτυχώς.')
+    setMessage(t('auth.resetSuccess'))
     setPassword('')
     setConfirmPassword('')
     setCompleted(true)
@@ -77,15 +76,13 @@ export function ResetPasswordPage({
 
   return (
     <>
-      <h2 className="auth-heading">Ορισμός νέου κωδικού</h2>
+      <h2 className="auth-heading">{t('auth.resetTitle')}</h2>
 
-      <p className="auth-description">
-        Επίλεξε έναν νέο κωδικό για τον λογαριασμό σου.
-      </p>
+      <p className="auth-description">{t('auth.resetBody')}</p>
 
       <form className="auth-form" onSubmit={handleSubmit}>
         <div className="form-field">
-          <label htmlFor="reset-password">Νέος κωδικός</label>
+          <label htmlFor="reset-password">{t('auth.newPassword')}</label>
 
           <input
             id="reset-password"
@@ -100,7 +97,7 @@ export function ResetPasswordPage({
 
         <div className="form-field">
           <label htmlFor="reset-confirm-password">
-            Επιβεβαίωση νέου κωδικού
+            {t('auth.confirmNewPassword')}
           </label>
 
           <input
@@ -122,8 +119,8 @@ export function ResetPasswordPage({
           disabled={loading || completed}
         >
           {loading
-            ? 'Γίνεται αποθήκευση...'
-            : 'Αποθήκευση νέου κωδικού'}
+            ? t('auth.resetSaving')
+            : t('auth.saveNewPassword')}
         </button>
       </form>
 

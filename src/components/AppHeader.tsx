@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { t } from '../i18n'
 import { formatGreekAllCaps } from '../lib/greekAllCaps'
 import { usePlayerProfileNav } from '../lib/playerProfileNav'
 import { HeaderLogo } from './BrandAssets'
@@ -32,44 +33,44 @@ type NavigationItem = {
 const navigationItems: NavigationItem[] = [
   {
     destination: 'home',
-    desktopLabel: 'Αρχική',
-    mobileLabel: 'Αρχική',
+    desktopLabel: t('nav.home'),
+    mobileLabel: t('nav.home'),
     icon: 'home',
   },
   {
     destination: 'predictions',
-    desktopLabel: 'Αγώνες & Προβλέψεις',
-    mobileLabel: 'Αγώνες',
+    desktopLabel: t('nav.matches'),
+    mobileLabel: t('nav.matchesShort'),
     icon: 'matches',
   },
   {
     destination: 'standings',
-    desktopLabel: 'Βαθμολογία',
-    mobileLabel: 'Βαθμοί',
+    desktopLabel: t('nav.standings'),
+    mobileLabel: t('nav.standingsShort'),
     icon: 'standings',
   },
   {
     destination: 'players-cup',
-    desktopLabel: 'Players Cup',
-    mobileLabel: 'Κύπελλο',
+    desktopLabel: t('nav.playersCup'),
+    mobileLabel: t('nav.playersCupShort'),
     icon: 'cup',
   },
   {
     destination: 'league-phase',
-    desktopLabel: 'League Phase',
-    mobileLabel: 'League Phase',
+    desktopLabel: t('nav.leaguePhase'),
+    mobileLabel: t('nav.leaguePhase'),
     icon: 'league',
   },
   {
     destination: 'rules',
-    desktopLabel: 'Κανόνες',
-    mobileLabel: 'Κανόνες',
+    desktopLabel: t('nav.rules'),
+    mobileLabel: t('nav.rules'),
     icon: 'rules',
   },
   {
     destination: 'admin',
-    desktopLabel: 'Διαχείριση',
-    mobileLabel: 'Διαχείριση',
+    desktopLabel: t('nav.admin'),
+    mobileLabel: t('nav.admin'),
     icon: 'admin',
     adminOnly: true,
   },
@@ -141,12 +142,12 @@ export function AppHeader({
             type="button"
             className="app-logo"
             onClick={() => navigate('home')}
-            aria-label="Μετάβαση στην αρχική σελίδα"
+            aria-label={t('nav.goHome')}
           >
             <HeaderLogo />
           </button>
 
-          <nav className="desktop-navigation" aria-label="Κύρια πλοήγηση">
+          <nav className="desktop-navigation" aria-label={t('nav.main')}>
             {availableItems.map((item) => {
               const isActive = item.destination === currentPage
 
@@ -172,18 +173,18 @@ export function AppHeader({
                 type="button"
                 className="user-profile-button"
                 onClick={() => openProfile(viewerUserId)}
-                aria-label={`Προφίλ ${username}`}
+                aria-label={t('nav.profileOf', { username })}
               >
                 {username}
               </button>
-              <span>{role === 'admin' ? 'Διαχειριστής' : 'Παίκτης'}</span>
+              <span>{role === 'admin' ? t('common.admin') : t('common.player')}</span>
             </div>
             <button
               type="button"
               className="logout-button"
               onClick={() => void onLogout()}
             >
-              Αποσύνδεση
+              {t('nav.signOut')}
             </button>
           </div>
         </div>
@@ -194,20 +195,20 @@ export function AppHeader({
           <button
             type="button"
             className="mobile-menu-backdrop"
-            aria-label="Κλείσιμο μενού"
+            aria-label={t('nav.closeMenu')}
             onClick={() => setMenuOpen(false)}
           />
           <nav
             id="mobile-overflow-navigation"
             className="mobile-overflow-menu"
-            aria-label="Περισσότερες σελίδες"
+            aria-label={t('nav.morePages')}
           >
             <div className="mobile-menu-heading">
-              <span>{formatGreekAllCaps('Περισσότερα')}</span>
+              <span>{formatGreekAllCaps(t('common.more'))}</span>
               <button
                 type="button"
                 onClick={() => setMenuOpen(false)}
-                aria-label="Κλείσιμο μενού"
+                aria-label={t('nav.closeMenu')}
               >
                 ×
               </button>
@@ -235,7 +236,7 @@ export function AppHeader({
         </>
       )}
 
-      <nav className="mobile-navigation" aria-label="Πλοήγηση κινητού">
+      <nav className="mobile-navigation" aria-label={t('nav.mobile')}>
         {bottomItems.map((item) => {
           const isActive = item.destination === currentPage
 
@@ -263,7 +264,7 @@ export function AppHeader({
           aria-expanded={menuOpen}
         >
           <NavIcon name="menu" />
-          Μενού
+          {t('common.menu')}
         </button>
       </nav>
     </>

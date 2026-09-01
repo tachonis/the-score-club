@@ -5,6 +5,7 @@ import {
 } from '../components/AppHeader'
 import { LoadingMark } from '../components/BrandAssets'
 import { formatGreekAllCaps } from '../lib/greekAllCaps'
+import { selectPlural, t } from '../i18n'
 import { usePlayerProfileNav } from '../lib/playerProfileNav'
 import {
   compareMatchdays,
@@ -44,9 +45,9 @@ type LeagueMatchday = {
 }
 
 const VIEWS: { id: StandingsView; label: string }[] = [
-  { id: 'overall', label: 'Γενική' },
-  { id: 'matchday', label: 'Ανά Αγωνιστική' },
-  { id: 'knockout', label: 'Knockout' },
+  { id: 'overall', label: t('standings.overall') },
+  { id: 'matchday', label: t('standings.byMatchday') },
+  { id: 'knockout', label: t('standings.knockout') },
 ]
 
 export function StandingsPage({
@@ -99,7 +100,7 @@ export function StandingsPage({
       } = await supabase.auth.getUser()
 
       if (userError || !user) {
-        setErrorMessage('Δεν ήταν δυνατή η αναγνώριση του χρήστη.')
+        setErrorMessage(t('errors.identifyUser'))
         setLoadingOverall(false)
         return
       }
@@ -110,7 +111,7 @@ export function StandingsPage({
 
       if (error) {
         setErrorMessage(
-          `Δεν φορτώθηκε η βαθμολογία: ${error.message}`,
+          t('errors.loadStandings', { detail: error.message }),
         )
         setLoadingOverall(false)
         return
@@ -150,7 +151,7 @@ export function StandingsPage({
 
       if (error) {
         setErrorMessage(
-          `Δεν φορτώθηκαν οι αγωνιστικές: ${error.message}`,
+          t('errors.loadMatchdays', { detail: error.message }),
         )
         setMatchdaysLoaded(true)
         setLoadingMatchdays(false)
@@ -189,7 +190,7 @@ export function StandingsPage({
 
       if (error) {
         setErrorMessage(
-          `Δεν φορτώθηκε η βαθμολογία αγωνιστικής: ${error.message}`,
+          t('errors.loadMatchdayStandings', { detail: error.message }),
         )
         setMatchdayRows([])
         setLoadedMatchdayId(selectedMatchdayId)
@@ -218,7 +219,7 @@ export function StandingsPage({
 
       if (error) {
         setErrorMessage(
-          `Δεν φορτώθηκε η βαθμολογία νοκ-άουτ: ${error.message}`,
+          t('errors.loadKnockoutStandings', { detail: error.message }),
         )
         setKnockoutLoaded(true)
         setLoadingKnockout(false)
@@ -255,17 +256,17 @@ export function StandingsPage({
     view === 'matchday'
       ? selectedMatchday?.matchday_number != null
         ? formatLeaguePhaseRound(selectedMatchday.matchday_number)
-        : 'Ανά αγωνιστική'
+        : t('standings.byMatchdayBoard')
       : view === 'knockout'
-        ? 'Knockout'
-        : 'Γενική κατάταξη'
+        ? t('standings.knockout')
+        : t('standings.overallBoard')
 
   const introCopy =
     view === 'matchday'
-      ? 'Η κατάταξη των παικτών για κάθε αγωνιστική της League Phase.'
+      ? t('standings.introMatchday')
       : view === 'knockout'
-        ? 'Η κατάταξη από προβλέψεις στα Knockout Play-offs, τη Φάση των 16, τα Προημιτελικά, τα Ημιτελικά και τον Τελικό.'
-        : 'Η συνολική κατάταξη των παικτών του The Score Club.'
+        ? t('standings.introKnockout')
+        : t('standings.introOverall')
 
   const renderRank = (rank: number) => {
     if (showPodium) {
@@ -293,7 +294,7 @@ export function StandingsPage({
             Champions League 2026/27
           </p>
 
-          <h1>Βαθμολογία</h1>
+          <h1>{t('standings.title')}</h1>
 
           <p>{introCopy}</p>
         </section>
@@ -301,7 +302,7 @@ export function StandingsPage({
         <div
           className="tsc-standings-views"
           role="tablist"
-          aria-label="Όψεις βαθμολογίας"
+          aria-label={t('standings.viewsAria')}
         >
           {VIEWS.map((item) => {
             const selected = view === item.id
@@ -338,7 +339,7 @@ export function StandingsPage({
             <div
               className="matchday-tabs"
               role="tablist"
-              aria-label="Αγωνιστικές League Phase"
+              aria-label={t('standings.matchdaysAria')}
             >
               {orderedLeagueMatchdays.map((matchday) => {
                 const isSelected = selectedMatchdayId === matchday.id
@@ -379,7 +380,7 @@ export function StandingsPage({
         {viewLoading ? (
           <section className="app-loading-inline">
             <LoadingMark />
-            <p>Φόρτωση βαθμολογίας...</p>
+            <p>{t('standings.loading')}</p>
           </section>
         ) : (
           <section className="tsc-leaderboard">
@@ -391,24 +392,24 @@ export function StandingsPage({
 
                 <strong>
                   {activeRows.length}{' '}
-                  {activeRows.length === 1 ? 'παίκτης' : 'παίκτες'}
+                  {t(selectPlural(activeRows.length, 'standings.playerOne', 'standings.playerMany'))}
                 </strong>
               </div>
             </div>
 
             <div className="tsc-table-scroll">
               <div className="tsc-table-header">
-                <span>{formatGreekAllCaps('Θέση')}</span>
-                <span>{formatGreekAllCaps('Παίκτης')}</span>
-                <span>{formatGreekAllCaps('Βαθμοί')}</span>
-                <span>{formatGreekAllCaps('Ακριβή')}</span>
-                <span>{formatGreekAllCaps('Σωστά')}</span>
+                <span>{formatGreekAllCaps(t('standings.pos'))}</span>
+                <span>{formatGreekAllCaps(t('standings.player'))}</span>
+                <span>{formatGreekAllCaps(t('standings.pts'))}</span>
+                <span>{formatGreekAllCaps(t('standings.exact'))}</span>
+                <span>{formatGreekAllCaps(t('standings.correct'))}</span>
               </div>
 
               <div className="tsc-table-body">
                 {activeRows.length === 0 ? (
                   <div className="tsc-leaderboard-empty">
-                    Δεν υπάρχουν ακόμη παίκτες στη βαθμολογία.
+                    {t('standings.empty')}
                   </div>
                 ) : (
                   activeRows.map((row) => {
@@ -434,10 +435,10 @@ export function StandingsPage({
                             type="button"
                             className="tsc-player-name"
                             onClick={() => openProfile(row.user_id)}
-                            aria-label={`Προφίλ ${row.username}`}
+                            aria-label={t('nav.profileOf', { username: row.username })}
                           >
                             <span>{row.username}</span>
-                            {isCurrentUser ? <small>Εσύ</small> : null}
+                            {isCurrentUser ? <small>{t('common.you')}</small> : null}
                           </button>
                         </div>
 
@@ -460,27 +461,17 @@ export function StandingsPage({
             className="tsc-tiebreak-note"
             aria-labelledby="standings-tiebreak-heading"
           >
-            <h2 id="standings-tiebreak-heading">Ισοβαθμία</h2>
-            <p>Σε ισοβαθμία εφαρμόζονται διαδοχικά:</p>
+            <h2 id="standings-tiebreak-heading">{t('standings.tiebreak')}</h2>
+            <p>{t('standings.tiebreakApply')}</p>
             <ol>
-              <li>περισσότερα ακριβή σκορ</li>
-              <li>περισσότερα σωστά αποτελέσματα</li>
-              <li>περισσότεροι βαθμοί στα νοκ-άουτ</li>
-              <li>λιγότερες χαμένες προβλέψεις</li>
+              <li>{t('standings.tieExact')}</li>
+              <li>{t('standings.tieCorrect')}</li>
+              <li>{t('standings.tieKnockoutPts')}</li>
+              <li>{t('standings.tieMissed')}</li>
             </ol>
-            <p>
-              Αν παραμένει ισοβαθμία, οι παίκτες μοιράζονται την ίδια θέση.
-            </p>
-            <p>
-              Οι βαθμοί στα νοκ-άουτ προέρχονται από προβλέψεις στα Knockout
-              Play-offs, τη Φάση των 16, τα Προημιτελικά, τα Ημιτελικά και
-              τον Τελικό. Δεν περιλαμβάνουν League Phase, Players Cup ή
-              μακροχρόνιες προβλέψεις.
-            </p>
-            <p>
-              Χαμένες προβλέψεις είναι τελειωμένοι αγώνες στους οποίους ο
-              παίκτης δεν είχε πρόβλεψη.
-            </p>
+            <p>{t('standings.tieShare')}</p>
+            <p>{t('standings.knockoutPtsNote')}</p>
+            <p>{t('standings.missedNote')}</p>
           </section>
         ) : null}
 
@@ -489,21 +480,14 @@ export function StandingsPage({
             className="tsc-tiebreak-note"
             aria-labelledby="standings-matchday-tiebreak-heading"
           >
-            <h2 id="standings-matchday-tiebreak-heading">Ισοβαθμία</h2>
-            <p>
-              Μετρούν μόνο οι πόντοι προβλέψεων της επιλεγμένης αγωνιστικής
-              της League Phase. Golden Match μετρά με τους ήδη διπλασιασμένους
-              αποθηκευμένους πόντους. Μακροχρόνιες προβλέψεις, Players Cup και
-              νοκ-άουτ δεν περιλαμβάνονται.
-            </p>
-            <p>Σε ισοβαθμία εφαρμόζονται διαδοχικά:</p>
+            <h2 id="standings-matchday-tiebreak-heading">{t('standings.tiebreak')}</h2>
+            <p>{t('standings.matchdayScope')}</p>
+            <p>{t('standings.tiebreakApply')}</p>
             <ol>
-              <li>περισσότερα ακριβή σκορ στην αγωνιστική</li>
-              <li>περισσότερα σωστά αποτελέσματα στην αγωνιστική</li>
+              <li>{t('standings.tieExactMatchday')}</li>
+              <li>{t('standings.tieCorrectMatchday')}</li>
             </ol>
-            <p>
-              Αν παραμένει ισοβαθμία, οι παίκτες μοιράζονται την ίδια θέση.
-            </p>
+            <p>{t('standings.tieShare')}</p>
           </section>
         ) : null}
 
@@ -512,21 +496,15 @@ export function StandingsPage({
             className="tsc-tiebreak-note"
             aria-labelledby="standings-knockout-tiebreak-heading"
           >
-            <h2 id="standings-knockout-tiebreak-heading">Ισοβαθμία</h2>
-            <p>
-              Μετρούν μόνο προβλέψεις στα Knockout Play-offs, τη Φάση των 16,
-              τα Προημιτελικά, τα Ημιτελικά και τον Τελικό. League Phase,
-              Players Cup και μακροχρόνιες προβλέψεις δεν περιλαμβάνονται.
-            </p>
-            <p>Σε ισοβαθμία εφαρμόζονται διαδοχικά:</p>
+            <h2 id="standings-knockout-tiebreak-heading">{t('standings.tiebreak')}</h2>
+            <p>{t('standings.knockoutScope')}</p>
+            <p>{t('standings.tiebreakApply')}</p>
             <ol>
-              <li>περισσότερα ακριβή σκορ στα νοκ-άουτ</li>
-              <li>περισσότερα σωστά αποτελέσματα στα νοκ-άουτ</li>
-              <li>λιγότερες χαμένες προβλέψεις στα νοκ-άουτ</li>
+              <li>{t('standings.tieExactKnockout')}</li>
+              <li>{t('standings.tieCorrectKnockout')}</li>
+              <li>{t('standings.tieMissedKnockout')}</li>
             </ol>
-            <p>
-              Αν παραμένει ισοβαθμία, οι παίκτες μοιράζονται την ίδια θέση.
-            </p>
+            <p>{t('standings.tieShare')}</p>
           </section>
         ) : null}
       </main>

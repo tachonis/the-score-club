@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { AppHeader, type AppDestination } from '../components/AppHeader'
 import { LoadingMark } from '../components/BrandAssets'
 import { formatGreekAllCaps } from '../lib/greekAllCaps'
+import { dateLocale, selectPlural, t } from '../i18n'
 import { supabase } from '../lib/supabase'
 
 type LeaguePhasePageProps = {
@@ -61,7 +62,7 @@ export function LeaguePhasePage({
 
     if (error) {
       setErrorMessage(
-        `Δεν φορτώθηκε η κατάταξη League Phase: ${error.message}`,
+        t('errors.loadLeaguePhase', { detail: error.message }),
       )
     } else {
       setRows((data ?? []) as LeagueStanding[])
@@ -110,23 +111,18 @@ export function LeaguePhasePage({
         <section className="league-phase-intro">
           <div>
             <p className="dashboard-eyebrow">Champions League 2026/27</p>
-            <h1>League Phase</h1>
-            <p>
-              Η ζωντανή κατάταξη των 36 ομάδων, υπολογισμένη αποκλειστικά
-              από ολοκληρωμένους αγώνες της League Phase.
-            </p>
+            <h1>{t('nav.leaguePhase')}</h1>
+            <p>{t('league.intro')}</p>
           </div>
 
-          <div className="league-phase-summary" aria-label="Σύνοψη κατάταξης">
+          <div className="league-phase-summary" aria-label={t('league.summaryAria')}>
             <span>
               <strong>{rows.length || 36}</strong>
-              ομάδες
+              {t('league.teams')}
             </span>
             <span>
               <strong>{finishedMatches}</strong>
-              {finishedMatches === 1
-                ? 'ολοκληρωμένος αγώνας'
-                : 'ολοκληρωμένοι αγώνες'}
+              {t(selectPlural(finishedMatches, 'league.finishedOne', 'league.finishedMany'))}
             </span>
           </div>
         </section>
@@ -138,14 +134,14 @@ export function LeaguePhasePage({
         {loading ? (
           <section className="app-loading-inline">
             <LoadingMark />
-            <p>Υπολογισμός κατάταξης...</p>
+            <p>{t('league.loading')}</p>
           </section>
         ) : (
           <section className="league-table-card">
             <div className="league-table-toolbar">
               <div>
-                <span>{formatGreekAllCaps('Επίσημη κατάταξη')}</span>
-                <strong>{finishedMatches} / 144 αγώνες ολοκληρώθηκαν</strong>
+                <span>{formatGreekAllCaps(t('league.official'))}</span>
+                <strong>{t('league.finishedOf', { finished: finishedMatches })}</strong>
               </div>
 
               <button
@@ -154,27 +150,25 @@ export function LeaguePhasePage({
                 onClick={() => void loadStandings()}
                 disabled={refreshing}
               >
-                {refreshing ? 'Ανανέωση...' : 'Ανανέωση'}
+                {refreshing ? t('common.refreshing') : t('common.refresh')}
               </button>
             </div>
 
             <div className="league-table-scroll" tabIndex={0}>
               <table className="league-table">
-                <caption>
-                  Κατάταξη League Phase με αγώνες, αποτελέσματα, γκολ και βαθμούς
-                </caption>
+                <caption>{t('league.caption')}</caption>
                 <thead>
                   <tr>
-                    <th scope="col">Θέση</th>
-                    <th scope="col">Ομάδα</th>
-                    <th scope="col" title="Αγώνες">ΑΓ</th>
-                    <th scope="col" title="Νίκες">Ν</th>
-                    <th scope="col" title="Ισοπαλίες">Ι</th>
-                    <th scope="col" title="Ήττες">Η</th>
-                    <th scope="col" title="Γκολ υπέρ">ΓΥ</th>
-                    <th scope="col" title="Γκολ κατά">ΓΚ</th>
-                    <th scope="col" title="Διαφορά γκολ">ΔΓ</th>
-                    <th scope="col" title="Βαθμοί">Β</th>
+                    <th scope="col">{t('league.pos')}</th>
+                    <th scope="col">{t('league.team')}</th>
+                    <th scope="col" title={t('league.playedTitle')}>{t('league.played')}</th>
+                    <th scope="col" title={t('league.winsTitle')}>{t('league.wins')}</th>
+                    <th scope="col" title={t('league.drawsTitle')}>{t('league.draws')}</th>
+                    <th scope="col" title={t('league.lossesTitle')}>{t('league.losses')}</th>
+                    <th scope="col" title={t('league.gfTitle')}>{t('league.gf')}</th>
+                    <th scope="col" title={t('league.gaTitle')}>{t('league.ga')}</th>
+                    <th scope="col" title={t('league.gdTitle')}>{t('league.gd')}</th>
+                    <th scope="col" title={t('league.ptsTitle')}>{t('league.pts')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -210,15 +204,14 @@ export function LeaguePhasePage({
             </div>
 
             <footer className="league-table-footer">
-              <span>
-                3 βαθμοί η νίκη · 1 η ισοπαλία · 0 η ήττα
-              </span>
+              <span>{t('league.scoring')}</span>
               {lastUpdated && (
                 <span>
-                  Τελευταία ενημέρωση{' '}
-                  {lastUpdated.toLocaleTimeString('el-GR', {
-                    hour: '2-digit',
-                    minute: '2-digit',
+                  {t('league.lastUpdated', {
+                    time: lastUpdated.toLocaleTimeString(dateLocale, {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    }),
                   })}
                 </span>
               )}
@@ -227,8 +220,7 @@ export function LeaguePhasePage({
         )}
 
         <p className="league-tiebreak-note">
-          <strong>Σειρά κατάταξης:</strong> βαθμοί, διαφορά γκολ, γκολ υπέρ.
-          Για πλήρως ισόβαθμες ομάδες χρησιμοποιείται σταθερή αλφαβητική σειρά.
+          <strong>{t('league.orderLead')}</strong> {t('league.orderRest')}
         </p>
       </main>
 

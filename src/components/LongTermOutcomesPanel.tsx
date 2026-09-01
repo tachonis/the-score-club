@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { t } from '../i18n'
 import { supabase } from '../lib/supabase'
 
 type PredictionType = 'winner' | 'league_phase_first'
@@ -35,10 +36,10 @@ const outcomeOptions: Array<{
   title: string
   points: number
 }> = [
-  { type: 'winner', title: 'Champions League Winner', points: 30 },
+  { type: 'winner', title: t('adminOutcomes.winnerTitle'), points: 30 },
   {
     type: 'league_phase_first',
-    title: '1st place in League Phase',
+    title: t('adminOutcomes.leagueTitle'),
     points: 15,
   },
 ]
@@ -81,7 +82,9 @@ export function LongTermOutcomesPanel({
 
     if (firstError) {
       setMessageType('error')
-      setMessage(`Δεν φορτώθηκαν τα long-term outcomes: ${firstError.message}`)
+      setMessage(
+        t('adminOutcomes.loadFailed', { detail: firstError.message }),
+      )
       setLoading(false)
       return
     }
@@ -120,8 +123,8 @@ export function LongTermOutcomesPanel({
       setMessageType('error')
       setMessage(
         error.message === 'Long-term outcomes require completed Matchday 3'
-          ? 'Τα outcomes μπορούν να καταχωριστούν μόνο μετά την ολοκλήρωση της 3ης αγωνιστικής.'
-          : `Δεν αποθηκεύτηκε το outcome: ${error.message}`,
+          ? t('adminOutcomes.lockedMd3')
+          : t('adminOutcomes.saveFailed', { detail: error.message }),
       )
       setSavingType(null)
       return
@@ -132,8 +135,10 @@ export function LongTermOutcomesPanel({
     setSaved((current) => ({ ...current, [predictionType]: teamId }))
     setMessageType('success')
     setMessage(
-      `Το outcome αποθηκεύτηκε. ${result?.scored_predictions ?? 0} επιλογές ` +
-        `ελέγχθηκαν και ${result?.changed_awards ?? 0} βαθμολογίες άλλαξαν.`,
+      t('adminOutcomes.saved', {
+        scored: result?.scored_predictions ?? 0,
+        changed: result?.changed_awards ?? 0,
+      }),
     )
     setSavingType(null)
   }
@@ -144,22 +149,25 @@ export function LongTermOutcomesPanel({
     <section className="admin-outcomes-panel">
       <div className="admin-outcomes-heading">
         <div>
-          <p className="dashboard-eyebrow">Admin-only scoring</p>
-          <h2>Long-term outcomes</h2>
+          <p className="dashboard-eyebrow">{t('adminOutcomes.kicker')}</p>
+          <h2>{t('adminOutcomes.heading')}</h2>
           <p>
-            Η διόρθωση ενός outcome επανυπολογίζει τους βαθμούς όλων των
-            παικτών. Δεν προσθέτει δεύτερη φορά βαθμούς.
+            {t('adminOutcomes.intro')}
           </p>
         </div>
         <span className={outcomesEnabled ? 'ready' : 'waiting'}>
-          {outcomesEnabled ? 'Διαθέσιμο' : 'Αναμονή 3ης αγωνιστικής'}
+          {outcomesEnabled
+            ? t('adminOutcomes.available')
+            : t('adminOutcomes.waitingMd3')}
         </span>
       </div>
 
       {status && !outcomesEnabled && (
         <p className="admin-outcomes-gate">
-          {status.finished_count}/{status.match_count} αγώνες της 3ης αγωνιστικής
-          έχουν ολοκληρωθεί. Η server-side καταχώριση παραμένει κλειδωμένη.
+          {t('adminOutcomes.gate', {
+            finished: status.finished_count,
+            total: status.match_count,
+          })}
         </p>
       )}
 
@@ -178,10 +186,10 @@ export function LongTermOutcomesPanel({
             <article key={option.type}>
               <div>
                 <h3>{option.title}</h3>
-                <strong>{option.points} βαθμοί</strong>
+                <strong>{t('adminOutcomes.points', { n: option.points })}</strong>
               </div>
               <select
-                aria-label={`Outcome ${option.title}`}
+                aria-label={t('adminOutcomes.outcomeAria', { title: option.title })}
                 value={drafts[option.type] ?? ''}
                 disabled={loading || !outcomesEnabled || savingType !== null}
                 onChange={(event) => {
@@ -194,7 +202,7 @@ export function LongTermOutcomesPanel({
                   }))
                 }}
               >
-                <option value="">Επίλεξε τελικό outcome</option>
+                <option value="">{t('adminOutcomes.choose')}</option>
                 {teams.map((team) => (
                   <option key={team.id} value={team.id}>
                     {team.name}
@@ -214,10 +222,10 @@ export function LongTermOutcomesPanel({
                 onClick={() => void handleSave(option.type)}
               >
                 {isSaving
-                  ? 'Επανυπολογισμός...'
+                  ? t('adminOutcomes.recomputing')
                   : saved[option.type] === null
-                    ? 'Καταχώριση outcome'
-                    : 'Διόρθωση & επανυπολογισμός'}
+                    ? t('adminOutcomes.save')
+                    : t('adminOutcomes.correct')}
               </button>
             </article>
           )

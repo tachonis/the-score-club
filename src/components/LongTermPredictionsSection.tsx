@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { formatGreekAllCaps } from '../lib/greekAllCaps'
+import { t } from '../i18n'
 import { supabase } from '../lib/supabase'
 
 type PredictionType = 'winner' | 'league_phase_first'
@@ -41,14 +42,14 @@ const predictionOptions: Array<{
 }> = [
   {
     type: 'winner',
-    title: 'Νικητής Champions League',
-    description: 'Ποια ομάδα θα κατακτήσει το Champions League;',
+    title: t('season.winnerTitle'),
+    description: t('season.winnerBody'),
     points: 30,
   },
   {
     type: 'league_phase_first',
-    title: '1η θέση στη League Phase',
-    description: 'Ποια ομάδα θα τερματίσει πρώτη στη League Phase;',
+    title: t('season.leagueFirstTitle'),
+    description: t('season.leagueFirstBody'),
     points: 15,
   },
 ]
@@ -113,7 +114,7 @@ export function LongTermPredictionsSection() {
 
     if (firstError) {
       setMessageType('error')
-      setMessage(`Δεν φορτώθηκαν οι μακροχρόνιες προβλέψεις: ${firstError.message}`)
+      setMessage(t('errors.loadSeasonPredictions', { detail: firstError.message }))
       setLoading(false)
       return
     }
@@ -168,7 +169,7 @@ export function LongTermPredictionsSection() {
 
     if (teamId === null) {
       setMessageType('error')
-      setMessage('Επίλεξε πρώτα μία ομάδα.')
+      setMessage(t('season.chooseTeamFirst'))
       return
     }
 
@@ -184,8 +185,8 @@ export function LongTermPredictionsSection() {
       setMessageType('error')
       setMessage(
         error.message === 'Long-term predictions are locked after Matchday 3'
-          ? 'Οι μακροχρόνιες προβλέψεις έχουν κλειδώσει μετά την 3η αγωνιστική.'
-          : `Δεν αποθηκεύτηκε η επιλογή: ${error.message}`,
+          ? t('season.lockedAfterMatchday3')
+          : t('season.saveFailedDetail', { detail: error.message }),
       )
       setSavingType(null)
       await loadLongTermPredictions()
@@ -197,8 +198,8 @@ export function LongTermPredictionsSection() {
     setMessageType('success')
     setMessage(
       saved[predictionType] === null
-        ? 'Η μακροχρόνια πρόβλεψη αποθηκεύτηκε.'
-        : 'Η αλλαγή της μακροχρόνιας πρόβλεψης αποθηκεύτηκε.',
+        ? t('season.savedOk')
+        : t('season.changedOk'),
     )
     setSavingType(null)
 
@@ -222,10 +223,10 @@ export function LongTermPredictionsSection() {
 
   const teamName = (teamId: number | null | undefined) => {
     if (teamId === null || teamId === undefined) {
-      return '—'
+      return t('common.dash')
     }
 
-    return teams.find((team) => team.id === teamId)?.name ?? '—'
+    return teams.find((team) => team.id === teamId)?.name ?? t('common.dash')
   }
 
   const savedTeamLabel = (teamId: number | null) => {
@@ -233,10 +234,10 @@ export function LongTermPredictionsSection() {
       return teamName(teamId)
     }
 
-    return isLocked ? 'Δεν έχει αποθηκευτεί' : '—'
+    return isLocked ? t('season.notSaved') : t('common.dash')
   }
 
-  const progressLabel = `${savedCount} από 2 ολοκληρωμένες`
+  const progressLabel = t('season.progress', { saved: savedCount })
 
   return (
     <section
@@ -253,7 +254,7 @@ export function LongTermPredictionsSection() {
           <div className="long-term-compact-main">
             <div className="long-term-compact-heading">
               <p className="dashboard-eyebrow">
-                {formatGreekAllCaps('Μακροχρόνιες προβλέψεις')}
+                {formatGreekAllCaps(t('season.title'))}
               </p>
               <span
                 className={`long-term-lock-badge ${
@@ -262,26 +263,28 @@ export function LongTermPredictionsSection() {
               >
                 <span aria-hidden="true">●</span>
                 {isLocked
-                  ? formatGreekAllCaps('Κλειδωμένες')
-                  : formatGreekAllCaps('Αποθηκευμένες')}
+                  ? formatGreekAllCaps(t('season.locked'))
+                  : formatGreekAllCaps(t('season.saved'))}
               </span>
             </div>
 
             <dl className="long-term-compact-summary">
               <div className="long-term-compact-row">
-                <dt>Νικητής:</dt>
+                <dt>{t('season.winner')}</dt>
                 <dd>{savedTeamLabel(saved.winner)}</dd>
               </div>
               <div className="long-term-compact-row">
-                <dt>1η League Phase:</dt>
+                <dt>{t('season.leaguePhaseFirst')}</dt>
                 <dd>{savedTeamLabel(saved.league_phase_first)}</dd>
               </div>
             </dl>
 
             {isLocked && status?.is_configured && (
               <p className="long-term-compact-note">
-                {status.finished_count}/{status.match_count} αγώνες της 3ης
-                αγωνιστικής ολοκληρώθηκαν.
+                {t('season.matchday3Progress', {
+                  finished: status.finished_count,
+                  total: status.match_count,
+                })}
               </p>
             )}
           </div>
@@ -294,7 +297,7 @@ export function LongTermPredictionsSection() {
               aria-controls="long-term-editor"
               onClick={() => setIsManuallyExpanded(true)}
             >
-              Επεξεργασία
+              {t('common.edit')}
               <span className="long-term-chevron" aria-hidden="true">
                 ▼
               </span>
@@ -306,11 +309,11 @@ export function LongTermPredictionsSection() {
           <div className="long-term-header">
             <div className="long-term-header-primary">
               <p className="dashboard-eyebrow long-term-header-eyebrow">
-                {formatGreekAllCaps('Μακροχρόνιες προβλέψεις')}
+                {formatGreekAllCaps(t('season.title'))}
               </p>
 
               <div className="long-term-header-title-row">
-                <h2>Μακροχρόνιες προβλέψεις</h2>
+                <h2>{t('season.title')}</h2>
 
                 {canCollapse && (
                   <button
@@ -320,7 +323,7 @@ export function LongTermPredictionsSection() {
                     aria-controls="long-term-editor"
                     onClick={handleCollapse}
                   >
-                    Κλείσιμο
+                    {t('common.close')}
                     <span className="long-term-chevron" aria-hidden="true">
                       ▲
                     </span>
@@ -334,33 +337,24 @@ export function LongTermPredictionsSection() {
                 )}
                 <p className="long-term-deadline-note">
                   {isLocked
-                    ? 'Οι μακροχρόνιες προβλέψεις έχουν κλειδώσει.'
-                    : 'Αλλαγές έως την ολοκλήρωση της 3ης αγωνιστικής.'}
+                    ? t('season.lockedNote')
+                    : t('season.untilMatchday3')}
                 </p>
                 {!isComplete && !isLocked && (
-                  <span className="long-term-points-hint">Έως 45 βαθμοί</span>
+                  <span className="long-term-points-hint">{t('season.upTo45')}</span>
                 )}
                 {status?.is_configured && (
                   <span className="long-term-match-progress">
-                    {status.finished_count}/{status.match_count} αγώνες
-                    ολοκληρώθηκαν
+                    {t('season.matchesFinished', {
+                      finished: status.finished_count,
+                      total: status.match_count,
+                    })}
                   </span>
                 )}
               </div>
 
               <p className="long-term-header-detail">
-                {!isComplete ? (
-                  <>
-                    Έως 45 βαθμοί. Οι αλλαγές επιτρέπονται μέχρι να
-                    ολοκληρωθούν όλοι οι αγώνες της 3ης αγωνιστικής της League
-                    Phase.
-                  </>
-                ) : (
-                  <>
-                    Οι αλλαγές επιτρέπονται μέχρι να ολοκληρωθούν όλοι οι
-                    αγώνες της 3ης αγωνιστικής της League Phase.
-                  </>
-                )}
+                  {t(!isComplete ? 'season.detailIncomplete' : 'season.detailComplete')}
               </p>
             </div>
 
@@ -368,7 +362,7 @@ export function LongTermPredictionsSection() {
               <div className="long-term-header-actions">
                 <div className="long-term-lock-badge locked">
                   <span aria-hidden="true">●</span>
-                  {formatGreekAllCaps('Κλειδωμένες')}
+                  {formatGreekAllCaps(t('season.locked'))}
                 </div>
               </div>
             )}
@@ -377,8 +371,14 @@ export function LongTermPredictionsSection() {
           {status?.is_configured && (
             <p className="long-term-deadline">
               {status.is_locked
-                ? `Οι μακροχρόνιες προβλέψεις κλειδώθηκαν. ${status.finished_count}/${status.match_count} αγώνες της 3ης αγωνιστικής ολοκληρώθηκαν.`
-                : `${status.finished_count}/${status.match_count} αγώνες της 3ης αγωνιστικής ολοκληρώθηκαν.`}
+                ? t('season.lockedAfter', {
+                    finished: status.finished_count,
+                    total: status.match_count,
+                  })
+                : t('season.matchday3Progress', {
+                    finished: status.finished_count,
+                    total: status.match_count,
+                  })}
             </p>
           )}
 
@@ -408,7 +408,7 @@ export function LongTermPredictionsSection() {
 
                   <label>
                     <span className="long-term-choice-label">
-                      {formatGreekAllCaps('Η επιλογή σου')}
+                      {formatGreekAllCaps(t('season.yourPick'))}
                     </span>
                     <select
                       value={drafts[option.type] ?? ''}
@@ -423,7 +423,7 @@ export function LongTermPredictionsSection() {
                         }))
                       }}
                     >
-                      <option value="">Επίλεξε ομάδα</option>
+                      <option value="">{t('season.chooseTeam')}</option>
                       {teams.map((team) => (
                         <option key={team.id} value={team.id}>
                           {team.name}
@@ -439,12 +439,12 @@ export function LongTermPredictionsSection() {
                       }`}
                     >
                       {isLocked
-                        ? `Κλειδωμένη: ${teamName(savedTeamId)}`
+                        ? t('season.lockedWithTeam', { team: teamName(savedTeamId) })
                         : hasChanged
-                          ? 'Αλλαγή σε εκκρεμότητα'
+                          ? t('season.pendingChange')
                           : savedTeamId === null
-                            ? 'Δεν έχει αποθηκευτεί'
-                            : 'Αποθηκευμένη'}
+                            ? t('season.notSaved')
+                            : t('season.savedState')}
                     </span>
 
                     {!isLocked && hasChanged && (
@@ -458,17 +458,17 @@ export function LongTermPredictionsSection() {
                         }
                         onClick={() => void handleSave(option.type)}
                       >
-                        {isSaving ? 'Αποθήκευση...' : 'Αποθήκευση'}
+                        {isSaving ? t('common.saving') : t('common.save')}
                       </button>
                     )}
                   </div>
 
                   {outcomes[option.type] !== undefined && (
                     <p className="long-term-result">
-                      Τελικό outcome:{' '}
+                      {t('season.finalOutcome')}{' '}
                       <strong>{teamName(outcomes[option.type])}</strong>
                       {' · '}
-                      Βαθμοί: <strong>{awards[option.type] ?? 0}</strong>
+                      {t('season.points')} <strong>{awards[option.type] ?? 0}</strong>
                     </p>
                   )}
                 </article>

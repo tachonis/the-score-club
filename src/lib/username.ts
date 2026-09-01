@@ -1,3 +1,5 @@
+import { t } from '../i18n'
+
 export const MIN_USERNAME_LENGTH = 3
 export const MAX_USERNAME_LENGTH = 30
 
@@ -6,20 +8,15 @@ export const MAX_USERNAME_LENGTH = 30
 // Latin A–Z, modern Greek letters including monotonic accents, digits, _ - .
 export const USERNAME_PATTERN = /^[A-Za-z0-9_.ΆΈ-ΊΌΎ-ώ-]+$/
 
-export const USERNAME_INVALID_MESSAGE =
-  'Το username μπορεί να περιέχει μόνο γράμματα, αριθμούς, τελεία, παύλα και κάτω παύλα.'
+export const USERNAME_INVALID_MESSAGE = t('auth.usernameInvalid')
 
-export const USERNAME_TOO_SHORT_MESSAGE =
-  'Το username πρέπει να έχει τουλάχιστον 3 χαρακτήρες.'
+export const USERNAME_TOO_SHORT_MESSAGE = t('auth.usernameTooShort')
 
-export const USERNAME_TOO_LONG_MESSAGE =
-  'Το username μπορεί να έχει έως 30 χαρακτήρες.'
+export const USERNAME_TOO_LONG_MESSAGE = t('auth.usernameTooLong')
 
-export const USERNAME_CONSTRAINT_MESSAGE =
-  'Το username δεν είναι έγκυρο. Χρησιμοποίησε 3–30 χαρακτήρες χωρίς κενά.'
+export const USERNAME_CONSTRAINT_MESSAGE = t('auth.usernameConstraint')
 
-export const REGISTER_GENERIC_MESSAGE =
-  'Δεν ολοκληρώθηκε η εγγραφή. Δοκίμασε ξανά.'
+export const REGISTER_GENERIC_MESSAGE = t('auth.registerGeneric')
 
 const UNREADABLE_TEXT = /^(?:\{\}|\[object object\]|null|undefined)$/i
 
@@ -138,7 +135,7 @@ export const mapRegisterError = (error: unknown) => {
   const text = readErrorText(error)
 
   if (text && !isInternalAuthText(text)) {
-    return `Δεν ολοκληρώθηκε η εγγραφή: ${text}`
+    return t('auth.registerFailedDetail', { detail: text })
   }
 
   return REGISTER_GENERIC_MESSAGE

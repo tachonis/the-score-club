@@ -1,8 +1,8 @@
 {
   "name": "The Score Club",
   "short_name": "The Score Club",
-  "description": "Παιχνίδι προβλέψεων για το Champions League",
-  "lang": "el",
+  "description": "Football prediction game for the Champions League",
+  "lang": "en",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

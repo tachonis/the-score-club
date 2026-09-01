@@ -1,3 +1,5 @@
+import { t, type MessageKey } from '../i18n'
+
 export const ADMIN_SCORE_MAX = 20
 
 export type PendingAdminResult = {
@@ -17,12 +19,10 @@ type ParsedAdminScore =
 
 const UNREADABLE_TEXT = /^(?:\{\}|\[object object\]|null|undefined)$/i
 
-const KNOWN_RESULT_ERRORS: Record<string, string> = {
-  'Active administrator privileges are required':
-    'Η καταχώριση απαιτεί ενεργό λογαριασμό διαχειριστή.',
-  'Scores must be non-negative integers':
-    'Το σκορ πρέπει να είναι μη αρνητικός ακέραιος.',
-  'Match not found': 'Ο αγώνας δεν βρέθηκε.',
+const KNOWN_RESULT_ERRORS: Record<string, MessageKey> = {
+  'Active administrator privileges are required': 'admin.needAdmin',
+  'Scores must be non-negative integers': 'admin.scoresMustBeInt',
+  'Match not found': 'admin.matchNotFound',
 }
 
 const readString = (value: unknown) =>
@@ -46,28 +46,28 @@ export const parseAdminScore = (value: string): ParsedAdminScore => {
   if (trimmed === '') {
     return {
       ok: false,
-      message: 'Συμπλήρωσε και τα δύο πεδία σκορ 90 λεπτών.',
+      message: t('admin.bothScores'),
     }
   }
 
   if (/[.,]/.test(trimmed)) {
     return {
       ok: false,
-      message: 'Το σκορ πρέπει να είναι ακέραιος αριθμός.',
+      message: t('admin.integerScore'),
     }
   }
 
   if (/^-/.test(trimmed) || trimmed.includes('-')) {
     return {
       ok: false,
-      message: 'Το σκορ δεν μπορεί να είναι αρνητικό.',
+      message: t('admin.negativeScore'),
     }
   }
 
   if (!/^\d{1,2}$/.test(trimmed)) {
     return {
       ok: false,
-      message: 'Το σκορ δεν είναι έγκυρο.',
+      message: t('admin.invalidScore'),
     }
   }
 
@@ -76,21 +76,21 @@ export const parseAdminScore = (value: string): ParsedAdminScore => {
   if (!Number.isFinite(parsed) || !Number.isInteger(parsed)) {
     return {
       ok: false,
-      message: 'Το σκορ δεν είναι έγκυρο.',
+      message: t('admin.invalidScore'),
     }
   }
 
   if (parsed < 0) {
     return {
       ok: false,
-      message: 'Το σκορ δεν μπορεί να είναι αρνητικό.',
+      message: t('admin.negativeScore'),
     }
   }
 
   if (parsed > ADMIN_SCORE_MAX) {
     return {
       ok: false,
-      message: `Το σκορ δεν μπορεί να είναι πάνω από ${ADMIN_SCORE_MAX}.`,
+      message: t('admin.scoreTooHigh', { max: ADMIN_SCORE_MAX }),
     }
   }
 
@@ -119,9 +119,9 @@ export const classifySetMatchResultError = (error: unknown) => {
     const known = KNOWN_RESULT_ERRORS[bit]
 
     if (known) {
-      return known
+      return t(known)
     }
   }
 
-  return 'Δεν αποθηκεύτηκε το αποτέλεσμα. Δοκίμασε ξανά.'
+  return t('admin.saveFailed')
 }

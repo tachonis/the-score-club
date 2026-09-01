@@ -1,3 +1,4 @@
+import { t } from '../../i18n'
 import {
   cupRoundMatchdaySubtitle,
   cupRoundName,
@@ -55,14 +56,14 @@ export function CupRoundTies({
             {cupRoundStatusLabel(round.status)}
           </span>
         ) : (
-          <span className="matchday-status">Αναμονή</span>
+          <span className="matchday-status">{t('cup.statusWaiting')}</span>
         )}
       </header>
 
       {ties.length === 0 ? (
         <div className="empty-state cup-round-empty">
           <p>
-            Οι συμμετέχοντες αυτού του γύρου δεν έχουν οριστικοποιηθεί ακόμη.
+            {t('cup.roundNotReady')}
           </p>
         </div>
       ) : (

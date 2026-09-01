@@ -24,6 +24,7 @@ import { PlayerProfilePage } from './pages/PlayerProfilePage'
 import { PlayersCupPage } from './pages/PlayersCupPage'
 import { StandingsPage } from './pages/StandingsPage'
 import { AuthLogo, LoadingSplashLogo } from './components/BrandAssets'
+import { t } from './i18n'
 import './auth.css'
 
 type UserProfile = {
@@ -57,7 +58,7 @@ function App() {
       if (initError && isRecoveryLinkError(initError)) {
         setProfileError(mapAuthError(initError))
       } else if (error) {
-        setProfileError('Δεν ήταν δυνατός ο έλεγχος της σύνδεσης.')
+        setProfileError(t('auth.sessionCheckFailed'))
       }
 
       setSession(data.session)
@@ -103,9 +104,7 @@ function App() {
         .single()
 
       if (error) {
-        setProfileError(
-          'Ο λογαριασμός συνδέθηκε, αλλά δεν φορτώθηκε το προφίλ.',
-        )
+        setProfileError(t('auth.profileLoadFailed'))
         return
       }
 
@@ -113,7 +112,7 @@ function App() {
 
       if (userProfile.status === 'disabled') {
         await supabase.auth.signOut()
-        setProfileError('Ο λογαριασμός σου είναι απενεργοποιημένος.')
+        setProfileError(t('auth.accountDisabled'))
         return
       }
 
@@ -206,7 +205,7 @@ function App() {
     const { error } = await supabase.auth.signOut()
 
     if (error) {
-      setProfileError('Δεν ολοκληρώθηκε η αποσύνδεση.')
+      setProfileError(t('auth.signOutFailed'))
       return
     }
 
@@ -227,7 +226,7 @@ function App() {
     return (
       <main className="app-loading">
         <LoadingSplashLogo />
-        <p>Φόρτωση The Score Club...</p>
+        <p>{t('auth.loadingApp')}</p>
       </main>
     )
   }
@@ -240,17 +239,14 @@ function App() {
             <AuthLogo />
 
             <div className="brand-rules">
-              <p>
-                Διάβασε πώς παίζεται το The Score Club και δες τους
-                επίσημους κανόνες πριν ξεκινήσεις.
-              </p>
+              <p>{t('auth.rulesIntro')}</p>
 
               <button
                 type="button"
                 className="brand-rules-button"
                 onClick={() => setShowRules(true)}
               >
-                Προβολή κανόνων
+                {t('auth.viewRules')}
               </button>
             </div>
           </div>
@@ -277,7 +273,7 @@ function App() {
     return (
       <main className="app-loading">
         <LoadingSplashLogo />
-        <p>Φόρτωση προφίλ...</p>
+        <p>{t('auth.loadingProfile')}</p>
       </main>
     )
   }
@@ -381,17 +377,14 @@ function App() {
           <AuthLogo />
 
           <div className="brand-rules">
-            <p>
-              Διάβασε πώς παίζεται το The Score Club και δες τους
-              επίσημους κανόνες πριν ξεκινήσεις.
-            </p>
+            <p>{t('auth.rulesIntro')}</p>
 
             <button
               type="button"
               className="brand-rules-button"
               onClick={() => setShowRules(true)}
             >
-              Προβολή κανόνων
+              {t('auth.viewRules')}
             </button>
           </div>
         </div>
@@ -405,7 +398,7 @@ function App() {
               className={`auth-tab ${page === 'login' ? 'active' : ''}`}
               onClick={() => setPage('login')}
             >
-              Σύνδεση
+              {t('auth.signIn')}
             </button>
 
             <button
@@ -413,7 +406,7 @@ function App() {
               className={`auth-tab ${page === 'register' ? 'active' : ''}`}
               onClick={() => setPage('register')}
             >
-              Εγγραφή
+              {t('auth.register')}
             </button>
           </div>
 

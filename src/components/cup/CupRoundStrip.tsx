@@ -1,3 +1,4 @@
+import { t } from '../../i18n'
 import {
   CUP_ROUND_NUMBERS,
   cupRoundName,
@@ -14,7 +15,7 @@ export function CupRoundStrip({
 }: CupRoundStripProps) {
   return (
     <div className="cup-round-selector">
-      <div className="cup-round-tabs" role="tablist" aria-label="Γύροι Κυπέλλου">
+      <div className="cup-round-tabs" role="tablist" aria-label={t('cup.roundsAria')}>
         {CUP_ROUND_NUMBERS.map((roundNumber) => {
           const selected = selectedRoundNumber === roundNumber
 

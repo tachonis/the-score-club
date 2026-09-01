@@ -1,18 +1,19 @@
 import { useEffect, useState } from 'react'
 import { fetchUniqueEarnedBadgeCount } from '../lib/badges'
 import { formatGreekAllCaps } from '../lib/greekAllCaps'
+import { t } from '../i18n'
 import { usePlayerProfileNav } from '../lib/playerProfileNav'
 
 const badgeCountCopy = (count: number) => {
   if (count === 0) {
-    return 'Δεν έχεις ξεκλειδώσει ακόμη κάποιο badge'
+    return t('badges.none')
   }
 
   if (count === 1) {
-    return 'Έχεις ξεκλειδώσει 1 badge'
+    return t('badges.one')
   }
 
-  return `Έχεις ξεκλειδώσει ${count} badges`
+  return t('badges.many', { count })
 }
 
 export function DashboardBadgesCard() {
@@ -71,8 +72,8 @@ export function DashboardBadgesCard() {
           </svg>
         </span>
         <div className="dashboard-badges-copy">
-          <p className="dashboard-eyebrow">{formatGreekAllCaps('Badges')}</p>
-          <p>Φόρτωση badges...</p>
+          <p className="dashboard-eyebrow">{formatGreekAllCaps(t('badges.title'))}</p>
+          <p>{t('badges.loading')}</p>
         </div>
       </div>
     )
@@ -85,7 +86,7 @@ export function DashboardBadgesCard() {
       type="button"
       className="dashboard-badges-card"
       onClick={() => openProfile(viewerUserId)}
-      aria-label={`${copy}. Προβολή badges`}
+      aria-label={t('badges.viewAria', { copy })}
     >
       <span className="dashboard-badges-icon" aria-hidden="true">
         <svg
@@ -104,11 +105,11 @@ export function DashboardBadgesCard() {
       </span>
 
       <div className="dashboard-badges-copy">
-        <p className="dashboard-eyebrow">{formatGreekAllCaps('Badges')}</p>
+        <p className="dashboard-eyebrow">{formatGreekAllCaps(t('badges.title'))}</p>
         <p>{copy}</p>
       </div>
 
-      <span className="dashboard-badges-action">Προβολή badges</span>
+      <span className="dashboard-badges-action">{t('badges.view')}</span>
     </button>
   )
 }

@@ -5,6 +5,7 @@ import {
   getPasswordRecoveryRedirectTo,
   mapAuthError,
 } from '../lib/passwordRecovery'
+import { t } from '../i18n'
 
 export function LoginPage() {
   const [email, setEmail] = useState('')
@@ -31,13 +32,13 @@ export function LoginPage() {
 
     if (error) {
       setMessageType('error')
-      setMessage(`Δεν ήταν δυνατή η σύνδεση: ${error.message}`)
+      setMessage(t('auth.signInFailed', { detail: error.message }))
       setLoading(false)
       return
     }
 
     setMessageType('success')
-    setMessage('Η σύνδεση ολοκληρώθηκε επιτυχώς.')
+    setMessage(t('auth.signInSuccess'))
     setLoading(false)
   }
 
@@ -64,9 +65,7 @@ export function LoginPage() {
 
     setRecoverySent(true)
     setMessageType('success')
-    setMessage(
-      'Σου στείλαμε email με οδηγίες για την επαναφορά του κωδικού σου.',
-    )
+    setMessage(t('auth.recoverSent'))
     setLoading(false)
   }
 
@@ -80,13 +79,10 @@ export function LoginPage() {
   if (view === 'recover') {
     return (
       <>
-        <h2 className="auth-heading">Επαναφορά κωδικού</h2>
+        <h2 className="auth-heading">{t('auth.recoverTitle')}</h2>
 
         {!recoverySent && (
-          <p className="auth-description">
-            Συμπλήρωσε το email σου και θα σου στείλουμε σύνδεσμο
-            για να ορίσεις νέο κωδικό.
-          </p>
+          <p className="auth-description">{t('auth.recoverBody')}</p>
         )}
 
         {recoverySent ? (
@@ -95,22 +91,20 @@ export function LoginPage() {
               {message}
             </p>
 
-            <p className="auth-hint">
-              Έλεγξε και τον φάκελο ανεπιθύμητης αλληλογραφίας.
-            </p>
+            <p className="auth-hint">{t('auth.recoverSpamHint')}</p>
 
             <button
               className="auth-secondary"
               type="button"
               onClick={returnToLogin}
             >
-              Επιστροφή στη σύνδεση
+              {t('auth.backToSignIn')}
             </button>
           </>
         ) : (
           <form className="auth-form" onSubmit={handleRecoverySubmit}>
             <div className="form-field">
-              <label htmlFor="recover-email">Email</label>
+              <label htmlFor="recover-email">{t('common.email')}</label>
 
               <input
                 id="recover-email"
@@ -128,9 +122,7 @@ export function LoginPage() {
                 type="submit"
                 disabled={loading}
               >
-                {loading
-                  ? 'Γίνεται αποστολή...'
-                  : 'Αποστολή συνδέσμου'}
+                {loading ? t('auth.sending') : t('auth.sendLink')}
               </button>
 
               <button
@@ -138,7 +130,7 @@ export function LoginPage() {
                 type="button"
                 onClick={returnToLogin}
               >
-                Επιστροφή στη σύνδεση
+                {t('auth.backToSignIn')}
               </button>
             </div>
           </form>
@@ -161,15 +153,13 @@ export function LoginPage() {
 
   return (
     <>
-      <h2 className="auth-heading">Καλώς ήρθες ξανά</h2>
+      <h2 className="auth-heading">{t('auth.welcomeBack')}</h2>
 
-      <p className="auth-description">
-        Συνδέσου για να συνεχίσεις τις προβλέψεις σου.
-      </p>
+      <p className="auth-description">{t('auth.welcomeBackBody')}</p>
 
       <form className="auth-form" onSubmit={handleSubmit}>
         <div className="form-field">
-          <label htmlFor="login-email">Email</label>
+          <label htmlFor="login-email">{t('common.email')}</label>
 
           <input
             id="login-email"
@@ -182,7 +172,7 @@ export function LoginPage() {
         </div>
 
         <div className="form-field">
-          <label htmlFor="login-password">Κωδικός</label>
+          <label htmlFor="login-password">{t('common.password')}</label>
 
           <input
             id="login-password"
@@ -203,7 +193,7 @@ export function LoginPage() {
             setMessage('')
           }}
         >
-          Ξέχασες τον κωδικό σου;
+          {t('auth.forgotPassword')}
         </button>
 
         <button
@@ -211,7 +201,7 @@ export function LoginPage() {
           type="submit"
           disabled={loading}
         >
-          {loading ? 'Γίνεται σύνδεση...' : 'Σύνδεση'}
+          {loading ? t('auth.signingIn') : t('auth.signIn')}
         </button>
       </form>
 

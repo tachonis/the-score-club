@@ -2,6 +2,7 @@ import {
   AppHeader,
   type AppDestination,
 } from '../components/AppHeader'
+import { t } from '../i18n'
 import { RulesContent } from './RulesContent'
 import { formatGreekAllCaps } from '../lib/greekAllCaps'
 
@@ -31,24 +32,22 @@ export function RulesPage({
       <main className="rules-page-main">
         <section className="rules-page-intro">
           <p className="dashboard-eyebrow">The Score Club</p>
-          <h1>Κανόνες παιχνιδιού</h1>
+          <h1>{t('rules.pageTitle')}</h1>
           <p>
-            Όλα όσα χρειάζεσαι για τις προβλέψεις, τη βαθμολογία και τις
-            ισοβαθμίες, στην ίδια έκδοση κανόνων που εμφανίζεται πριν τη
-            σύνδεση.
+            {t('rules.pageIntro')}
           </p>
         </section>
 
         <section className="rules-page-card" aria-labelledby="rules-page-title">
           <header className="rules-page-card-header">
             <div>
-              <span>{formatGreekAllCaps('Επίσημοι κανόνες')}</span>
-              <h2 id="rules-page-title">Πώς παίζεται</h2>
+              <span>{formatGreekAllCaps(t('rules.official'))}</span>
+              <h2 id="rules-page-title">{t('auth.rulesTitle')}</h2>
             </div>
-            <div className="rules-score-key" aria-label="Βασική βαθμολογία">
-              <span><strong>5</strong> ακριβές</span>
-              <span><strong>2</strong> αποτέλεσμα</span>
-              <span><strong>0</strong> λάθος</span>
+            <div className="rules-score-key" aria-label={t('rules.scoreKeyAria')}>
+              <span><strong>5</strong> {t('rules.exactShort')}</span>
+              <span><strong>2</strong> {t('rules.resultShort')}</span>
+              <span><strong>0</strong> {t('rules.missShort')}</span>
             </div>
           </header>
 

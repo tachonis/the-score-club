@@ -1,3 +1,5 @@
+import { t, type MessageKey } from '../i18n'
+import { formatLeaguePhaseRound } from './stages'
 import { supabase } from './supabase'
 
 export const DEFAULT_CUP_REWARDS = {
@@ -8,15 +10,15 @@ export const DEFAULT_CUP_REWARDS = {
 
 export const MINIMUM_CUP_PARTICIPANTS = 8
 
-export const UNKNOWN_PLAYER_NAME = 'Άγνωστος παίκτης'
+export const UNKNOWN_PLAYER_NAME = t('cup.unknownPlayer')
 
 export const CUP_ROUND_META = {
-  1: { name: '1ος Γύρος', matchdayNumber: 3 },
-  2: { name: '2ος Γύρος', matchdayNumber: 4 },
-  3: { name: '3ος Γύρος', matchdayNumber: 5 },
-  4: { name: 'Προημιτελικά', matchdayNumber: 6 },
-  5: { name: 'Ημιτελικά', matchdayNumber: 7 },
-  6: { name: 'Τελικός', matchdayNumber: 8 },
+  1: { matchdayNumber: 3 },
+  2: { matchdayNumber: 4 },
+  3: { matchdayNumber: 5 },
+  4: { matchdayNumber: 6 },
+  5: { matchdayNumber: 7 },
+  6: { matchdayNumber: 8 },
 } as const
 
 export type CupRoundNumber = keyof typeof CUP_ROUND_META
@@ -171,7 +173,17 @@ export const rewardsFromCompetition = (
   }
 }
 
-export const formatRankPosition = (rank: number) => `${rank}η`
+const CUP_ROUND_NAME_KEYS = {
+  1: 'cup.round1',
+  2: 'cup.round2',
+  3: 'cup.round3',
+  4: 'cup.quarterFinal',
+  5: 'cup.semiFinal',
+  6: 'cup.final',
+} as const satisfies Record<CupRoundNumber, MessageKey>
+
+export const formatRankPosition = (rank: number) =>
+  t('cup.rankOrdinal', { n: rank })
 
 export const isCupRoundNumber = (value: number): value is CupRoundNumber =>
   value === 1 ||
@@ -183,8 +195,8 @@ export const isCupRoundNumber = (value: number): value is CupRoundNumber =>
 
 export const cupRoundName = (roundNumber: number) =>
   isCupRoundNumber(roundNumber)
-    ? CUP_ROUND_META[roundNumber].name
-    : `Γύρος ${roundNumber}`
+    ? t(CUP_ROUND_NAME_KEYS[roundNumber])
+    : t('cup.roundFallback', { n: roundNumber })
 
 export const cupRoundMatchdaySubtitle = (
   roundNumber: number,
@@ -197,24 +209,24 @@ export const cupRoundMatchdaySubtitle = (
       : null)
 
   if (matchdayNumber) {
-    return `${matchdayNumber}η αγωνιστική`
+    return formatLeaguePhaseRound(matchdayNumber)
   }
 
   return matchday?.name ?? ''
 }
 
 export const cupRoundStatusLabel = (status: CupRoundStatus) => {
-  if (status === 'in_progress') return 'Σε εξέλιξη'
-  if (status === 'final') return 'Ολοκληρώθηκε'
-  return 'Αναμονή'
+  if (status === 'in_progress') return t('cup.statusLive')
+  if (status === 'final') return t('cup.statusDone')
+  return t('cup.statusWaiting')
 }
 
 export const decidedByRuleLabel = (rule: string | null | undefined) => {
-  if (rule === 'points') return 'Στα σημεία'
-  if (rule === 'exact') return 'Με περισσότερα ακριβή σκορ'
-  if (rule === 'correct') return 'Με περισσότερα σωστά αποτελέσματα'
+  if (rule === 'points') return t('cup.onPoints')
+  if (rule === 'exact') return t('cup.byExact')
+  if (rule === 'correct') return t('cup.byCorrect')
   if (rule === 'rank_position') {
-    return 'Με καλύτερη θέση μετά τη 2η αγωνιστική'
+    return t('cup.byRank')
   }
 
   return null
@@ -426,9 +438,9 @@ export const getExcludedCountForRound = (
 }
 
 export const cupAwardLabel = (awardType: CupAwardType) => {
-  if (awardType === 'winner') return 'Πρωταθλητής'
-  if (awardType === 'finalist') return 'Φιναλίστ'
-  return 'Ημιτελικά'
+  if (awardType === 'winner') return t('cup.champion')
+  if (awardType === 'finalist') return t('cup.finalist')
+  return t('cup.semiFinalists')
 }
 
 const emptyLiveState = {
@@ -479,21 +491,25 @@ export const loadPlayersCupSnapshot = async (): Promise<{
   if (cupResult.error) {
     return {
       snapshot: null,
-      error: `Δεν φορτώθηκε το Κύπελλο: ${cupResult.error.message}`,
+      error: t('cup.loadCup', { detail: cupResult.error.message }),
     }
   }
 
   if (matchdaysResult.error) {
     return {
       snapshot: null,
-      error: `Δεν φορτώθηκαν οι αγωνιστικές του Κυπέλλου: ${matchdaysResult.error.message}`,
+      error: t('cup.loadCupMatchdays', {
+        detail: matchdaysResult.error.message,
+      }),
     }
   }
 
   if (profilesResult.error) {
     return {
       snapshot: null,
-      error: `Δεν φορτώθηκαν οι ενεργοί παίκτες: ${profilesResult.error.message}`,
+      error: t('cup.loadActivePlayers', {
+        detail: profilesResult.error.message,
+      }),
     }
   }
 
@@ -592,35 +608,37 @@ export const loadPlayersCupSnapshot = async (): Promise<{
   if (participantsResult.error) {
     return {
       snapshot: null,
-      error: `Δεν φορτώθηκαν οι συμμετέχοντες του Κυπέλλου: ${participantsResult.error.message}`,
+      error: t('cup.loadParticipants', {
+        detail: participantsResult.error.message,
+      }),
     }
   }
 
   if (roundsResult.error) {
     return {
       snapshot: null,
-      error: `Δεν φορτώθηκαν οι γύροι του Κυπέλλου: ${roundsResult.error.message}`,
+      error: t('cup.loadRounds', { detail: roundsResult.error.message }),
     }
   }
 
   if (tiesResult.error) {
     return {
       snapshot: null,
-      error: `Δεν φορτώθηκαν οι αγώνες του Κυπέλλου: ${tiesResult.error.message}`,
+      error: t('cup.loadTies', { detail: tiesResult.error.message }),
     }
   }
 
   if (awardsResult.error) {
     return {
       snapshot: null,
-      error: `Δεν φορτώθηκαν τα έπαθλα του Κυπέλλου: ${awardsResult.error.message}`,
+      error: t('cup.loadAwards', { detail: awardsResult.error.message }),
     }
   }
 
   if (excludedResult.error) {
     return {
       snapshot: null,
-      error: `Δεν φορτώθηκαν οι αναβληθέντες αγώνες του Κυπέλλου: ${excludedResult.error.message}`,
+      error: t('cup.loadExcluded', { detail: excludedResult.error.message }),
     }
   }
 

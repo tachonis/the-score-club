@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { supabase } from '../lib/supabase'
 import { mapRegisterError, validateUsername } from '../lib/username'
+import { t } from '../i18n'
 
 export function RegisterPage() {
   const [username, setUsername] = useState('')
@@ -33,16 +34,14 @@ export function RegisterPage() {
 
     if (password.length < 6) {
       setMessageType('error')
-      setMessage(
-        'Ο κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες.',
-      )
+      setMessage(t('auth.passwordTooShort'))
       setLoading(false)
       return
     }
 
     if (password !== confirmPassword) {
       setMessageType('error')
-      setMessage('Οι δύο κωδικοί δεν ταιριάζουν.')
+      setMessage(t('auth.passwordsMismatch'))
       setLoading(false)
       return
     }
@@ -65,9 +64,7 @@ export function RegisterPage() {
     }
 
     setMessageType('success')
-    setMessage(
-      'Η εγγραφή ολοκληρώθηκε. Έλεγξε το email σου για επιβεβαίωση.',
-    )
+    setMessage(t('auth.registerSuccess'))
 
     setUsername('')
     setEmail('')
@@ -78,15 +75,13 @@ export function RegisterPage() {
 
   return (
     <>
-      <h2 className="auth-heading">Δημιουργία λογαριασμού</h2>
+      <h2 className="auth-heading">{t('auth.createAccount')}</h2>
 
-      <p className="auth-description">
-        Δημιούργησε το προφίλ σου για να συμμετέχεις στο παιχνίδι.
-      </p>
+      <p className="auth-description">{t('auth.createAccountBody')}</p>
 
       <form className="auth-form" onSubmit={handleSubmit}>
         <div className="form-field">
-          <label htmlFor="register-username">Username</label>
+          <label htmlFor="register-username">{t('common.username')}</label>
 
           <input
             id="register-username"
@@ -99,7 +94,7 @@ export function RegisterPage() {
         </div>
 
         <div className="form-field">
-          <label htmlFor="register-email">Email</label>
+          <label htmlFor="register-email">{t('common.email')}</label>
 
           <input
             id="register-email"
@@ -112,7 +107,7 @@ export function RegisterPage() {
         </div>
 
         <div className="form-field">
-          <label htmlFor="register-password">Κωδικός</label>
+          <label htmlFor="register-password">{t('common.password')}</label>
 
           <input
             id="register-password"
@@ -127,7 +122,7 @@ export function RegisterPage() {
 
         <div className="form-field">
           <label htmlFor="confirm-password">
-            Επιβεβαίωση κωδικού
+            {t('auth.confirmPassword')}
           </label>
 
           <input
@@ -148,7 +143,7 @@ export function RegisterPage() {
           type="submit"
           disabled={loading}
         >
-          {loading ? 'Γίνεται εγγραφή...' : 'Εγγραφή'}
+          {loading ? t('auth.registering') : t('auth.register')}
         </button>
       </form>
 

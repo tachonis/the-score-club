@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { t } from '../i18n'
 
 export const pushDestinations = [
   'home',
@@ -126,7 +127,7 @@ const persistSubscription = async (subscription: PushSubscription) => {
   const auth = details.keys?.auth
 
   if (!p256dh || !auth) {
-    throw new Error('Η συνδρομή της συσκευής δεν περιέχει κλειδιά.')
+    throw new Error(t('push.missingKeys'))
   }
 
   const { error } = await supabase.rpc('upsert_my_push_subscription', {

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { dateLocale, t } from '../../i18n'
 import {
   MINIMUM_CUP_PARTICIPANTS,
   loadPlayersCupSnapshot,
@@ -47,10 +48,7 @@ export function AdminCupPanel({ refreshKey = 0 }: AdminCupPanelProps) {
 
     if (error || !nextSnapshot) {
       setMessageType('error')
-      setMessage(
-        error ??
-          'Η εντολή ολοκληρώθηκε, αλλά δεν φορτώθηκε ξανά η κατάσταση του Κυπέλλου.',
-      )
+      setMessage(error ?? t('adminCup.commandNoReload'))
       return null
     }
 
@@ -73,9 +71,7 @@ export function AdminCupPanel({ refreshKey = 0 }: AdminCupPanelProps) {
       setBusyAction(null)
       setMessageType('success')
       setMessage(
-        error
-          ? 'Η κλήρωση έχει ήδη πραγματοποιηθεί.'
-          : 'Η κλήρωση ολοκληρώθηκε.',
+        error ? t('adminCup.alreadyDrawn') : t('adminCup.drawOk'),
       )
       return
     }
@@ -83,8 +79,8 @@ export function AdminCupPanel({ refreshKey = 0 }: AdminCupPanelProps) {
     setMessageType('error')
     setMessage(
       error
-        ? `Δεν πραγματοποιήθηκε η κλήρωση: ${error.message}`
-        : 'Η κλήρωση ολοκληρώθηκε, αλλά το Κύπελλο δεν εμφανίζεται ακόμη. Πάτησε ανανέωση.',
+        ? t('adminCup.drawFailed', { detail: error.message })
+        : t('adminCup.drawOkMissing'),
     )
     setBusyAction(null)
   }
@@ -97,7 +93,7 @@ export function AdminCupPanel({ refreshKey = 0 }: AdminCupPanelProps) {
 
     if (error) {
       setMessageType('error')
-      setMessage(`Δεν επανυπολογίστηκε το Κύπελλο: ${error.message}`)
+      setMessage(t('adminCup.recomputeFailed', { detail: error.message }))
       setBusyAction(null)
       return
     }
@@ -107,14 +103,14 @@ export function AdminCupPanel({ refreshKey = 0 }: AdminCupPanelProps) {
     if (nextSnapshot) {
       setConfirming(null)
       setMessageType('success')
-      setMessage('Το Κύπελλο επανυπολογίστηκε από τα αποθηκευμένα αποτελέσματα.')
+      setMessage(t('adminCup.recomputeOk'))
     }
 
     setBusyAction(null)
   }
 
   const formatCreatedAt = (value: string) => {
-    return new Intl.DateTimeFormat('el-GR', {
+    return new Intl.DateTimeFormat(dateLocale, {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -131,27 +127,28 @@ export function AdminCupPanel({ refreshKey = 0 }: AdminCupPanelProps) {
   const canDraw = !cup && rankingReady && enoughPlayers
   const isBusy = busyAction !== null
 
-  let statusLabel = 'Φόρτωση...'
+  let statusLabel = t('common.loading')
   let helper = ''
 
   if (!loading && !snapshot && messageType === 'error') {
-    statusLabel = 'Δεν φορτώθηκε'
+    statusLabel = t('adminCup.loadFailed')
   } else if (cup) {
-    statusLabel = 'Η κλήρωση ολοκληρώθηκε'
+    statusLabel = t('adminCup.drawDone')
   } else if (!snapshot?.rankingMatchdaysExist) {
-    statusLabel = 'Δεν έχουν οριστεί αγωνιστικές'
-    helper =
-      'Η κλήρωση θα είναι διαθέσιμη όταν ολοκληρωθούν η 1η και η 2η αγωνιστική.'
+    statusLabel = t('adminCup.noMatchdays')
+    helper = t('adminCup.drawWhenMd12')
   } else if (!rankingReady) {
-    statusLabel = 'Η 2η αγωνιστική δεν έχει ολοκληρωθεί'
-    helper =
-      'Η κλήρωση θα είναι διαθέσιμη όταν ολοκληρωθούν η 1η και η 2η αγωνιστική.'
+    statusLabel = t('adminCup.md2Incomplete')
+    helper = t('adminCup.drawWhenMd12')
   } else if (!enoughPlayers) {
-    statusLabel = 'Δεν υπάρχουν αρκετοί παίκτες'
-    helper = `Απαιτούνται τουλάχιστον ${MINIMUM_CUP_PARTICIPANTS} ενεργοί παίκτες. Αυτή τη στιγμή υπάρχουν ${snapshot?.activePlayerCount ?? 0}.`
+    statusLabel = t('adminCup.notEnoughPlayers')
+    helper = t('adminCup.needPlayersNow', {
+      min: MINIMUM_CUP_PARTICIPANTS,
+      count: snapshot?.activePlayerCount ?? 0,
+    })
   } else {
-    statusLabel = 'Έτοιμο για κλήρωση'
-    helper = 'Η κλήρωση είναι οριστική. Το bracket δεν μπορεί να ξαναγίνει.'
+    statusLabel = t('adminCup.ready')
+    helper = t('adminCup.drawFinal')
   }
 
   return (
@@ -159,7 +156,7 @@ export function AdminCupPanel({ refreshKey = 0 }: AdminCupPanelProps) {
       <div className="admin-cup-panel-heading">
         <div>
           <p className="dashboard-eyebrow">Players Cup</p>
-          <h2>Κλήρωση Κυπέλλου</h2>
+          <h2>{t('adminCup.heading')}</h2>
         </div>
         <span className="matchday-status">{statusLabel}</span>
       </div>
@@ -175,31 +172,33 @@ export function AdminCupPanel({ refreshKey = 0 }: AdminCupPanelProps) {
       )}
 
       {loading ? (
-        <p className="admin-cup-helper">Φόρτωση Κυπέλλου...</p>
+        <p className="admin-cup-helper">{t('adminCup.loading')}</p>
       ) : !snapshot ? (
         <>
           <p className="admin-cup-helper">
-            Δεν φορτώθηκε η κατάσταση του Κυπέλλου.
+            {t('adminCup.loadStateFailed')}
           </p>
           <button
             type="button"
             className="league-refresh-button"
             onClick={() => void loadPanel()}
           >
-            Ανανέωση
+            {t('common.refresh')}
           </button>
         </>
       ) : cup ? (
         <>
           <p className="admin-cup-helper">
-            {cup.participant_count} παίκτες · {formatCreatedAt(cup.created_at)}
+            {t('adminCup.playersAt', {
+              count: cup.participant_count,
+              when: formatCreatedAt(cup.created_at),
+            })}
           </p>
 
           {confirming === 'recompute' ? (
             <div className="admin-notifications-confirm">
               <p>
-                Δεν προχωρά γύρο. Ξαναϋπολογίζει την κατάσταση του Κυπέλλου
-                από τα αποθηκευμένα αποτελέσματα. Να συνεχίσω;
+                {t('adminCup.recomputeConfirm')}
               </p>
               <div className="admin-notifications-confirm-actions">
                 <button
@@ -209,8 +208,8 @@ export function AdminCupPanel({ refreshKey = 0 }: AdminCupPanelProps) {
                   onClick={() => void handleRecompute()}
                 >
                   {busyAction === 'recompute'
-                    ? 'Επανυπολογισμός...'
-                    : 'Επιβεβαίωση'}
+                    ? t('adminCup.recomputing')
+                    : t('common.confirm')}
                 </button>
                 <button
                   type="button"
@@ -218,7 +217,7 @@ export function AdminCupPanel({ refreshKey = 0 }: AdminCupPanelProps) {
                   disabled={isBusy}
                   onClick={() => setConfirming(null)}
                 >
-                  Ακύρωση
+                  {t('common.cancel')}
                 </button>
               </div>
             </div>
@@ -232,19 +231,17 @@ export function AdminCupPanel({ refreshKey = 0 }: AdminCupPanelProps) {
                 setConfirming('recompute')
               }}
             >
-              Επανυπολογισμός Κυπέλλου
+              {t('adminCup.recompute')}
             </button>
           )}
           <p className="admin-cup-recovery-note">
-            Δεν προχωρά γύρο. Ξαναϋπολογίζει την κατάσταση του Κυπέλλου από τα
-            αποθηκευμένα αποτελέσματα.
+            {t('adminCup.recomputeNote')}
           </p>
         </>
       ) : confirming === 'draw' ? (
         <div className="admin-notifications-confirm">
           <p>
-            Η κλήρωση είναι οριστική. Το bracket δεν μπορεί να ξαναγίνει. Να
-            συνεχίσω;
+            {t('adminCup.drawConfirm')}
           </p>
           <div className="admin-notifications-confirm-actions">
             <button
@@ -253,7 +250,7 @@ export function AdminCupPanel({ refreshKey = 0 }: AdminCupPanelProps) {
               disabled={isBusy}
               onClick={() => void handleDraw()}
             >
-              {busyAction === 'draw' ? 'Κλήρωση...' : 'Επιβεβαίωση'}
+              {busyAction === 'draw' ? t('adminCup.drawing') : t('common.confirm')}
             </button>
             <button
               type="button"
@@ -261,7 +258,7 @@ export function AdminCupPanel({ refreshKey = 0 }: AdminCupPanelProps) {
               disabled={isBusy}
               onClick={() => setConfirming(null)}
             >
-              Ακύρωση
+              {t('common.cancel')}
             </button>
           </div>
         </div>
@@ -277,7 +274,7 @@ export function AdminCupPanel({ refreshKey = 0 }: AdminCupPanelProps) {
               setConfirming('draw')
             }}
           >
-            Πραγματοποίηση κλήρωσης
+            {t('adminCup.doDraw')}
           </button>
         </>
       )}

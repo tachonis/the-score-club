@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { t } from '../i18n'
 import {
   optimizedBadgeImagePath,
   type GroupedBadge,
@@ -45,7 +46,10 @@ export function BadgeGrid({ badges, onSelect }: BadgeGridProps) {
           onClick={() => onSelect(badge)}
           aria-label={
             badge.count > 1
-              ? `${badge.definition.title}, ${badge.count} φορές`
+              ? t('badgesUi.timesAria', {
+                  title: badge.definition.title,
+                  count: badge.count,
+                })
               : badge.definition.title
           }
         >

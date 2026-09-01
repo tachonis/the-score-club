@@ -6,6 +6,7 @@ import {
   syncPushSubscription,
   type PushStatus,
 } from '../lib/push'
+import { t } from '../i18n'
 
 type PushUiState =
   | 'loading'
@@ -38,20 +39,20 @@ const variantClass: Record<PushUiState, string> = {
 
 const labels: Record<PushUiState, string> = {
   loading: '',
-  cta: 'Ενεργοποίησε ειδοποιήσεις για να λαμβάνεις υπενθυμίσεις πριν από τις αγωνιστικές.',
-  subscribed: 'Ειδοποιήσεις ενεργές',
-  idle: 'Ειδοποιήσεις ανενεργές',
-  denied: 'Οι ειδοποιήσεις είναι αποκλεισμένες',
+  cta: t('push.cta'),
+  subscribed: t('push.on'),
+  idle: t('push.off'),
+  denied: t('push.denied'),
   'ios-install': '',
-  unsupported: 'Η συσκευή ή ο browser δεν υποστηρίζει ειδοποιήσεις',
+  unsupported: t('push.unsupported'),
 }
 
 const notes: Record<PushUiState, string> = {
   loading: '',
   cta: '',
-  subscribed: 'σε αυτή τη συσκευή',
-  idle: 'σε αυτή τη συσκευή',
-  denied: 'Επίτρεψέ τες ξανά από τις ρυθμίσεις του browser ή της συσκευής.',
+  subscribed: t('push.onThisDevice'),
+  idle: t('push.onThisDevice'),
+  denied: t('push.deniedHint'),
   'ios-install': '',
   unsupported: '',
 }
@@ -108,8 +109,8 @@ export function PushNotificationsCard() {
     } catch (enableError) {
       setError(
         enableError instanceof Error
-          ? `Δεν ενεργοποιήθηκαν οι ειδοποιήσεις: ${enableError.message}`
-          : 'Δεν ενεργοποιήθηκαν οι ειδοποιήσεις.',
+          ? t('push.enableFailedDetail', { detail: enableError.message })
+          : t('push.enableFailed'),
       )
     }
 
@@ -127,8 +128,8 @@ export function PushNotificationsCard() {
     } catch (disableError) {
       setError(
         disableError instanceof Error
-          ? `Δεν απενεργοποιήθηκαν οι ειδοποιήσεις: ${disableError.message}`
-          : 'Δεν απενεργοποιήθηκαν οι ειδοποιήσεις.',
+          ? t('push.disableFailedDetail', { detail: disableError.message })
+          : t('push.disableFailed'),
       )
     }
 
@@ -143,19 +144,19 @@ export function PushNotificationsCard() {
     uiState === 'subscribed'
       ? {
           className: 'push-row-action push-row-action--quiet',
-          label: busy ? 'Απενεργοποίηση...' : 'Απενεργοποίηση',
+          label: busy ? t('push.disabling') : t('push.disable'),
           onClick: handleDisable,
         }
       : uiState === 'idle'
         ? {
             className: 'push-row-action',
-            label: busy ? 'Ενεργοποίηση...' : 'Ενεργοποίηση',
+            label: busy ? t('push.enabling') : t('push.enable'),
             onClick: handleEnable,
           }
         : uiState === 'cta'
           ? {
               className: 'push-cta-button',
-              label: busy ? 'Ενεργοποίηση...' : 'Ενεργοποίηση ειδοποιήσεων',
+              label: busy ? t('push.enabling') : t('push.enableCta'),
               onClick: handleEnable,
             }
           : null
@@ -177,17 +178,12 @@ export function PushNotificationsCard() {
 
         {uiState === 'ios-install' && (
           <details className="push-row-disclosure">
-            <summary>
-              Για ειδοποιήσεις στο iPhone, πρόσθεσε το The Score Club στην
-              Αρχική οθόνη
-            </summary>
+            <summary>{t('push.iosSummary')}</summary>
             <ol className="push-row-steps">
-              <li>Άνοιξε το The Score Club στο Safari.</li>
-              <li>
-                Πάτησε Κοινή χρήση και μετά «Προσθήκη στην οθόνη Αφετηρίας».
-              </li>
-              <li>Άνοιξε το εικονίδιο The Score Club από την οθόνη σου.</li>
-              <li>Ενεργοποίησε εκεί τις ειδοποιήσεις.</li>
+              <li>{t('push.iosStep1')}</li>
+              <li>{t('push.iosStep2')}</li>
+              <li>{t('push.iosStep3')}</li>
+              <li>{t('push.iosStep4')}</li>
             </ol>
           </details>
         )}

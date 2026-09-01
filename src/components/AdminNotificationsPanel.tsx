@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { selectPlural, t } from '../i18n'
 import { formatGreekAllCaps } from '../lib/greekAllCaps'
 import { supabase } from '../lib/supabase'
 import type { PushDestination } from '../lib/push'
@@ -15,11 +16,11 @@ const destinationOptions: Array<{
   value: PushDestination
   label: string
 }> = [
-  { value: 'predictions', label: 'Αγώνες & Προβλέψεις' },
-  { value: 'home', label: 'Αρχική' },
-  { value: 'standings', label: 'Βαθμολογία' },
-  { value: 'league-phase', label: 'League Phase' },
-  { value: 'rules', label: 'Κανόνες' },
+  { value: 'predictions', label: t('nav.matches') },
+  { value: 'home', label: t('nav.home') },
+  { value: 'standings', label: t('nav.standings') },
+  { value: 'league-phase', label: t('nav.leaguePhase') },
+  { value: 'rules', label: t('nav.rules') },
 ]
 
 const titleLimit = 80
@@ -41,28 +42,31 @@ const readErrorDetail = async (error: unknown) => {
     }
   }
 
-  return error instanceof Error ? error.message : 'Άγνωστο σφάλμα'
+  return error instanceof Error ? error.message : t('adminPush.unknownError')
 }
 
 const describeResult = (result: BroadcastResult) => {
-  const parts = [`Στάλθηκε σε ${result.delivered} συσκευές.`]
+  const parts = [t('adminPush.delivered', { count: result.delivered })]
 
   if (result.gone > 0) {
     parts.push(
-      `${result.gone} ${
-        result.gone === 1 ? 'παλιά συνδρομή αφαιρέθηκε' : 'παλιές συνδρομές αφαιρέθηκαν'
-      }.`,
+      t(selectPlural(result.gone, 'adminPush.goneOne', 'adminPush.goneMany'), {
+        count: result.gone,
+      }),
     )
   }
 
   if (result.failed > 0) {
     parts.push(
-      `${result.failed} ${result.failed === 1 ? 'απέτυχε' : 'απέτυχαν'}.`,
+      t(
+        selectPlural(result.failed, 'adminPush.failedOne', 'adminPush.failedMany'),
+        { count: result.failed },
+      ),
     )
   }
 
   if (result.attempted === 0) {
-    return 'Καμία συσκευή δεν έχει ενεργοποιήσει ειδοποιήσεις.'
+    return t('adminPush.noDevices')
   }
 
   return parts.join(' ')
@@ -70,14 +74,14 @@ const describeResult = (result: BroadcastResult) => {
 
 const describeTestResult = (result: BroadcastResult) => {
   if (result.attempted === 0) {
-    return 'Δεν υπάρχει ενεργή συνδρομή στον λογαριασμό σου. Ενεργοποίησε τις ειδοποιήσεις στην Αρχική και δοκίμασε ξανά.'
+    return t('adminPush.testNoSub')
   }
 
   if (result.delivered === 0) {
-    return 'Η δοκιμαστική ειδοποίηση δεν έφτασε στις συσκευές σου. Δοκίμασε ξανά.'
+    return t('adminPush.testNotDelivered')
   }
 
-  return 'Η δοκιμαστική ειδοποίηση στάλθηκε στις συσκευές σου.'
+  return t('adminPush.testSent')
 }
 
 export function AdminNotificationsPanel() {
@@ -117,7 +121,9 @@ export function AdminNotificationsPanel() {
     if (error) {
       setMessageType('error')
       setMessage(
-        `Δεν στάλθηκε η ειδοποίηση: ${await readErrorDetail(error)}`,
+        t('adminPush.sendFailed', {
+          detail: await readErrorDetail(error),
+        }),
       )
       setSendingKind(null)
       setConfirming(false)
@@ -140,7 +146,7 @@ export function AdminNotificationsPanel() {
       {
         body: {
           title: trimmedTitle || 'The Score Club',
-          message: trimmedBody || 'Δοκιμαστική ειδοποίηση.',
+          message: trimmedBody || t('adminPush.testDefaultBody'),
           destination: testDestination,
           self_only: true,
         },
@@ -149,7 +155,7 @@ export function AdminNotificationsPanel() {
 
     if (error) {
       setMessageType('error')
-      setMessage('Δεν στάλθηκε η δοκιμαστική ειδοποίηση. Δοκίμασε ξανά.')
+      setMessage(t('adminPush.testFailed'))
       setSendingKind(null)
       return
     }
@@ -167,12 +173,11 @@ export function AdminNotificationsPanel() {
       <div className="admin-outcomes-heading">
         <div>
           <p className="dashboard-eyebrow">
-            {formatGreekAllCaps('Admin-only αποστολή')}
+            {formatGreekAllCaps(t('adminPush.kicker'))}
           </p>
-          <h2>Ειδοποιήσεις παικτών</h2>
+          <h2>{t('adminPush.heading')}</h2>
           <p>
-            Η ειδοποίηση φτάνει σε κάθε συσκευή που έχει ενεργοποιήσει
-            ειδοποιήσεις, ακόμη και όταν η εφαρμογή είναι κλειστή.
+            {t('adminPush.intro')}
           </p>
         </div>
       </div>
@@ -189,7 +194,7 @@ export function AdminNotificationsPanel() {
 
       <div className="admin-notifications-form">
         <label>
-          <span>Τίτλος</span>
+          <span>{t('adminPush.title')}</span>
           <input
             type="text"
             value={title}
@@ -206,13 +211,13 @@ export function AdminNotificationsPanel() {
         </label>
 
         <label>
-          <span>Μήνυμα</span>
+          <span>{t('adminPush.message')}</span>
           <textarea
             rows={3}
             value={body}
             maxLength={messageLimit}
             disabled={sending}
-            placeholder="Μην ξεχάσετε τις προβλέψεις σας."
+            placeholder={t('adminPush.placeholder')}
             onChange={(event) => {
               setConfirming(false)
               setBody(event.target.value)
@@ -224,7 +229,7 @@ export function AdminNotificationsPanel() {
         </label>
 
         <label>
-          <span>Προορισμός</span>
+          <span>{t('adminPush.destination')}</span>
           <select
             value={destination}
             disabled={sending}
@@ -245,8 +250,7 @@ export function AdminNotificationsPanel() {
       {confirming ? (
         <div className="admin-notifications-confirm">
           <p>
-            Η ειδοποίηση θα σταλεί σε όλες τις συσκευές που έχουν
-            ενεργοποιήσει ειδοποιήσεις. Να συνεχίσω;
+            {t('adminPush.confirm')}
           </p>
           <div className="admin-notifications-confirm-actions">
             <button
@@ -256,8 +260,8 @@ export function AdminNotificationsPanel() {
               onClick={() => void handleSend()}
             >
               {sendingKind === 'broadcast'
-                ? 'Αποστολή...'
-                : 'Επιβεβαίωση αποστολής'}
+                ? t('adminPush.sending')
+                : t('adminPush.confirmSend')}
             </button>
             <button
               type="button"
@@ -265,7 +269,7 @@ export function AdminNotificationsPanel() {
               disabled={sending}
               onClick={() => setConfirming(false)}
             >
-              Ακύρωση
+              {t('common.cancel')}
             </button>
           </div>
         </div>
@@ -279,7 +283,7 @@ export function AdminNotificationsPanel() {
             setConfirming(true)
           }}
         >
-          Αποστολή ειδοποίησης
+          {t('adminPush.send')}
         </button>
       )}
 
@@ -291,11 +295,11 @@ export function AdminNotificationsPanel() {
           onClick={() => void handleTestSend()}
         >
           {sendingKind === 'test'
-            ? 'Αποστολή δοκιμής...'
-            : 'Αποστολή δοκιμαστικής ειδοποίησης σε εμένα'}
+            ? t('adminPush.sendingTest')
+            : t('adminPush.sendTest')}
         </button>
         <p className="admin-notifications-test-note">
-          Στέλνεται μόνο στις δικές σου συσκευές. Δεν ειδοποιεί τους παίκτες.
+          {t('adminPush.testNote')}
         </p>
       </div>
     </section>

@@ -1,3 +1,4 @@
+import { t } from '../../i18n'
 import { usePlayerProfileNav } from '../../lib/playerProfileNav'
 import {
   decidedByRuleLabel,
@@ -47,7 +48,7 @@ export function CupPlayerName({
         <CupSeedBadge rankPosition={participant.rank_position} />
       ) : null}
       {isMe ? (
-        <span className="cup-me-tag">{formatGreekAllCaps('Εσύ')}</span>
+        <span className="cup-me-tag">{formatGreekAllCaps(t('common.you'))}</span>
       ) : null}
     </>
   )
@@ -58,7 +59,7 @@ export function CupPlayerName({
         type="button"
         className={className}
         title={name}
-        aria-label={`Προφίλ ${name}`}
+        aria-label={t('nav.profileOf', { username: name })}
         onClick={() => openProfile(userId)}
       >
         {content}
@@ -118,7 +119,7 @@ export function CupTieCard({
             byeParticipant?.id === viewerParticipantId
           }
         />
-        <p className="cup-tie-copy">Πέρασε χωρίς αγώνα</p>
+        <p className="cup-tie-copy">{t('cup.byeAdvance')}</p>
       </article>
     )
   }
@@ -135,7 +136,7 @@ export function CupTieCard({
         className={`cup-tie-card is-waiting-opponent ${viewerIsInTie ? 'is-me' : ''}`}
       >
         <div className="cup-tie-card-top">
-          <span className="cup-tie-badge is-waiting">Αναμονή</span>
+          <span className="cup-tie-badge is-waiting">{t('cup.statusWaiting')}</span>
         </div>
         <div className="cup-tie-sides">
           <div className="cup-tie-side">
@@ -148,7 +149,7 @@ export function CupTieCard({
           </div>
           <p className="cup-tie-vs">vs</p>
           <div className="cup-tie-side is-waiting-slot">
-            <span className="cup-player-name-text">Περιμένει αντίπαλο</span>
+            <span className="cup-player-name-text">{t('cup.waitingOpponent')}</span>
           </div>
         </div>
       </article>
@@ -166,7 +167,7 @@ export function CupTieCard({
               roundStatus === 'in_progress' ? 'is-live' : 'is-waiting'
             }`}
           >
-            Σε εξέλιξη
+            {t('cup.statusLive')}
           </span>
         </div>
         <div className="cup-tie-sides">
@@ -197,7 +198,7 @@ export function CupTieCard({
   return (
     <article className={`cup-tie-card is-decided ${viewerIsInTie ? 'is-me' : ''}`}>
       <div className="cup-tie-card-top">
-        <span className="cup-tie-badge is-decided">Ολοκληρώθηκε</span>
+        <span className="cup-tie-badge is-decided">{t('cup.statusDone')}</span>
       </div>
       <div className="cup-tie-sides">
         <CupScoreRow
@@ -251,11 +252,11 @@ function CupScoreRow({
         isLoser={isLoser}
         isMe={isMe}
       />
-      <strong className="cup-tie-score" aria-label={`${points} βαθμοί`}>
+      <strong className="cup-tie-score" aria-label={t('cup.points', { n: points })}>
         {points}
       </strong>
       {isWinner ? (
-        <span className="cup-winner-mark">{formatGreekAllCaps('Νικητής')}</span>
+        <span className="cup-winner-mark">{formatGreekAllCaps(t('cup.winner'))}</span>
       ) : null}
     </div>
   )

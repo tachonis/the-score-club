@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { t } from '../i18n'
 import { RulesContent } from './RulesContent'
 
 type RulesModalProps = {
@@ -38,14 +39,14 @@ export function RulesModal({ onClose }: RulesModalProps) {
         <header className="rules-header">
           <div>
             <p className="rules-eyebrow">The Score Club</p>
-            <h2 id="rules-title">Πώς παίζεται</h2>
+            <h2 id="rules-title">{t('auth.rulesTitle')}</h2>
           </div>
 
           <button
             type="button"
             className="rules-close"
             onClick={onClose}
-            aria-label="Κλείσιμο κανόνων"
+            aria-label={t('auth.closeRules')}
           >
             ×
           </button>
@@ -61,7 +62,7 @@ export function RulesModal({ onClose }: RulesModalProps) {
             className="rules-done"
             onClick={onClose}
           >
-            Κλείσιμο
+            {t('common.close')}
           </button>
         </footer>
       </section>

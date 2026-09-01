@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { t } from '../i18n'
 import { BadgeImage } from './BadgeGrid'
 import {
   formatAwardContext,
@@ -54,7 +55,7 @@ export function BadgeModal({ badge, onClose }: BadgeModalProps) {
             type="button"
             className="rules-close"
             onClick={onClose}
-            aria-label="Κλείσιμο badge"
+            aria-label={t('badgesUi.close')}
           >
             ×
           </button>
@@ -98,7 +99,7 @@ export function BadgeModal({ badge, onClose }: BadgeModalProps) {
             </div>
           ) : (
             <div className="badge-modal-earned">
-              <p className="badge-modal-unlock">Ξεκλειδώθηκε</p>
+              <p className="badge-modal-unlock">{t('badgesUi.unlocked')}</p>
               {latest ? (
                 <p className="badge-modal-date">
                   {formatAwardDate(latest.earned_at)}

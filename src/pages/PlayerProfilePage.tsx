@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { t } from '../i18n'
 import {
   AppHeader,
   type AppDestination,
@@ -99,7 +100,7 @@ export function PlayerProfilePage({
       if (cancelled) return
 
       if (profileLookupError) {
-        setProfileError('Δεν φορτώθηκε το προφίλ.')
+        setProfileError(t('profile.loadFailed'))
         setLoadingProfile(false)
         setStatsState({ status: 'unavailable' })
         setPredictionsState({ status: 'unavailable' })
@@ -196,7 +197,7 @@ export function PlayerProfilePage({
       } catch {
         if (cancelled) return
 
-        setBadgesError('Δεν φορτώθηκαν τα badges.')
+        setBadgesError(t('profile.loadBadgesFailed'))
       } finally {
         if (!cancelled) {
           setLoadingBadges(false)
@@ -216,7 +217,10 @@ export function PlayerProfilePage({
     header &&
     header.rankPosition !== null &&
     header.totalPoints !== null
-      ? `#${header.rankPosition} · ${header.totalPoints} βαθμοί`
+      ? t('profile.rankLine', {
+          rank: header.rankPosition,
+          points: header.totalPoints,
+        })
       : null
 
   const pointsValue =
@@ -241,25 +245,25 @@ export function PlayerProfilePage({
       <main className="dashboard-main profile-main">
         <section className="profile-hero">
           <button type="button" className="profile-back" onClick={onBack}>
-            ← Πίσω
+            ← {t('profile.back')}
           </button>
 
           {loadingProfile ? (
             <section className="app-loading-inline">
               <LoadingMark />
-              <p>Φόρτωση προφίλ...</p>
+              <p>{t('auth.loadingProfile')}</p>
             </section>
           ) : profileError ? (
             <p className="auth-message error">{profileError}</p>
           ) : notFound ? (
             <div className="empty-state">
-              <h2>Προφίλ Παίκτη</h2>
-              <p>Το προφίλ δεν βρέθηκε.</p>
+              <h2>{t('profile.title')}</h2>
+              <p>{t('profile.notFound')}</p>
             </div>
           ) : header ? (
             <>
               <p className="dashboard-eyebrow">
-                {formatGreekAllCaps('Προφίλ Παίκτη')}
+                {formatGreekAllCaps(t('profile.title'))}
               </p>
               <h1>@{header.username}</h1>
               {rankLine ? <p className="profile-meta">{rankLine}</p> : null}
@@ -270,29 +274,29 @@ export function PlayerProfilePage({
         {!notFound && !profileError && header ? (
           <section
             className="profile-stats"
-            aria-label="Στατιστικά παίκτη"
+            aria-label={t('profile.statsAria')}
             aria-busy={
               statsState.status === 'loading' ||
               predictionsState.status === 'loading'
             }
           >
             <article className="summary-card">
-              <span>Συνολικοί βαθμοί</span>
+              <span>{t('profile.totalPoints')}</span>
               <strong>{pointsValue}</strong>
             </article>
             <article className="summary-card">
-              <span>Ακριβή σκορ</span>
+              <span>{t('profile.exactScores')}</span>
               <strong>{exactValue}</strong>
             </article>
             <article className="summary-card">
-              <span>Σωστά αποτελέσματα</span>
+              <span>{t('profile.correctResults')}</span>
               <strong>{correctValue}</strong>
             </article>
             <article className="summary-card">
-              <span>Προβλέψεις</span>
+              <span>{t('profile.predictions')}</span>
               <strong>{predictionsValue}</strong>
               {predictionsState.status === 'ready' ? (
-                <small>συνολικά</small>
+                <small>{t('profile.predictionsTotal')}</small>
               ) : null}
             </article>
           </section>
@@ -300,18 +304,18 @@ export function PlayerProfilePage({
 
         {!notFound && !profileError ? (
           <section className="profile-badges" aria-labelledby="profile-badges-heading">
-            <h2 id="profile-badges-heading">Badges</h2>
+            <h2 id="profile-badges-heading">{t('badges.title')}</h2>
 
             {badgesError ? (
               <p className="auth-message error">{badgesError}</p>
             ) : loadingBadges ? (
               <section className="app-loading-inline">
                 <LoadingMark />
-                <p>Φόρτωση badges...</p>
+                <p>{t('badges.loading')}</p>
               </section>
             ) : badges.length === 0 ? (
               <p className="profile-badges-empty">
-                Δεν έχει ξεκλειδώσει ακόμη κάποιο badge.
+                {t('profile.emptyBadges')}
               </p>
             ) : (
               <BadgeGrid badges={badges} onSelect={setSelectedBadge} />
