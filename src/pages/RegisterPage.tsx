@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { supabase } from '../lib/supabase'
+import { getAuthRedirectTo } from '../lib/passwordRecovery'
 import { mapRegisterError, validateUsername } from '../lib/username'
 import { t } from '../i18n'
 
@@ -50,6 +51,7 @@ export function RegisterPage() {
       email: email.trim(),
       password,
       options: {
+        emailRedirectTo: getAuthRedirectTo(),
         data: {
           username: cleanUsername,
         },

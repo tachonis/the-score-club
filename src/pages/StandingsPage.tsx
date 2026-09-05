@@ -11,6 +11,7 @@ import {
   compareMatchdays,
   formatLeaguePhaseOrdinal,
   formatLeaguePhaseRound,
+  isLeaguePhaseMatchdayOneComplete,
   isLeaguePhaseStage,
   selectDefaultLeaguePhaseMatchdayId,
 } from '../lib/stages'
@@ -125,13 +126,8 @@ export function StandingsPage({
   }, [])
 
   useEffect(() => {
-    if (view !== 'matchday' || matchdaysLoaded) {
-      return
-    }
-
     const loadMatchdays = async () => {
       setLoadingMatchdays(true)
-      setErrorMessage('')
 
       const { data, error } = await supabase
         .from('matchdays')
@@ -173,7 +169,7 @@ export function StandingsPage({
     }
 
     void loadMatchdays()
-  }, [view, matchdaysLoaded])
+  }, [])
 
   useEffect(() => {
     if (view !== 'matchday' || selectedMatchdayId == null) {
@@ -250,7 +246,7 @@ export function StandingsPage({
         ? loadingKnockout
         : loadingOverall
 
-  const showPodium = activeRows.some((row) => row.total_points > 0)
+  const showPodium = isLeaguePhaseMatchdayOneComplete(orderedLeagueMatchdays)
 
   const boardLabel =
     view === 'matchday'

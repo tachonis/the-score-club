@@ -61,7 +61,9 @@ supabase.auth.onAuthStateChange((event) => {
 
 export const MIN_PASSWORD_LENGTH = 6
 
-export const getPasswordRecoveryRedirectTo = () => window.location.origin
+export const getAuthRedirectTo = () => window.location.origin
+
+export const getPasswordRecoveryRedirectTo = getAuthRedirectTo
 
 export const isPasswordRecoveryActive = () => recoveryActive
 

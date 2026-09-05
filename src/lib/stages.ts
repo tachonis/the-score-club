@@ -260,6 +260,21 @@ export const isMatchdayComplete = (
   return matches.every((match) => match.status === 'finished')
 }
 
+export const isLeaguePhaseMatchdayOneComplete = (
+  matchdays: Array<{
+    stage: string
+    matchday_number: number | null
+    matches?: { status: string }[] | null
+  }>,
+) => {
+  const matchdayOne = matchdays.find(
+    (matchday) =>
+      isLeaguePhaseStage(matchday.stage) && matchday.matchday_number === 1,
+  )
+
+  return Boolean(matchdayOne && isMatchdayComplete(matchdayOne.matches))
+}
+
 export const selectDefaultLeaguePhaseMatchdayId = (
   matchdays: Array<
     MatchdaySortKey & { matches?: { status: string }[] | null }
