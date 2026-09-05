@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react'
 import { t } from '../i18n'
 import { formatGreekAllCaps } from '../lib/greekAllCaps'
+import {
+  loadNewFeedbackCount,
+  subscribeFeedbackCountRefresh,
+} from '../lib/feedback'
 import { usePlayerProfileNav } from '../lib/playerProfileNav'
 import { HeaderLogo } from './BrandAssets'
 import { NavIcon, type NavIconName } from './NavIcons'
@@ -12,6 +16,7 @@ export type AppDestination =
   | 'players-cup'
   | 'league-phase'
   | 'rules'
+  | 'contact'
   | 'admin'
 
 type AppHeaderProps = {
@@ -68,6 +73,12 @@ const navigationItems: NavigationItem[] = [
     icon: 'rules',
   },
   {
+    destination: 'contact',
+    desktopLabel: t('nav.contact'),
+    mobileLabel: t('nav.contact'),
+    icon: 'contact',
+  },
+  {
     destination: 'admin',
     desktopLabel: t('nav.admin'),
     mobileLabel: t('nav.admin'),
@@ -86,6 +97,7 @@ const bottomDestinations: AppDestination[] = [
 const overflowDestinations: AppDestination[] = [
   'league-phase',
   'rules',
+  'contact',
   'admin',
 ]
 
@@ -97,6 +109,7 @@ export function AppHeader({
   onLogout,
 }: AppHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [newFeedbackCount, setNewFeedbackCount] = useState(0)
   const { viewerUserId, openProfile } = usePlayerProfileNav()
 
   const availableItems = navigationItems.filter(
@@ -117,6 +130,35 @@ export function AppHeader({
   }, [currentPage])
 
   useEffect(() => {
+    if (role !== 'admin') {
+      setNewFeedbackCount(0)
+      return
+    }
+
+    let active = true
+
+    const loadCount = async () => {
+      try {
+        const count = await loadNewFeedbackCount()
+
+        if (active) {
+          setNewFeedbackCount(count)
+        }
+      } catch {
+        if (active) {
+          setNewFeedbackCount(0)
+        }
+      }
+    }
+
+    void loadCount()
+
+    return subscribeFeedbackCountRefresh(() => {
+      void loadCount()
+    })
+  }, [role])
+
+  useEffect(() => {
     if (!menuOpen) return
 
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -133,6 +175,16 @@ export function AppHeader({
     setMenuOpen(false)
     onNavigate(destination)
   }
+
+  const unreadBadge =
+    role === 'admin' && newFeedbackCount > 0 ? (
+      <span
+        className="nav-count-badge"
+        aria-label={t('nav.unreadFeedback', { count: newFeedbackCount })}
+      >
+        {newFeedbackCount}
+      </span>
+    ) : null
 
   return (
     <>
@@ -162,6 +214,7 @@ export function AppHeader({
                   aria-current={isActive ? 'page' : undefined}
                 >
                   {item.desktopLabel}
+                  {item.destination === 'admin' ? unreadBadge : null}
                 </button>
               )
             })}
@@ -227,7 +280,10 @@ export function AppHeader({
                   aria-current={isActive ? 'page' : undefined}
                 >
                   <NavIcon name={item.icon} />
-                  <strong>{item.mobileLabel}</strong>
+                  <strong>
+                    {item.mobileLabel}
+                    {item.destination === 'admin' ? unreadBadge : null}
+                  </strong>
                   <small aria-hidden="true">›</small>
                 </button>
               )
@@ -263,7 +319,10 @@ export function AppHeader({
           aria-controls="mobile-overflow-navigation"
           aria-expanded={menuOpen}
         >
-          <NavIcon name="menu" />
+          <span className="mobile-nav-icon-wrap">
+            <NavIcon name="menu" />
+            {unreadBadge}
+          </span>
           {t('common.menu')}
         </button>
       </nav>

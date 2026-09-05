@@ -6,6 +6,7 @@ type NavIconName =
   | 'menu'
   | 'league'
   | 'rules'
+  | 'contact'
   | 'admin'
 
 const iconProps = {
@@ -68,6 +69,12 @@ export function NavIcon({ name }: { name: NavIconName }) {
           <path d="M7 4.5h10A1.5 1.5 0 0 1 18.5 6v14L12 17.2 5.5 20V6A1.5 1.5 0 0 1 7 4.5z" />
           <path d="M9 8.5h6" />
           <path d="M9 12h4" />
+        </>
+      )}
+      {name === 'contact' && (
+        <>
+          <rect x="3.75" y="5.5" width="16.5" height="13" rx="1.75" />
+          <path d="m5.2 7.6 6.8 5.1 6.8-5.1" />
         </>
       )}
       {name === 'admin' && (

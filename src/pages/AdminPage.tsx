@@ -6,6 +6,7 @@ import {
 } from '../components/AppHeader'
 import { LoadingMark } from '../components/BrandAssets'
 import { AdminCupPanel } from '../components/cup/AdminCupPanel'
+import { AdminFeedbackPanel } from '../components/AdminFeedbackPanel'
 import { AdminNotificationsPanel } from '../components/AdminNotificationsPanel'
 import { AdminResultConfirmModal } from '../components/AdminResultConfirmModal'
 import { LongTermOutcomesPanel } from '../components/LongTermOutcomesPanel'
@@ -417,6 +418,8 @@ export function AdminPage({
         <AdminCupPanel refreshKey={outcomesRefreshKey} />
 
         <AdminNotificationsPanel />
+
+        <AdminFeedbackPanel />
 
         <LongTermOutcomesPanel refreshKey={outcomesRefreshKey} />
 

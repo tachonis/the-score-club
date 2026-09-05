@@ -18,6 +18,12 @@ UNSAFE = {
     "20260829174500_official_2026_27_league_phase_import.sql",
 }
 
+# Additive files kept out of 0001. Apply them after 0001 on empty English DBs,
+# and as the only schema change on the existing English production project.
+POST_SCHEMA = {
+    "20260906120000_feedback_messages.sql",
+}
+
 SAFETY = """-- =============================================================================
 -- ENGLISH BOOTSTRAP — DO NOT APPLY TO GREEK PRODUCTION
 -- =============================================================================
@@ -49,7 +55,7 @@ def write_schema() -> None:
     files = sorted(
         path
         for path in MIGRATIONS.glob("*.sql")
-        if path.name not in UNSAFE
+        if path.name not in UNSAFE and path.name not in POST_SCHEMA
     )
     if len(files) != 26:
         raise SystemExit(f"Expected 26 safe schema files, found {len(files)}")

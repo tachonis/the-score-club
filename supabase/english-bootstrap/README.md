@@ -28,7 +28,8 @@ up during `supabase db push` or `supabase db reset`. That is intentional.
 1. `0001_schema.sql` — tables, views, functions, triggers, RLS, grants, RPCs
 2. `0002_official_seed.sql` — 36 teams, 8 English matchdays, 144 scheduled fixtures
 3. `0003_english_badges.sql` — 17 English `badge_definitions` (no awards)
-4. `verify.sql` — read-only post-seed checks
+4. `0004_feedback_messages.sql` — player contact inbox (table, RLS, RPCs). Apply this to the **existing** English production project; do not `db push` Greek migration history. Also apply after 0001–0003 on any future empty English bootstrap.
+5. `verify.sql` — read-only post-seed checks
 
 `assemble.py` rebuilds `0001` and `0002` from classified `supabase/migrations`
 files. It does not connect to any hosted project.
@@ -60,6 +61,7 @@ These tables/views of user state must remain empty after bootstrap:
 - `cup_excluded_matches`
 - `push_subscriptions`
 - `push_broadcasts`
+- `feedback_messages`
 
 ## Admin creation (future English project only)
 
@@ -123,6 +125,10 @@ unsafe Greek documentary files. Do not use reset as an English bootstrap path.
 - `20260829160000_profiles_username_format.sql`
 - `20260829190000_predictions_require_active_profile.sql`
 - `20260901120000_matchday_leaderboard.sql`
+
+### Additive after 0001 (do not concatenate into 0001)
+
+- `20260906120000_feedback_messages.sql` — apply as `0004_feedback_messages.sql` to English production / empty bootstraps. Never `db push` this Greek migration history into English.
 
 ### D — Needs manual review (schema taken, Greek seed replaced)
 

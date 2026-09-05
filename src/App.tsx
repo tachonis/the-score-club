@@ -12,6 +12,7 @@ import {
 import { readDestinationFromHash, syncPushSubscription, type PushDestination } from './lib/push'
 import type { AppDestination } from './components/AppHeader'
 import { AdminPage } from './pages/AdminPage'
+import { ContactPage } from './pages/ContactPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { LoginPage } from './pages/LoginPage'
 import { LeaguePhasePage } from './pages/LeaguePhasePage'
@@ -341,6 +342,15 @@ function App() {
     } else if (appPage === 'rules') {
       page = (
         <RulesPage
+          username={profile.username}
+          role={profile.role}
+          onNavigate={handleNavigate}
+          onLogout={handleLogout}
+        />
+      )
+    } else if (appPage === 'contact') {
+      page = (
+        <ContactPage
           username={profile.username}
           role={profile.role}
           onNavigate={handleNavigate}
