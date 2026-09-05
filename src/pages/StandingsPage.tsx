@@ -264,12 +264,14 @@ export function StandingsPage({
         ? t('standings.introKnockout')
         : t('standings.introOverall')
 
-  const renderRank = (rank: number) => {
-    if (showPodium) {
-      if (rank === 1) return '🥇'
-      if (rank === 2) return '🥈'
-      if (rank === 3) return '🥉'
+  const renderRank = (rank: number, rowIndex: number) => {
+    if (!showPodium) {
+      return rowIndex + 1
     }
+
+    if (rank === 1) return '🥇'
+    if (rank === 2) return '🥈'
+    if (rank === 3) return '🥉'
 
     return rank
   }
@@ -408,7 +410,7 @@ export function StandingsPage({
                     {t('standings.empty')}
                   </div>
                 ) : (
-                  activeRows.map((row) => {
+                  activeRows.map((row, rowIndex) => {
                     const isCurrentUser = row.user_id === currentUserId
 
                     return (
@@ -419,7 +421,7 @@ export function StandingsPage({
                         }`}
                       >
                         <div className="tsc-rank">
-                          {renderRank(row.rank_position)}
+                          {renderRank(row.rank_position, rowIndex)}
                         </div>
 
                         <div className="tsc-player">
