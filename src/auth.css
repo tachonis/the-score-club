@@ -6446,6 +6446,247 @@ button.cup-player-name:focus-visible {
   text-align: left;
 }
 
+.profile-history {
+  margin: 28px 0 0;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+.profile-history h2 {
+  margin: 0 0 16px;
+  color: #102c32;
+  font-size: 1.05rem;
+  font-weight: 850;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.profile-history-empty {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(16, 44, 50, 0.09);
+  border-radius: 12px;
+  background: #faf9f5;
+  color: #708083;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.profile-history-groups {
+  display: grid;
+  gap: 10px;
+}
+
+.profile-history-matchday {
+  min-width: 0;
+  border: 1px solid rgba(16, 44, 50, 0.09);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 8px 25px rgba(16, 44, 50, 0.04);
+}
+
+.profile-history-matchday summary {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  list-style: none;
+  cursor: pointer;
+  min-height: 48px;
+  padding: 12px 16px;
+  color: #102c32;
+  font-size: 0.92rem;
+  font-weight: 750;
+}
+
+.profile-history-matchday summary::-webkit-details-marker {
+  display: none;
+}
+
+.profile-history-matchday summary::before {
+  content: '';
+  flex: 0 0 auto;
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 6px solid #9aa6a7;
+}
+
+.profile-history-matchday[open] summary::before {
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #9aa6a7;
+  border-bottom: 0;
+}
+
+.profile-history-matchday summary:focus-visible {
+  outline: 2px solid #d28b45;
+  outline-offset: 2px;
+}
+
+.profile-history-matchday summary span:first-of-type {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.profile-history-count {
+  flex: 0 0 auto;
+  min-width: 1.5em;
+  border-radius: 999px;
+  padding: 2px 8px;
+  background: rgba(16, 44, 50, 0.08);
+  color: #102c32;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.profile-history-matches {
+  display: grid;
+  gap: 8px;
+  padding: 0 12px 12px;
+}
+
+.profile-history-match {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  padding: 12px 12px 10px;
+  border: 1px solid rgba(16, 44, 50, 0.08);
+  border-radius: 12px;
+  background: #fbfaf7;
+}
+
+.profile-history-fixture {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.profile-history-team {
+  min-width: 0;
+  color: #102c32;
+  font-size: 0.92rem;
+  font-weight: 750;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.profile-history-team.is-home {
+  text-align: left;
+}
+
+.profile-history-team.is-away {
+  text-align: right;
+}
+
+.profile-history-final {
+  flex: 0 0 auto;
+  color: #102c32;
+  font-size: 1.05rem;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.profile-history-prediction {
+  margin: 0;
+  color: #5f7173;
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.profile-history-outcome {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  min-width: 0;
+}
+
+.profile-history-points {
+  color: #102c32;
+  font-size: 0.88rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.profile-history-result {
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+}
+
+.profile-history-result.is-exact {
+  background: #f5eadc;
+  color: #9b5e26;
+}
+
+.profile-history-result.is-correct {
+  background: rgba(16, 44, 50, 0.08);
+  color: #102c32;
+}
+
+.profile-history-result.is-wrong {
+  background: rgba(16, 44, 50, 0.05);
+  color: #708083;
+}
+
+.profile-history-match.is-wrong .profile-history-points {
+  color: #708083;
+  font-weight: 700;
+}
+
+.profile-history-golden {
+  margin: 0;
+  color: #a76121;
+  font-size: 0.75rem;
+  font-weight: 750;
+}
+
+@media (max-width: 760px) {
+  .profile-history {
+    margin-top: 22px;
+  }
+
+  .profile-history-matchday summary {
+    padding: 12px 12px;
+    font-size: 0.86rem;
+  }
+
+  .profile-history-matches {
+    padding: 0 10px 10px;
+  }
+
+  .profile-history-team {
+    overflow: hidden;
+    font-size: 0.82rem;
+  }
+
+  .profile-history-team .team-name-full {
+    display: none;
+  }
+
+  .profile-history-team .team-name-short {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .profile-history-final {
+    font-size: 0.95rem;
+  }
+}
+
 .badge-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

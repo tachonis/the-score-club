@@ -234,7 +234,8 @@ begin
       ('get_active_push_subscriptions'),
       ('is_admin'),
       ('handle_new_user'),
-      ('admin_recompute_badges')
+      ('admin_recompute_badges'),
+      ('get_player_prediction_history')
   ) as expected(proname)
   where not exists (
     select 1

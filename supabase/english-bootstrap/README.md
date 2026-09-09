@@ -125,6 +125,8 @@ unsafe Greek documentary files. Do not use reset as an English bootstrap path.
 - `20260829160000_profiles_username_format.sql`
 - `20260829190000_predictions_require_active_profile.sql`
 - `20260901120000_matchday_leaderboard.sql`
+- `20260909120000_reveal_predictions_after_kickoff.sql`
+- `20260909140000_player_prediction_history.sql`
 
 ### Additive after 0001 (do not concatenate into 0001)
 

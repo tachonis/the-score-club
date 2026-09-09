@@ -57,8 +57,8 @@ def write_schema() -> None:
         for path in MIGRATIONS.glob("*.sql")
         if path.name not in UNSAFE and path.name not in POST_SCHEMA
     )
-    if len(files) != 26:
-        raise SystemExit(f"Expected 26 safe schema files, found {len(files)}")
+    if len(files) != 28:
+        raise SystemExit(f"Expected 28 safe schema files, found {len(files)}")
 
     parts = [
         SAFETY,

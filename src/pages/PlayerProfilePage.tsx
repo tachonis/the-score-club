@@ -7,6 +7,7 @@ import {
 import { BadgeGrid } from '../components/BadgeGrid'
 import { BadgeModal } from '../components/BadgeModal'
 import { LoadingMark } from '../components/BrandAssets'
+import { PlayerPredictionHistory } from '../components/PlayerPredictionHistory'
 import {
   fetchEarnedBadges,
   type GroupedBadge,
@@ -321,6 +322,13 @@ export function PlayerProfilePage({
               <BadgeGrid badges={badges} onSelect={setSelectedBadge} />
             )}
           </section>
+        ) : null}
+
+        {!notFound && !profileError && header ? (
+          <PlayerPredictionHistory
+            key={profileUserId}
+            profileUserId={profileUserId}
+          />
         ) : null}
       </main>
 
