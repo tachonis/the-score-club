@@ -282,6 +282,12 @@ export const en = {
       '{home} – {away} just locked. Your other predictions were saved.',
     manyJustLocked:
       '{count} matches just locked. Your other predictions were saved.',
+    playerPredictions: 'Player predictions',
+    playerPredictionsHidden:
+      'Other players’ predictions will appear after kickoff.',
+    playerPredictionsEmpty: 'There are no predictions for this match.',
+    playerGoldenMatch: 'Golden Match',
+    playerPoints: '{points} pts',
   },
   golden: {
     kicker: 'GOLDEN MATCH · DOUBLE POINTS',

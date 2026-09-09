@@ -296,6 +296,12 @@ export const el = {
       'Ο αγώνας {home} – {away} μόλις κλείδωσε. Οι υπόλοιπες προβλέψεις αποθηκεύτηκαν.',
     manyJustLocked:
       '{count} αγώνες μόλις κλείδωσαν. Οι υπόλοιπες προβλέψεις αποθηκεύτηκαν.',
+    playerPredictions: 'Προβλέψεις παικτών',
+    playerPredictionsHidden:
+      'Οι προβλέψεις των άλλων παικτών θα εμφανιστούν μετά τη σέντρα.',
+    playerPredictionsEmpty: 'Δεν υπάρχουν προβλέψεις για αυτόν τον αγώνα.',
+    playerGoldenMatch: 'Golden Match',
+    playerPoints: '{points} β.',
   },
   golden: {
     kicker: 'GOLDEN MATCH · ΔΙΠΛΟΙ ΒΑΘΜΟΙ',

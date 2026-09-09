@@ -5,6 +5,7 @@ import {
 } from '../components/AppHeader'
 import { LoadingMark } from '../components/BrandAssets'
 import { LongTermPredictionsSection } from '../components/LongTermPredictionsSection'
+import { PlayerPredictionsPanel } from '../components/PlayerPredictionsPanel'
 import { ScoreStepper } from '../components/ScoreStepper'
 import {
   compareMatchdays,
@@ -17,6 +18,11 @@ import {
   isGoldenMatchStage,
   isKnockoutPredictionStage,
 } from '../lib/stages'
+import {
+  groupMatchPlayerPredictions,
+  hasMatchKickedOff,
+  type MatchPlayerPrediction,
+} from '../lib/matchPlayerPredictions'
 import {
   buildPredictionSaveFeedback,
   classifyPredictionSaveError,
@@ -172,6 +178,11 @@ export function PredictionsPage({
   const [goldenMatches, setGoldenMatches] = useState<
     Record<number, number>
   >({})
+  const [viewerUserId, setViewerUserId] = useState<string | null>(null)
+  const [playerPredictionsByMatch, setPlayerPredictionsByMatch] =
+    useState<Record<number, MatchPlayerPrediction[]>>({})
+  const [playerPredictionsUnavailable, setPlayerPredictionsUnavailable] =
+    useState(false)
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -325,6 +336,7 @@ export function PredictionsPage({
       })
 
       setMatches(loadedMatches)
+      setViewerUserId(user.id)
       setPredictions(predictionValues)
       setSavedPredictions(predictionValues)
       setPredictionPoints(loadedPoints)
@@ -376,6 +388,57 @@ export function PredictionsPage({
       (match) => match.matchday_id === selectedMatchdayId,
     )
   }, [matches, selectedMatchdayId])
+
+  const revealedMatchIdsKey = useMemo(
+    () =>
+      selectedMatches
+        .filter((match) => hasMatchKickedOff(match.kickoff_at, now))
+        .map((match) => match.id)
+        .sort((left, right) => left - right)
+        .join(','),
+    [selectedMatches, now],
+  )
+
+  useEffect(() => {
+    if (revealedMatchIdsKey === '') {
+      setPlayerPredictionsByMatch({})
+      setPlayerPredictionsUnavailable(false)
+      return
+    }
+
+    const matchIds = revealedMatchIdsKey.split(',').map(Number)
+    let cancelled = false
+
+    const loadPlayerPredictions = async () => {
+      const { data, error } = await supabase.rpc(
+        'get_match_player_predictions',
+        { p_match_ids: matchIds },
+      )
+
+      if (cancelled) {
+        return
+      }
+
+      if (error) {
+        setPlayerPredictionsByMatch({})
+        setPlayerPredictionsUnavailable(true)
+        return
+      }
+
+      setPlayerPredictionsUnavailable(false)
+      setPlayerPredictionsByMatch(
+        groupMatchPlayerPredictions(
+          (data ?? []) as MatchPlayerPrediction[],
+        ),
+      )
+    }
+
+    void loadPlayerPredictions()
+
+    return () => {
+      cancelled = true
+    }
+  }, [revealedMatchIdsKey])
 
   const selectedMatchday = matchdays.find(
     (matchday) => matchday.id === selectedMatchdayId,
@@ -1207,6 +1270,14 @@ export function PredictionsPage({
                         </span>
                       )}
                     </div>
+
+                    <PlayerPredictionsPanel
+                      kickedOff={hasMatchKickedOff(match.kickoff_at, now)}
+                      showTeaser={match.status === 'scheduled'}
+                      rows={playerPredictionsByMatch[match.id] ?? []}
+                      viewerUserId={viewerUserId}
+                      revealUnavailable={playerPredictionsUnavailable}
+                    />
                   </article>
                 )
               })}
