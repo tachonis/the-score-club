@@ -104,8 +104,8 @@ $helper$;
 -- ---------------------------------------------------------------------------
 
 select pg_temp.badge_assert(
-  (select count(*) from public.badge_definitions) = 17,
-  'exactly 17 definitions exist'
+  (select count(*) from public.badge_definitions) = 23,
+  'exactly 23 definitions exist'
 );
 
 select pg_temp.badge_assert(
@@ -113,11 +113,17 @@ select pg_temp.badge_assert(
     select array_agg(definition.code order by definition.code)
     from public.badge_definitions as definition
   ) = array[
+    'blazing',
+    'deadeye',
+    'exact_legend',
     'exact_machine',
+    'exact_master',
     'final_boss',
+    'inferno',
     'leader',
     'league_phase_champion',
     'league_phase_runner_up',
+    'matchday_monster',
     'on_fire',
     'perfect_matchday',
     'players_cup_champion',
@@ -140,6 +146,10 @@ select pg_temp.badge_assert(
     from public.badge_definitions as definition
     where definition.repeatable
   ) = array[
+    'blazing',
+    'deadeye',
+    'inferno',
+    'matchday_monster',
     'on_fire',
     'perfect_matchday',
     'second_of_the_matchday',
@@ -504,7 +514,7 @@ select set_config('request.jwt.claim.role', 'authenticated', true);
 set local role authenticated;
 
 select pg_temp.badge_assert(
-  (select count(*) from public.badge_definitions) = 17,
+  (select count(*) from public.badge_definitions) = 23,
   'authenticated can SELECT definitions'
 );
 
@@ -583,7 +593,7 @@ end;
 $test$;
 
 select unnest(array[
-  'exactly_17_definitions',
+  'exactly_23_definitions',
   'all_expected_badge_codes',
   'repeatable_flags',
   'categories',

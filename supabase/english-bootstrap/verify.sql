@@ -170,8 +170,8 @@ begin
   end if;
 
   select count(*) into v_badge_defs from public.badge_definitions;
-  if v_badge_defs is distinct from 17 then
-    raise exception 'Expected 17 badge_definitions, found %.', v_badge_defs;
+  if v_badge_defs is distinct from 23 then
+    raise exception 'Expected 23 badge_definitions, found %.', v_badge_defs;
   end if;
 
   if exists (

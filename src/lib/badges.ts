@@ -12,11 +12,17 @@ export type BadgeCode =
   | 'players_cup_finalist'
   | 'players_cup_semifinalist'
   | 'exact_machine'
+  | 'exact_master'
+  | 'exact_legend'
   | 'sharp_shooter'
+  | 'deadeye'
   | 'on_fire'
+  | 'blazing'
+  | 'inferno'
   | 'top_of_the_matchday'
   | 'second_of_the_matchday'
   | 'third_of_the_matchday'
+  | 'matchday_monster'
   | 'final_boss'
   | 'perfect_matchday'
   | 'leader'
@@ -141,7 +147,8 @@ export function formatAwardContext(
   switch (badgeCode) {
     case 'top_of_the_matchday':
     case 'second_of_the_matchday':
-    case 'third_of_the_matchday': {
+    case 'third_of_the_matchday':
+    case 'matchday_monster': {
       const parts: string[] = []
 
       if (rank !== null) parts.push(t('badgesUi.rankPlace', { n: rank }))
@@ -151,11 +158,14 @@ export function formatAwardContext(
     }
 
     case 'sharp_shooter':
+    case 'deadeye':
       return exactCount !== null
         ? t('badgesUi.exactScores', { n: exactCount })
         : null
 
     case 'on_fire':
+    case 'blazing':
+    case 'inferno':
       return points !== null ? t('badgesUi.points', { n: points }) : null
 
     case 'perfect_matchday': {
@@ -177,6 +187,8 @@ export function formatAwardContext(
     }
 
     case 'exact_machine':
+    case 'exact_master':
+    case 'exact_legend':
       return exactCount !== null
         ? t('badgesUi.exactScores', { n: exactCount })
         : null

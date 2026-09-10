@@ -177,6 +177,60 @@ values
     false,
     'performance',
     48
+  ),
+  (
+    'blazing',
+    'Blazing',
+    'Scored 30 or more points in a single matchday.',
+    '/badges/blazing.png',
+    true,
+    'performance',
+    49
+  ),
+  (
+    'inferno',
+    'Inferno',
+    'Scored 40 or more points in a single matchday.',
+    '/badges/inferno.png',
+    true,
+    'performance',
+    50
+  ),
+  (
+    'deadeye',
+    'Deadeye',
+    'Predicted 5 exact scores in the same matchday.',
+    '/badges/deadeye.png',
+    true,
+    'performance',
+    51
+  ),
+  (
+    'exact_master',
+    'Exact Master',
+    'Predicted 20 exact scores across the season.',
+    '/badges/exact-master.png',
+    false,
+    'performance',
+    52
+  ),
+  (
+    'exact_legend',
+    'Exact Legend',
+    'Predicted 30 exact scores across the season.',
+    '/badges/exact-legend.png',
+    false,
+    'performance',
+    53
+  ),
+  (
+    'matchday_monster',
+    'Matchday Monster',
+    'Finished first in a matchday with at least 30 points.',
+    '/badges/matchday-monster.png',
+    true,
+    'matchday',
+    54
   )
 on conflict (code) do update
 set
@@ -193,9 +247,9 @@ declare
 begin
   select count(*) into v_count from public.badge_definitions;
 
-  if v_count is distinct from 17 then
+  if v_count is distinct from 23 then
     raise exception
-      'English badge seed failed: expected 17 definitions, found %.',
+      'English badge seed failed: expected 23 definitions, found %.',
       v_count;
   end if;
 

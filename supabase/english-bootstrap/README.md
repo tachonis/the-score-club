@@ -27,7 +27,7 @@ up during `supabase db push` or `supabase db reset`. That is intentional.
 
 1. `0001_schema.sql` — tables, views, functions, triggers, RLS, grants, RPCs
 2. `0002_official_seed.sql` — 36 teams, 8 English matchdays, 144 scheduled fixtures
-3. `0003_english_badges.sql` — 17 English `badge_definitions` (no awards)
+3. `0003_english_badges.sql` — 23 English `badge_definitions` (no awards)
 4. `0004_feedback_messages.sql` — player contact inbox (table, RLS, RPCs). Apply this to the **existing** English production project; do not `db push` Greek migration history. Also apply after 0001–0003 on any future empty English bootstrap.
 5. `verify.sql` — read-only post-seed checks
 
@@ -127,6 +127,7 @@ unsafe Greek documentary files. Do not use reset as an English bootstrap path.
 - `20260901120000_matchday_leaderboard.sql`
 - `20260909120000_reveal_predictions_after_kickoff.sql`
 - `20260909140000_player_prediction_history.sql`
+- `20260910120000_badges_extended_tiers.sql`
 
 ### Additive after 0001 (do not concatenate into 0001)
 
@@ -136,7 +137,9 @@ unsafe Greek documentary files. Do not use reset as an English bootstrap path.
 
 - `20260827190000_badges_foundation.sql` — tables/RLS/grants are in `0001`;
   the 17 Greek `badge_definitions` INSERTs are omitted and replaced by
-  `0003_english_badges.sql`.
+  `0003_english_badges.sql`. The later `20260910120000_badges_extended_tiers.sql`
+  Greek INSERT of the 6 extra badges is also omitted from `0001`; those English
+  rows live in `0003` as well.
 
 ### C — Greek production / documentary / unsafe to replay (excluded)
 

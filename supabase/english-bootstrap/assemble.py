@@ -51,14 +51,31 @@ def strip_badge_seed(text: str) -> str:
     )
 
 
+def strip_extended_badge_seed(text: str) -> str:
+    start = text.find("insert into public.badge_definitions")
+    end = text.find(
+        "create or replace function public.recompute_matchday_badges"
+    )
+    if start < 0 or end < 0 or end <= start:
+        raise SystemExit(
+            "Could not locate extended badge_definitions seed block to strip"
+        )
+    return (
+        text[:start]
+        + "-- Greek extended badge_definitions copy omitted.\n"
+        + "-- English rows are inserted by 0003_english_badges.sql.\n\n"
+        + text[end:]
+    )
+
+
 def write_schema() -> None:
     files = sorted(
         path
         for path in MIGRATIONS.glob("*.sql")
         if path.name not in UNSAFE and path.name not in POST_SCHEMA
     )
-    if len(files) != 28:
-        raise SystemExit(f"Expected 28 safe schema files, found {len(files)}")
+    if len(files) != 29:
+        raise SystemExit(f"Expected 29 safe schema files, found {len(files)}")
 
     parts = [
         SAFETY,
@@ -71,6 +88,8 @@ def write_schema() -> None:
         text = path.read_text(encoding="utf-8")
         if path.name == "20260827190000_badges_foundation.sql":
             text = strip_badge_seed(text)
+        if path.name == "20260910120000_badges_extended_tiers.sql":
+            text = strip_extended_badge_seed(text)
         parts.append(
             "\n\n-- =====================================================================\n"
             f"-- SOURCE: supabase/migrations/{path.name}\n"

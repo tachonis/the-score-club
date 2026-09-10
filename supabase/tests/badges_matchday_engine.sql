@@ -164,6 +164,8 @@ create table pg_temp.eng_em_matches (
   matchday_id bigint not null
 );
 
+grant select on pg_temp.eng_em_matches to authenticated;
+
 -- ---------------------------------------------------------------------------
 -- Fixture people and teams
 -- ---------------------------------------------------------------------------
@@ -275,7 +277,7 @@ set
   away_score = 0
 where id = current_setting('test.m_unscored')::bigint;
 
-select pg_temp.eng_predict(2, current_setting('test.m_unscored')::bigint, 1, 0);
+select pg_temp.eng_predict(1, current_setting('test.m_unscored')::bigint, 1, 0);
 
 select pg_temp.eng_assert(
   public.badge_matchday_is_complete(current_setting('test.md_unscored')::bigint) = false,
@@ -285,7 +287,7 @@ select pg_temp.eng_assert(
 update public.predictions
 set points = 5
 where match_id = current_setting('test.m_unscored')::bigint
-  and user_id = pg_temp.eng_user_id(2);
+  and user_id = pg_temp.eng_user_id(1);
 
 select pg_temp.eng_assert(
   public.badge_matchday_is_complete(current_setting('test.md_unscored')::bigint) = true,
@@ -625,6 +627,11 @@ begin
   end loop;
 end;
 $test$;
+
+select pg_temp.eng_assert(
+  pg_temp.eng_award_count(2, 'exact_machine') = 0,
+  '9 exact -> no Exact Machine'
+);
 
 select pg_temp.eng_assert(
   pg_temp.eng_award_count(2, 'exact_machine') = 0,

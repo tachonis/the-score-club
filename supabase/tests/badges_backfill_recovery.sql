@@ -913,7 +913,7 @@ select pg_temp.bf_assert(
 -- ---------------------------------------------------------------------------
 
 create table pg_temp.bf_award_snapshot (
-  id bigint primary key,
+  id uuid primary key,
   user_id uuid not null,
   badge_code text not null,
   matchday_id bigint,
