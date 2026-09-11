@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react'
 import { t } from '../i18n'
 import { formatGreekAllCaps } from '../lib/greekAllCaps'
 import {
+  loadUnreadAnnouncementCount,
+  subscribeAnnouncementCountRefresh,
+} from '../lib/announcements'
+import {
   loadNewFeedbackCount,
   subscribeFeedbackCountRefresh,
 } from '../lib/feedback'
@@ -15,6 +19,7 @@ export type AppDestination =
   | 'standings'
   | 'players-cup'
   | 'league-phase'
+  | 'announcements'
   | 'rules'
   | 'contact'
   | 'admin'
@@ -67,6 +72,12 @@ const navigationItems: NavigationItem[] = [
     icon: 'league',
   },
   {
+    destination: 'announcements',
+    desktopLabel: t('nav.announcements'),
+    mobileLabel: t('nav.announcementsShort'),
+    icon: 'announcements',
+  },
+  {
     destination: 'rules',
     desktopLabel: t('nav.rules'),
     mobileLabel: t('nav.rules'),
@@ -95,6 +106,7 @@ const bottomDestinations: AppDestination[] = [
 ]
 
 const overflowDestinations: AppDestination[] = [
+  'announcements',
   'league-phase',
   'rules',
   'contact',
@@ -110,6 +122,7 @@ export function AppHeader({
 }: AppHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [newFeedbackCount, setNewFeedbackCount] = useState(0)
+  const [unreadAnnouncements, setUnreadAnnouncements] = useState(0)
   const { viewerUserId, openProfile } = usePlayerProfileNav()
 
   const availableItems = navigationItems.filter(
@@ -159,6 +172,30 @@ export function AppHeader({
   }, [role])
 
   useEffect(() => {
+    let active = true
+
+    const loadCount = async () => {
+      try {
+        const count = await loadUnreadAnnouncementCount()
+
+        if (active) {
+          setUnreadAnnouncements(count)
+        }
+      } catch {
+        if (active) {
+          setUnreadAnnouncements(0)
+        }
+      }
+    }
+
+    void loadCount()
+
+    return subscribeAnnouncementCountRefresh(() => {
+      void loadCount()
+    })
+  }, [])
+
+  useEffect(() => {
     if (!menuOpen) return
 
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -176,7 +213,7 @@ export function AppHeader({
     onNavigate(destination)
   }
 
-  const unreadBadge =
+  const feedbackBadge =
     role === 'admin' && newFeedbackCount > 0 ? (
       <span
         className="nav-count-badge"
@@ -185,6 +222,26 @@ export function AppHeader({
         {newFeedbackCount}
       </span>
     ) : null
+
+  const announcementsBadge =
+    unreadAnnouncements > 0 ? (
+      <span
+        className="nav-count-badge"
+        aria-label={t('nav.unreadAnnouncements', {
+          count: unreadAnnouncements,
+        })}
+      >
+        {unreadAnnouncements}
+      </span>
+    ) : null
+
+  const itemBadge = (destination: AppDestination) => {
+    if (destination === 'announcements') return announcementsBadge
+    if (destination === 'admin') return feedbackBadge
+    return null
+  }
+
+  const menuBadge = announcementsBadge ?? feedbackBadge
 
   return (
     <>
@@ -214,7 +271,7 @@ export function AppHeader({
                   aria-current={isActive ? 'page' : undefined}
                 >
                   {item.desktopLabel}
-                  {item.destination === 'admin' ? unreadBadge : null}
+                  {itemBadge(item.destination)}
                 </button>
               )
             })}
@@ -282,7 +339,7 @@ export function AppHeader({
                   <NavIcon name={item.icon} />
                   <strong>
                     {item.mobileLabel}
-                    {item.destination === 'admin' ? unreadBadge : null}
+                    {itemBadge(item.destination)}
                   </strong>
                   <small aria-hidden="true">›</small>
                 </button>
@@ -321,7 +378,7 @@ export function AppHeader({
         >
           <span className="mobile-nav-icon-wrap">
             <NavIcon name="menu" />
-            {unreadBadge}
+            {menuBadge}
           </span>
           {t('common.menu')}
         </button>

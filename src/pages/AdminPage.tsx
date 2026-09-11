@@ -5,6 +5,7 @@ import {
   type AppDestination,
 } from '../components/AppHeader'
 import { LoadingMark } from '../components/BrandAssets'
+import { AdminAnnouncementsPanel } from '../components/AdminAnnouncementsPanel'
 import { AdminCupPanel } from '../components/cup/AdminCupPanel'
 import { AdminFeedbackPanel } from '../components/AdminFeedbackPanel'
 import { AdminNotificationsPanel } from '../components/AdminNotificationsPanel'
@@ -416,6 +417,8 @@ export function AdminPage({
         )}
 
         <AdminCupPanel refreshKey={outcomesRefreshKey} />
+
+        <AdminAnnouncementsPanel />
 
         <AdminNotificationsPanel />
 

@@ -19,7 +19,14 @@ const allowedDestinations = [
   'standings',
   'league-phase',
   'rules',
+  'announcements',
 ]
+
+const announcementDestination =
+  /^announcements\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+const isAllowedDestination = (value: string) =>
+  allowedDestinations.includes(value) || announcementDestination.test(value)
 
 const allowedFields = ['title', 'message', 'destination', 'self_only']
 
@@ -133,7 +140,7 @@ const readRequest = (payload: unknown): BroadcastRequest | string => {
     return `The message must be between 1 and ${messageLimit} characters`
   }
 
-  if (!allowedDestinations.includes(destination)) {
+  if (!isAllowedDestination(destination)) {
     return 'An allowed destination is required'
   }
 
@@ -276,10 +283,21 @@ Deno.serve(async (request: Request) => {
     })
   }
 
+  const announcementMatch = parsed.destination.match(
+    /^announcements\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i,
+  )
+  const announcementId = announcementMatch?.[1]?.toLowerCase() ?? null
+
   const notification = JSON.stringify({
     title: parsed.title,
     body: parsed.message,
     destination: parsed.destination,
+    ...(announcementId
+      ? {
+          announcement_id: announcementId,
+          url: `/announcements/${announcementId}`,
+        }
+      : {}),
   })
 
   const goneIds: string[] = []

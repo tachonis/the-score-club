@@ -12,12 +12,40 @@ const ALLOWED_DESTINATIONS = [
   'standings',
   'league-phase',
   'rules',
+  'announcements',
 ]
+
+const ANNOUNCEMENT_ID =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+const ANNOUNCEMENT_DESTINATION =
+  /^announcements(?:\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}))?$/i
 
 const DEFAULT_TITLE = 'The Score Club'
 
-const readDestination = (value) =>
-  ALLOWED_DESTINATIONS.includes(value) ? value : DEFAULT_DESTINATION
+const readAnnouncementDestination = (value) => {
+  if (typeof value !== 'string') return null
+
+  const match = value
+    .replace(/^#/, '')
+    .replace(/^\/+/, '')
+    .trim()
+    .match(ANNOUNCEMENT_DESTINATION)
+
+  if (!match) return null
+
+  return match[1]
+    ? `announcements/${match[1].toLowerCase()}`
+    : 'announcements'
+}
+
+const readDestination = (value) => {
+  const announcement = readAnnouncementDestination(value)
+
+  if (announcement) return announcement
+
+  return ALLOWED_DESTINATIONS.includes(value) ? value : DEFAULT_DESTINATION
+}
 
 const readPayload = (event) => {
   if (!event.data) {
@@ -32,13 +60,25 @@ const readPayload = (event) => {
     payload = { body: event.data.text() }
   }
 
+  const announcementId =
+    typeof payload?.announcement_id === 'string' &&
+    ANNOUNCEMENT_ID.test(payload.announcement_id)
+      ? payload.announcement_id.toLowerCase()
+      : null
+
+  const fromUrl = readAnnouncementDestination(payload?.url)
+  const destination = announcementId
+    ? `announcements/${announcementId}`
+    : readDestination(fromUrl ?? payload?.destination)
+
   return {
     title:
       typeof payload?.title === 'string' && payload.title.trim() !== ''
         ? payload.title
         : DEFAULT_TITLE,
     body: typeof payload?.body === 'string' ? payload.body : '',
-    destination: readDestination(payload?.destination),
+    destination,
+    announcementId: announcementId ?? destination.match(ANNOUNCEMENT_DESTINATION)?.[1] ?? null,
   }
 }
 
@@ -58,9 +98,17 @@ self.addEventListener('push', (event) => {
       body: payload.body,
       icon: '/icon-192.png',
       badge: '/icon-192.png',
-      tag: 'the-score-club-broadcast',
+      tag: payload.announcementId
+        ? `the-score-club-announcement-${payload.announcementId}`
+        : 'the-score-club-broadcast',
       renotify: true,
-      data: { destination: payload.destination },
+      data: {
+        destination: payload.destination,
+        announcement_id: payload.announcementId,
+        url: payload.announcementId
+          ? `/announcements/${payload.announcementId}`
+          : `/${payload.destination}`,
+      },
     }),
   )
 })
@@ -68,7 +116,8 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
 
-  const destination = readDestination(event.notification.data?.destination)
+  const data = event.notification.data ?? {}
+  const destination = readDestination(data.destination)
   const targetUrl = new URL(`/#${destination}`, self.location.origin).href
 
   event.waitUntil(
@@ -82,7 +131,12 @@ self.addEventListener('notificationclick', (event) => {
         if (new URL(client.url).origin !== self.location.origin) continue
 
         await client.focus()
-        client.postMessage({ type: 'push-navigate', destination })
+        client.postMessage({
+          type: 'push-navigate',
+          destination,
+          announcement_id: data.announcement_id ?? null,
+          url: data.url ?? null,
+        })
         return
       }
 

@@ -1,16 +1,25 @@
 import { supabase } from './supabase'
 import { t } from '../i18n'
+import {
+  pagePushDestinations,
+  parsePushTarget,
+  type PagePushDestination,
+  type PushTarget,
+} from './pushDestination'
 
-export const pushDestinations = [
-  'home',
-  'predictions',
-  'standings',
-  'players-cup',
-  'league-phase',
-  'rules',
-] as const
+export const pushDestinations = pagePushDestinations
 
-export type PushDestination = (typeof pushDestinations)[number]
+export type PushDestination = PagePushDestination
+export type { PushTarget }
+
+export const readDestinationFromHash = (hash: string): PushTarget | null =>
+  parsePushTarget(hash)
+
+export const readPushTargetFromLocation = (location: {
+  hash: string
+  pathname: string
+}): PushTarget | null =>
+  parsePushTarget(location.hash) ?? parsePushTarget(location.pathname)
 
 export type PushAvailability = 'ready' | 'ios-needs-install' | 'unsupported'
 
@@ -25,17 +34,6 @@ export type PushStatus = {
 const vapidPublicKey: string = import.meta.env.VITE_VAPID_PUBLIC_KEY ?? ''
 
 const serviceWorkerUrl = '/sw.js'
-
-const isPushDestination = (value: string): value is PushDestination =>
-  (pushDestinations as readonly string[]).includes(value)
-
-export const readDestinationFromHash = (
-  hash: string,
-): PushDestination | null => {
-  const value = hash.replace(/^#/, '').trim()
-
-  return isPushDestination(value) ? value : null
-}
 
 const hasPushApis = () =>
   typeof window !== 'undefined' &&

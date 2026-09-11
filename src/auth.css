@@ -1172,7 +1172,8 @@ button {
   .predictions-main,
   .cup-page-main,
   .profile-main,
-  .contact-page-main {
+  .contact-page-main,
+  .announcements-main {
     padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
   }
 
@@ -6913,5 +6914,240 @@ button.cup-player-name:focus-visible {
   .tsc-player-name,
   button.cup-player-name {
     transition: none;
+  }
+}
+
+.announcements-main {
+  width: min(100% - 40px, 720px);
+  max-width: 100%;
+  min-width: 0;
+  margin: 0 auto;
+  padding: 44px 0 calc(100px + env(safe-area-inset-bottom, 0px));
+}
+
+.announcements-intro,
+.announcements-detail {
+  margin-bottom: 22px;
+  min-width: 0;
+}
+
+.announcements-intro h1,
+.announcement-detail-card h1 {
+  margin: 0;
+  color: #102c32;
+  font-size: clamp(1.7rem, 4vw, 2.5rem);
+  line-height: 1.12;
+  overflow-wrap: anywhere;
+}
+
+.announcements-intro > p:last-child {
+  max-width: 640px;
+  margin: 10px 0 0;
+  color: #6f7e80;
+  line-height: 1.55;
+}
+
+.announcements-list,
+.admin-announcements-list {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.announcement-card {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  width: 100%;
+  margin: 0;
+  border: 1px solid rgba(16, 44, 50, 0.1);
+  border-radius: 16px;
+  padding: 16px;
+  background: #ffffff;
+  box-shadow: 0 10px 28px rgba(16, 44, 50, 0.06);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.announcement-card.unread {
+  border-color: rgba(210, 139, 69, 0.5);
+  background:
+    linear-gradient(135deg, rgba(210, 139, 69, 0.08), transparent 42%),
+    #ffffff;
+}
+
+.announcement-card:focus-visible {
+  outline: 2px solid #d28b45;
+  outline-offset: 2px;
+}
+
+.announcement-card-icon {
+  position: relative;
+  display: grid;
+  place-items: start;
+  padding-top: 2px;
+}
+
+.announcement-category {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: rgba(16, 44, 50, 0.06);
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.announcement-unread-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 9px;
+  height: 9px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background: #d28b45;
+}
+
+.announcement-card-copy,
+.announcement-detail-card,
+.admin-announcement-card {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.announcement-card-copy strong,
+.announcement-detail-card h1,
+.admin-announcement-card strong {
+  min-width: 0;
+  color: #102c32;
+  overflow-wrap: anywhere;
+}
+
+.announcement-card-copy time,
+.announcement-detail-meta,
+.admin-announcement-meta {
+  color: #6f7e80;
+  font-size: 0.78rem;
+}
+
+.announcement-card-copy small,
+.admin-announcement-card p {
+  min-width: 0;
+  color: #4f5f61;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.announcement-detail-card {
+  padding: 24px;
+  border: 1px solid rgba(16, 44, 50, 0.1);
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 18px 45px rgba(16, 44, 50, 0.09);
+}
+
+.announcement-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.announcement-detail-body {
+  margin: 8px 0 0;
+  color: #102c32;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.admin-announcements-panel {
+  margin-bottom: 28px;
+  padding: 26px;
+  border: 1px solid #dce3ed;
+  border-radius: 20px;
+  background:
+    linear-gradient(135deg, rgba(210, 139, 69, 0.08), transparent 48%),
+    #ffffff;
+  box-shadow: 0 16px 38px rgba(26, 45, 72, 0.08);
+}
+
+.admin-announcements-publish {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-announcements-publish input {
+  width: 18px;
+  height: 18px;
+}
+
+.admin-announcements-form-actions,
+.admin-announcement-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 16px 0 0;
+}
+
+.admin-announcement-card {
+  padding: 16px;
+  border: 1px solid #dce3ed;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.admin-announcement-card.draft {
+  border-color: #dce3ed;
+}
+
+.admin-announcement-card.published {
+  border-color: rgba(210, 139, 69, 0.45);
+}
+
+.admin-announcement-status {
+  display: inline-grid;
+  place-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.admin-announcement-status.draft {
+  background: #e7eef2;
+  color: #1d4a54;
+}
+
+.admin-announcement-status.published {
+  background: #d28b45;
+  color: #102c32;
+}
+
+@media (max-width: 760px) {
+  .announcements-main {
+    width: calc(100% - 24px);
+    max-width: calc(100vw - 24px);
+    padding: 24px 0 calc(100px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .announcement-card,
+  .announcement-detail-card,
+  .admin-announcements-panel {
+    padding: 14px;
+  }
+
+  .announcements-intro h1,
+  .announcement-detail-card h1 {
+    font-size: clamp(1.45rem, 7vw, 1.9rem);
   }
 }

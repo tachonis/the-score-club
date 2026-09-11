@@ -5,6 +5,7 @@ type NavIconName =
   | 'cup'
   | 'menu'
   | 'league'
+  | 'announcements'
   | 'rules'
   | 'contact'
   | 'admin'
@@ -62,6 +63,13 @@ export function NavIcon({ name }: { name: NavIconName }) {
           <rect x="13" y="4" width="7" height="7" rx="1" />
           <rect x="4" y="13" width="7" height="7" rx="1" />
           <rect x="13" y="13" width="7" height="7" rx="1" />
+        </>
+      )}
+      {name === 'announcements' && (
+        <>
+          <path d="M6 8.5V18a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V8.5L12 4.8z" />
+          <path d="M9.5 12h5" />
+          <path d="M9.5 15h3.5" />
         </>
       )}
       {name === 'rules' && (

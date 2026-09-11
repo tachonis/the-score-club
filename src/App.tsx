@@ -9,9 +9,10 @@ import {
   mapAuthError,
   subscribePasswordRecovery,
 } from './lib/passwordRecovery'
-import { readDestinationFromHash, syncPushSubscription, type PushDestination } from './lib/push'
+import { readDestinationFromHash, readPushTargetFromLocation, syncPushSubscription, type PushTarget } from './lib/push'
 import type { AppDestination } from './components/AppHeader'
 import { AdminPage } from './pages/AdminPage'
+import { AnnouncementsPage } from './pages/AnnouncementsPage'
 import { ContactPage } from './pages/ContactPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { LoginPage } from './pages/LoginPage'
@@ -39,6 +40,7 @@ function App() {
   const [showRules, setShowRules] = useState(false)
   const [appPage, setAppPage] = useState<AppDestination>('home')
   const [profileUserId, setProfileUserId] = useState<string | null>(null)
+  const [announcementId, setAnnouncementId] = useState<string | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loadingSession, setLoadingSession] = useState(true)
@@ -47,8 +49,8 @@ function App() {
     isPasswordRecoveryActive,
   )
   const [pendingDestination, setPendingDestination] =
-    useState<PushDestination | null>(() =>
-      readDestinationFromHash(window.location.hash),
+    useState<PushTarget | null>(() =>
+      readPushTargetFromLocation(window.location),
     )
 
   useEffect(() => {
@@ -145,7 +147,7 @@ function App() {
   // already open, arrives as a message from the push worker.
   useEffect(() => {
     const readHash = () => {
-      const destination = readDestinationFromHash(window.location.hash)
+      const destination = readPushTargetFromLocation(window.location)
 
       if (destination) {
         setPendingDestination(destination)
@@ -154,12 +156,22 @@ function App() {
 
     const readWorkerMessage = (event: MessageEvent) => {
       const data = event.data as
-        | { type?: string; destination?: string }
+        | {
+            type?: string
+            destination?: string
+            announcement_id?: string
+            url?: string
+          }
         | null
 
       if (data?.type !== 'push-navigate') return
 
-      const destination = readDestinationFromHash(data.destination ?? '')
+      const destination =
+        readDestinationFromHash(data.destination ?? '') ??
+        readDestinationFromHash(data.url ?? '') ??
+        (data.announcement_id
+          ? readDestinationFromHash(`announcements/${data.announcement_id}`)
+          : null)
 
       if (destination) {
         setPendingDestination(destination)
@@ -190,7 +202,9 @@ function App() {
       return
     }
 
-    setAppPage(pendingDestination)
+    setAppPage(pendingDestination.destination)
+    setAnnouncementId(pendingDestination.announcementId)
+    setProfileUserId(null)
     setPendingDestination(null)
 
     if (window.location.hash) {
@@ -211,6 +225,7 @@ function App() {
     }
 
     setProfileUserId(null)
+    setAnnouncementId(null)
     setPage('login')
   }
 
@@ -220,6 +235,7 @@ function App() {
     }
 
     setProfileUserId(null)
+    setAnnouncementId(null)
     setAppPage(destination)
   }
 
@@ -355,6 +371,18 @@ function App() {
           role={profile.role}
           onNavigate={handleNavigate}
           onLogout={handleLogout}
+        />
+      )
+    } else if (appPage === 'announcements') {
+      page = (
+        <AnnouncementsPage
+          username={profile.username}
+          role={profile.role}
+          selectedId={announcementId}
+          onNavigate={handleNavigate}
+          onLogout={handleLogout}
+          onOpen={setAnnouncementId}
+          onBackToList={() => setAnnouncementId(null)}
         />
       )
     } else if (appPage === 'predictions') {

@@ -19,6 +19,7 @@ const destinationOptions: Array<{
   { value: 'predictions', label: t('nav.matches') },
   { value: 'home', label: t('nav.home') },
   { value: 'standings', label: t('nav.standings') },
+  { value: 'announcements', label: t('nav.announcements') },
   { value: 'league-phase', label: t('nav.leaguePhase') },
   { value: 'rules', label: t('nav.rules') },
 ]

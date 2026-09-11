@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "build:en": "tsc -b && vite build --mode en",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --experimental-strip-types --test scripts/announcements-deep-link.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.0",

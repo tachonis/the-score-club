@@ -22,6 +22,7 @@ UNSAFE = {
 # and as the only schema change on the existing English production project.
 POST_SCHEMA = {
     "20260906120000_feedback_messages.sql",
+    "20260911120000_announcements.sql",
 }
 
 SAFETY = """-- =============================================================================
