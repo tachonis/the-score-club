@@ -9,7 +9,15 @@ import {
   mapAuthError,
   subscribePasswordRecovery,
 } from './lib/passwordRecovery'
-import { readDestinationFromHash, readPushTargetFromLocation, syncPushSubscription, type PushTarget } from './lib/push'
+import { syncPushSubscription } from './lib/push'
+import {
+  canApplyPendingPushTarget,
+  clearConsumedPushHash,
+  consumePendingPushTarget,
+  peekPendingPushTarget,
+  resolveVisiblePushRoute,
+  subscribePushNavigation,
+} from './lib/pushNavigation'
 import type { AppDestination } from './components/AppHeader'
 import { AdminPage } from './pages/AdminPage'
 import { AnnouncementsPage } from './pages/AnnouncementsPage'
@@ -38,9 +46,14 @@ type UserProfile = {
 function App() {
   const [page, setPage] = useState<'login' | 'register'>('login')
   const [showRules, setShowRules] = useState(false)
-  const [appPage, setAppPage] = useState<AppDestination>('home')
+  const [appPage, setAppPage] = useState<AppDestination>(
+    () => peekPendingPushTarget()?.destination ?? 'home',
+  )
   const [profileUserId, setProfileUserId] = useState<string | null>(null)
-  const [announcementId, setAnnouncementId] = useState<string | null>(null)
+  const [announcementId, setAnnouncementId] = useState<string | null>(
+    () => peekPendingPushTarget()?.announcementId ?? null,
+  )
+  const [navigationEpoch, setNavigationEpoch] = useState(0)
   const [session, setSession] = useState<Session | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loadingSession, setLoadingSession] = useState(true)
@@ -48,10 +61,6 @@ function App() {
   const [passwordRecovery, setPasswordRecovery] = useState(
     isPasswordRecoveryActive,
   )
-  const [pendingDestination, setPendingDestination] =
-    useState<PushTarget | null>(() =>
-      readPushTargetFromLocation(window.location),
-    )
 
   useEffect(() => {
     const loadInitialSession = async () => {
@@ -143,78 +152,37 @@ function App() {
     })
   }, [canSyncPush, signedInUserId])
 
-  // A tapped notification either opens /#<destination> or, when a window is
-  // already open, arrives as a message from the push worker.
   useEffect(() => {
-    const readHash = () => {
-      const destination = readPushTargetFromLocation(window.location)
-
-      if (destination) {
-        setPendingDestination(destination)
-      }
-    }
-
-    const readWorkerMessage = (event: MessageEvent) => {
-      const data = event.data as
-        | {
-            type?: string
-            destination?: string
-            announcement_id?: string
-            url?: string
-          }
-        | null
-
-      if (data?.type !== 'push-navigate') return
-
-      const destination =
-        readDestinationFromHash(data.destination ?? '') ??
-        readDestinationFromHash(data.url ?? '') ??
-        (data.announcement_id
-          ? readDestinationFromHash(`announcements/${data.announcement_id}`)
-          : null)
-
-      if (destination) {
-        setPendingDestination(destination)
-      }
-    }
-
-    const worker =
-      'serviceWorker' in navigator ? navigator.serviceWorker : null
-
-    window.addEventListener('hashchange', readHash)
-    worker?.addEventListener('message', readWorkerMessage)
-
-    return () => {
-      window.removeEventListener('hashchange', readHash)
-      worker?.removeEventListener('message', readWorkerMessage)
-    }
+    return subscribePushNavigation(() => {
+      setNavigationEpoch((value) => value + 1)
+    })
   }, [])
 
-  // The requested page is kept until the session and profile are ready, so a
-  // notification tap survives the login screen.
+  // Keep the tapped destination until session/profile are ready, including
+  // messages that arrived before React mounted.
   useEffect(() => {
     if (
-      !pendingDestination ||
-      !session ||
-      !profile ||
-      passwordRecovery
+      !canApplyPendingPushTarget({
+        hasSession: Boolean(session),
+        hasProfile: Boolean(profile),
+        passwordRecovery,
+      })
     ) {
       return
     }
 
-    setAppPage(pendingDestination.destination)
-    setAnnouncementId(pendingDestination.announcementId)
-    setProfileUserId(null)
-    setPendingDestination(null)
+    const pending = peekPendingPushTarget()
 
-    if (window.location.hash) {
-      window.history.replaceState(
-        null,
-        '',
-        window.location.pathname + window.location.search,
-      )
+    if (!pending) {
+      return
     }
-  }, [pendingDestination, session, profile, passwordRecovery])
+
+    consumePendingPushTarget()
+    setAppPage(pending.destination)
+    setAnnouncementId(pending.announcementId)
+    setProfileUserId(null)
+    clearConsumedPushHash(window.location, window.history)
+  }, [navigationEpoch, session, profile, passwordRecovery])
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut()
@@ -234,6 +202,7 @@ function App() {
       return
     }
 
+    consumePendingPushTarget()
     setProfileUserId(null)
     setAnnouncementId(null)
     setAppPage(destination)
@@ -296,8 +265,16 @@ function App() {
   }
 
   if (session && profile) {
+    const visibleRoute = resolveVisiblePushRoute({
+      pending: peekPendingPushTarget(),
+      appPage,
+      announcementId,
+    })
     const currentPage =
-      appPage === 'admin' && profile.role !== 'admin' ? 'home' : appPage
+      visibleRoute.destination === 'admin' && profile.role !== 'admin'
+        ? 'home'
+        : (visibleRoute.destination as AppDestination)
+    const selectedAnnouncementId = visibleRoute.announcementId
 
     let page = (
       <DashboardPage
@@ -320,7 +297,7 @@ function App() {
           onBack={() => setProfileUserId(null)}
         />
       )
-    } else if (appPage === 'admin' && profile.role === 'admin') {
+    } else if (currentPage === 'admin' && profile.role === 'admin') {
       page = (
         <AdminPage
           username={profile.username}
@@ -328,7 +305,7 @@ function App() {
           onLogout={handleLogout}
         />
       )
-    } else if (appPage === 'standings') {
+    } else if (currentPage === 'standings') {
       page = (
         <StandingsPage
           username={profile.username}
@@ -337,7 +314,7 @@ function App() {
           onLogout={handleLogout}
         />
       )
-    } else if (appPage === 'players-cup') {
+    } else if (currentPage === 'players-cup') {
       page = (
         <PlayersCupPage
           username={profile.username}
@@ -346,7 +323,7 @@ function App() {
           onLogout={handleLogout}
         />
       )
-    } else if (appPage === 'league-phase') {
+    } else if (currentPage === 'league-phase') {
       page = (
         <LeaguePhasePage
           username={profile.username}
@@ -355,7 +332,7 @@ function App() {
           onLogout={handleLogout}
         />
       )
-    } else if (appPage === 'rules') {
+    } else if (currentPage === 'rules') {
       page = (
         <RulesPage
           username={profile.username}
@@ -364,7 +341,7 @@ function App() {
           onLogout={handleLogout}
         />
       )
-    } else if (appPage === 'contact') {
+    } else if (currentPage === 'contact') {
       page = (
         <ContactPage
           username={profile.username}
@@ -373,19 +350,19 @@ function App() {
           onLogout={handleLogout}
         />
       )
-    } else if (appPage === 'announcements') {
+    } else if (currentPage === 'announcements') {
       page = (
         <AnnouncementsPage
           username={profile.username}
           role={profile.role}
-          selectedId={announcementId}
+          selectedId={selectedAnnouncementId}
           onNavigate={handleNavigate}
           onLogout={handleLogout}
           onOpen={setAnnouncementId}
           onBackToList={() => setAnnouncementId(null)}
         />
       )
-    } else if (appPage === 'predictions') {
+    } else if (currentPage === 'predictions') {
       page = (
         <PredictionsPage
           username={profile.username}

@@ -130,8 +130,24 @@ self.addEventListener('notificationclick', (event) => {
       for (const client of windowClients) {
         if (new URL(client.url).origin !== self.location.origin) continue
 
-        await client.focus()
-        client.postMessage({
+        let targetClient = client
+
+        // Existing PWA windows are often still at start_url `/`. Updating the
+        // URL before focus keeps the hash if postMessage arrives before JS.
+        if (typeof client.navigate === 'function') {
+          try {
+            const navigated = await client.navigate(targetUrl)
+
+            if (navigated) {
+              targetClient = navigated
+            }
+          } catch {
+            targetClient = client
+          }
+        }
+
+        await targetClient.focus()
+        targetClient.postMessage({
           type: 'push-navigate',
           destination,
           announcement_id: data.announcement_id ?? null,
