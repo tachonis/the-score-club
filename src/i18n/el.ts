@@ -291,6 +291,8 @@ export const el = {
     goals: 'Γκολ {team}',
     increaseGoals: 'Αύξηση γκολ {team}',
     decreaseGoals: 'Μείωση γκολ {team}',
+    randomScore: 'Τυχαίο σκορ',
+    randomScoreHelp: 'Δημιουργία τυχαίου σκορ',
     saveSomeFailed: 'Κάποιες προβλέψεις δεν αποθηκεύτηκαν. Δοκίμασε ξανά.',
     savedCountOk: 'Αποθηκεύτηκαν {count} προβλέψεις.',
     allLockedNow:

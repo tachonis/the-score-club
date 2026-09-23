@@ -1698,6 +1698,69 @@ button {
   gap: 7px;
 }
 
+.score-prediction-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.random-score-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid rgba(16, 44, 50, 0.12);
+  border-radius: 8px;
+  background: #f7f5f0;
+  color: #5f6f71;
+  cursor: pointer;
+  line-height: 1;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease;
+}
+
+.random-score-button:hover:not(:disabled) {
+  border-color: rgba(16, 44, 50, 0.22);
+  background: #f1eee6;
+  color: #102c32;
+}
+
+.random-score-button:focus-visible {
+  outline: 2px solid rgba(167, 99, 37, 0.55);
+  outline-offset: 2px;
+}
+
+.random-score-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.random-score-dice {
+  display: inline-block;
+  font-size: 0.92rem;
+  transform-origin: center;
+  transition: transform 160ms ease;
+}
+
+.random-score-button:active:not(:disabled) .random-score-dice {
+  transform: rotate(16deg) scale(1.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .random-score-dice {
+    transition: none;
+  }
+
+  .random-score-button:active:not(:disabled) .random-score-dice {
+    transform: none;
+  }
+}
+
 .score-stepper {
   display: flex;
   flex-direction: column;
@@ -2144,6 +2207,20 @@ button {
 
   .score-prediction-inputs {
     gap: 5px;
+  }
+
+  .score-prediction-block {
+    gap: 5px;
+  }
+
+  .random-score-button {
+    width: 36px;
+    height: 32px;
+    border-radius: 9px;
+  }
+
+  .random-score-dice {
+    font-size: 1rem;
   }
 
   .score-stepper-button {
@@ -3403,6 +3480,11 @@ button {
   background: #eceeea;
   color: #7b898b;
   cursor: not-allowed;
+}
+
+.prediction-match-card.locked .random-score-button {
+  background: #eceeea;
+  color: #8a9697;
 }
 
 .status-unsaved {

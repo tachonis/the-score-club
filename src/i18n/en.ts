@@ -278,6 +278,8 @@ export const en = {
     goals: '{team} goals',
     increaseGoals: 'Increase {team} goals',
     decreaseGoals: 'Decrease {team} goals',
+    randomScore: 'Random score',
+    randomScoreHelp: 'Generate a random score',
     saveSomeFailed: 'Some predictions were not saved. Try again.',
     savedCountOk: 'Saved {count} predictions.',
     allLockedNow: 'The matches you tried to change have now locked.',

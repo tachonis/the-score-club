@@ -27,6 +27,7 @@ import {
   buildPredictionSaveFeedback,
   classifyPredictionSaveError,
 } from '../lib/predictionSave'
+import { generateRandomFootballScore } from '../lib/randomScore'
 import { supabase } from '../lib/supabase'
 import { getCompactTeamName } from '../lib/teamDisplayName'
 import { formatGreekAllCaps } from '../lib/greekAllCaps'
@@ -546,6 +547,24 @@ export function PredictionsPage({
     ) {
       awayInputRefs.current[matchId]?.focus()
     }
+  }
+
+  const handleRandomScore = (match: Match) => {
+    if (isMatchLocked(match)) {
+      return
+    }
+
+    const score = generateRandomFootballScore()
+
+    setMessage('')
+
+    setPredictions((currentPredictions) => ({
+      ...currentPredictions,
+      [match.id]: {
+        home: String(score.home),
+        away: String(score.away),
+      },
+    }))
   }
 
   const handleGoldenMatchSelection = async (match: Match) => {
@@ -1173,37 +1192,52 @@ export function PredictionsPage({
                         </strong>
                       </div>
 
-                      <div className="score-prediction-inputs">
-                        <ScoreStepper
-                          value={prediction.home}
-                          disabled={locked}
-                          inputLabel={t('predictions.goals', { team: match.home_team.name })}
-                          incrementLabel={t('predictions.increaseGoals', { team: match.home_team.name })}
-                          decrementLabel={t('predictions.decreaseGoals', { team: match.home_team.name })}
-                          onChange={(next, source) =>
-                            handleScoreChange(match.id, 'home', next, {
-                              skipAutoAdvance: source === 'stepper',
-                            })
-                          }
-                        />
+                      <div className="score-prediction-block">
+                        <div className="score-prediction-inputs">
+                          <ScoreStepper
+                            value={prediction.home}
+                            disabled={locked}
+                            inputLabel={t('predictions.goals', { team: match.home_team.name })}
+                            incrementLabel={t('predictions.increaseGoals', { team: match.home_team.name })}
+                            decrementLabel={t('predictions.decreaseGoals', { team: match.home_team.name })}
+                            onChange={(next, source) =>
+                              handleScoreChange(match.id, 'home', next, {
+                                skipAutoAdvance: source === 'stepper',
+                              })
+                            }
+                          />
 
-                        <span>:</span>
+                          <span>:</span>
 
-                        <ScoreStepper
-                          value={prediction.away}
-                          disabled={locked}
-                          inputRef={(el) => {
-                            awayInputRefs.current[match.id] = el
-                          }}
-                          inputLabel={t('predictions.goals', { team: match.away_team.name })}
-                          incrementLabel={t('predictions.increaseGoals', { team: match.away_team.name })}
-                          decrementLabel={t('predictions.decreaseGoals', { team: match.away_team.name })}
-                          onChange={(next, source) =>
-                            handleScoreChange(match.id, 'away', next, {
-                              skipAutoAdvance: source === 'stepper',
-                            })
-                          }
-                        />
+                          <ScoreStepper
+                            value={prediction.away}
+                            disabled={locked}
+                            inputRef={(el) => {
+                              awayInputRefs.current[match.id] = el
+                            }}
+                            inputLabel={t('predictions.goals', { team: match.away_team.name })}
+                            incrementLabel={t('predictions.increaseGoals', { team: match.away_team.name })}
+                            decrementLabel={t('predictions.decreaseGoals', { team: match.away_team.name })}
+                            onChange={(next, source) =>
+                              handleScoreChange(match.id, 'away', next, {
+                                skipAutoAdvance: source === 'stepper',
+                              })
+                            }
+                          />
+                        </div>
+
+                        <button
+                          type="button"
+                          className="random-score-button"
+                          disabled={locked || saving}
+                          title={t('predictions.randomScoreHelp')}
+                          aria-label={t('predictions.randomScore')}
+                          onClick={() => handleRandomScore(match)}
+                        >
+                          <span className="random-score-dice" aria-hidden="true">
+                            🎲
+                          </span>
+                        </button>
                       </div>
 
                       <div className="prediction-team away-team">
