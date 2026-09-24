@@ -6222,6 +6222,11 @@ button {
   font-weight: 750;
 }
 
+.cup-player-name .player-shield {
+  width: 18px;
+  height: auto;
+}
+
 button.cup-player-name {
   appearance: none;
   margin: 0;
@@ -6593,6 +6598,187 @@ button.cup-player-name:focus-visible {
   font-size: clamp(1.4rem, 3vw, 1.85rem);
   line-height: 1.15;
   overflow-wrap: anywhere;
+}
+
+.profile-identity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.profile-identity-copy {
+  min-width: 0;
+}
+
+.profile-supports {
+  margin: 6px 0 0;
+  color: #3d5558;
+  font-size: 0.95rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.profile-edit-button,
+.profile-edit-cancel,
+.profile-edit-save {
+  appearance: none;
+  min-height: 44px;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.profile-edit-button {
+  margin-top: 10px;
+  border: 1px solid rgba(16, 44, 50, 0.14);
+  padding: 0 14px;
+  background: #fff;
+  color: #102c32;
+}
+
+.profile-edit-button:hover,
+.profile-edit-button:focus-visible,
+.profile-edit-cancel:hover,
+.profile-edit-cancel:focus-visible,
+.profile-edit-save:hover,
+.profile-edit-save:focus-visible {
+  outline: 2px solid #d28b45;
+  outline-offset: 2px;
+}
+
+.profile-edit-dialog {
+  width: min(100%, 440px);
+  max-height: min(720px, calc(100vh - 32px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(231, 184, 117, 0.25);
+  border-radius: 20px;
+  background: #faf8f3;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.35);
+}
+
+.profile-edit-header,
+.profile-edit-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.profile-edit-header {
+  padding: 16px 16px 0;
+}
+
+.profile-edit-header h2 {
+  margin: 0;
+  color: #102c32;
+  font-size: 1.15rem;
+}
+
+.profile-edit-form {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 12px 16px 16px;
+}
+
+.profile-team-label {
+  margin: 0 0 8px;
+  color: #102c32;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.profile-team-options {
+  display: grid;
+  gap: 6px;
+  max-height: min(52vh, 420px);
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.profile-team-option {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid rgba(16, 44, 50, 0.1);
+  border-radius: 12px;
+  padding: 6px 10px;
+  background: #fff;
+  color: #102c32;
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.profile-team-option span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.profile-team-option.is-selected {
+  border-color: #d28b45;
+  background: rgba(210, 139, 69, 0.12);
+}
+
+.profile-team-option:focus-visible {
+  outline: 2px solid #d28b45;
+  outline-offset: 2px;
+}
+
+.profile-edit-actions {
+  margin-top: 12px;
+}
+
+.profile-edit-cancel,
+.profile-edit-save {
+  flex: 1 1 0;
+  border: 0;
+  padding: 0 12px;
+}
+
+.profile-edit-cancel {
+  background: #ece7dc;
+  color: #102c32;
+}
+
+.profile-edit-save {
+  background: #102c32;
+  color: #f6f2e9;
+}
+
+.profile-edit-save:disabled,
+.profile-edit-cancel:disabled,
+.profile-edit-button:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.player-shield {
+  display: block;
+  flex: 0 0 auto;
+}
+
+@media (max-width: 760px) {
+  .profile-identity {
+    gap: 12px;
+  }
+
+  .profile-identity .player-shield {
+    width: 64px;
+    height: auto;
+  }
+
+  .tsc-player .player-shield {
+    width: 22px;
+    height: auto;
+  }
 }
 
 .profile-meta {

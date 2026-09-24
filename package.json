@@ -9,7 +9,7 @@
     "build:en": "tsc -b && vite build --mode en",
     "lint": "oxlint",
     "preview": "vite preview",
-    "test": "node --experimental-strip-types --test scripts/announcements-deep-link.test.mjs scripts/random-score.test.mjs scripts/randomise-matchday.test.mjs"
+    "test": "node --experimental-strip-types --test scripts/announcements-deep-link.test.mjs scripts/random-score.test.mjs scripts/randomise-matchday.test.mjs scripts/player-shield.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.0",

@@ -4,6 +4,8 @@ import {
   type AppDestination,
 } from '../components/AppHeader'
 import { LoadingMark } from '../components/BrandAssets'
+import { PlayerShield } from '../components/PlayerShield'
+import { loadTeamNameMap } from '../lib/favoriteTeam'
 import { formatGreekAllCaps } from '../lib/greekAllCaps'
 import { selectPlural, t } from '../i18n'
 import { usePlayerProfileNav } from '../lib/playerProfileNav'
@@ -35,6 +37,7 @@ type LeaderboardRow = {
   correct_results: number
   knockout_points?: number
   missed_predictions?: number
+  favorite_team_id?: number | null
 }
 
 type LeagueMatchday = {
@@ -43,6 +46,24 @@ type LeagueMatchday = {
   matchday_number: number | null
   name: string
   matches: { id: number; status: string }[] | null
+}
+
+const teamNameForRow = (
+  row: LeaderboardRow,
+  overallRows: LeaderboardRow[],
+  teamNames: Map<number, string>,
+) => {
+  const fromOverall = overallRows.find((entry) => entry.user_id === row.user_id)
+  const favoriteId =
+    row.favorite_team_id !== undefined
+      ? row.favorite_team_id
+      : fromOverall?.favorite_team_id
+
+  if (favoriteId == null) {
+    return null
+  }
+
+  return teamNames.get(favoriteId) ?? null
 }
 
 const VIEWS: { id: StandingsView; label: string }[] = [
@@ -79,6 +100,7 @@ export function StandingsPage({
   const [matchdaysLoaded, setMatchdaysLoaded] = useState(false)
   const [knockoutLoaded, setKnockoutLoaded] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [teamNames, setTeamNames] = useState<Map<number, string>>(new Map())
   const userPickedMatchdayRef = useRef(false)
 
   const orderedLeagueMatchdays = useMemo(
@@ -108,7 +130,10 @@ export function StandingsPage({
 
       setCurrentUserId(user.id)
 
-      const { data, error } = await supabase.rpc('get_leaderboard')
+      const [{ data, error }, names] = await Promise.all([
+        supabase.rpc('get_leaderboard'),
+        loadTeamNameMap(),
+      ])
 
       if (error) {
         setErrorMessage(
@@ -118,6 +143,7 @@ export function StandingsPage({
         return
       }
 
+      setTeamNames(names)
       setOverallRows((data ?? []) as LeaderboardRow[])
       setLoadingOverall(false)
     }
@@ -425,9 +451,14 @@ export function StandingsPage({
                         </div>
 
                         <div className="tsc-player">
-                          <div className="tsc-player-avatar">
-                            {row.username.charAt(0).toUpperCase()}
-                          </div>
+                          <PlayerShield
+                            teamName={teamNameForRow(
+                              row,
+                              overallRows,
+                              teamNames,
+                            )}
+                            size={28}
+                          />
 
                           <button
                             type="button"

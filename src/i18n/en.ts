@@ -540,6 +540,12 @@ export const en = {
     historyPoints: '+{n} pts',
     historyPointsZero: '0 pts',
     loadHistoryFailed: 'Prediction history could not be loaded.',
+    editProfile: 'Edit profile',
+    favoriteTeam: 'Favorite team',
+    noTeam: 'None',
+    favoriteTeamUpdated: 'Favorite team updated.',
+    favoriteTeamSaveFailed: 'The favorite team could not be saved.',
+    supports: 'Supports: {team}',
   },
   admin: {
     heading: 'Results admin',

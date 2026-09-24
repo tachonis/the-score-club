@@ -6,12 +6,20 @@ import {
 } from '../components/AppHeader'
 import { BadgeGrid } from '../components/BadgeGrid'
 import { BadgeModal } from '../components/BadgeModal'
+import { FavoriteTeamDialog } from '../components/FavoriteTeamDialog'
 import { LoadingMark } from '../components/BrandAssets'
 import { PlayerPredictionHistory } from '../components/PlayerPredictionHistory'
+import { PlayerShield } from '../components/PlayerShield'
 import {
   fetchEarnedBadges,
   type GroupedBadge,
 } from '../lib/badges'
+import {
+  loadChampionsLeagueTeams,
+  loadTeamById,
+  teamsForPicker,
+  type TeamChoice,
+} from '../lib/favoriteTeam'
 import { formatGreekAllCaps } from '../lib/greekAllCaps'
 import { usePlayerProfileNav } from '../lib/playerProfileNav'
 import { supabase } from '../lib/supabase'
@@ -38,6 +46,8 @@ type ProfileHeader = {
   username: string
   rankPosition: number | null
   totalPoints: number | null
+  favoriteTeamId: number | null
+  favoriteTeamName: string | null
 }
 
 type ProfileStats = {
@@ -80,6 +90,11 @@ export function PlayerProfilePage({
   const [profileError, setProfileError] = useState('')
   const [badgesError, setBadgesError] = useState('')
   const [notFound, setNotFound] = useState(false)
+  const [currentTeams, setCurrentTeams] = useState<TeamChoice[]>([])
+  const [editingFavorite, setEditingFavorite] = useState(false)
+  const [savingFavorite, setSavingFavorite] = useState(false)
+  const [favoriteMessage, setFavoriteMessage] = useState('')
+  const [favoriteError, setFavoriteError] = useState('')
 
   useEffect(() => {
     let cancelled = false
@@ -89,14 +104,22 @@ export function PlayerProfilePage({
       setProfileError('')
       setNotFound(false)
       setHeader(null)
+      setEditingFavorite(false)
+      setFavoriteMessage('')
+      setFavoriteError('')
       setStatsState({ status: 'loading' })
       setPredictionsState({ status: 'loading' })
 
-      const { data: profileRow, error: profileLookupError } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('id', profileUserId)
-        .maybeSingle()
+      const [profileResult, teams] = await Promise.all([
+        supabase
+          .from('profiles')
+          .select('username, favorite_team_id')
+          .eq('id', profileUserId)
+          .maybeSingle(),
+        loadChampionsLeagueTeams(),
+      ])
+      const profileRow = profileResult.data
+      const profileLookupError = profileResult.error
 
       if (cancelled) return
 
@@ -116,10 +139,24 @@ export function PlayerProfilePage({
         return
       }
 
+      const favoriteTeamId =
+        (profileRow.favorite_team_id as number | null) ?? null
+      const listedTeam =
+        teams.find((team) => team.id === favoriteTeamId) ?? null
+      const savedTeam =
+        favoriteTeamId !== null && !listedTeam
+          ? await loadTeamById(favoriteTeamId)
+          : listedTeam
+
+      if (cancelled) return
+
+      setCurrentTeams(teams)
       setHeader({
         username: profileRow.username as string,
         rankPosition: null,
         totalPoints: null,
+        favoriteTeamId,
+        favoriteTeamName: savedTeam?.name ?? null,
       })
       setLoadingProfile(false)
 
@@ -232,6 +269,47 @@ export function PlayerProfilePage({
     statsState.status === 'ready' ? statsState.stats.correctResults : '—'
   const predictionsValue =
     predictionsState.status === 'ready' ? predictionsState.count : '—'
+  const isOwnProfile = viewerUserId === profileUserId
+  const pickerTeams = teamsForPicker(
+    currentTeams,
+    header?.favoriteTeamId && header.favoriteTeamName
+      ? { id: header.favoriteTeamId, name: header.favoriteTeamName }
+      : null,
+  )
+
+  const saveFavoriteTeam = async (favoriteTeamId: number | null) => {
+    setSavingFavorite(true)
+    setFavoriteError('')
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ favorite_team_id: favoriteTeamId })
+      .eq('id', profileUserId)
+
+    if (error) {
+      setFavoriteError(t('profile.favoriteTeamSaveFailed'))
+      setSavingFavorite(false)
+      return
+    }
+
+    const savedTeam =
+      favoriteTeamId === null
+        ? null
+        : pickerTeams.find((team) => team.id === favoriteTeamId) ?? null
+
+    setHeader((current) =>
+      current
+        ? {
+            ...current,
+            favoriteTeamId,
+            favoriteTeamName: savedTeam?.name ?? null,
+          }
+        : current,
+    )
+    setFavoriteMessage(t('profile.favoriteTeamUpdated'))
+    setSavingFavorite(false)
+    setEditingFavorite(false)
+  }
 
   return (
     <div className="app-shell">
@@ -266,7 +344,36 @@ export function PlayerProfilePage({
               <p className="dashboard-eyebrow">
                 {formatGreekAllCaps(t('profile.title'))}
               </p>
-              <h1>@{header.username}</h1>
+              <div className="profile-identity">
+                <PlayerShield
+                  teamName={header.favoriteTeamName}
+                  size={84}
+                />
+                <div className="profile-identity-copy">
+                  <h1>@{header.username}</h1>
+                  {header.favoriteTeamName ? (
+                    <p className="profile-supports">
+                      {t('profile.supports', { team: header.favoriteTeamName })}
+                    </p>
+                  ) : null}
+                  {isOwnProfile ? (
+                    <button
+                      type="button"
+                      className="profile-edit-button"
+                      onClick={() => {
+                        setFavoriteError('')
+                        setFavoriteMessage('')
+                        setEditingFavorite(true)
+                      }}
+                    >
+                      {t('profile.editProfile')}
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+              {favoriteMessage ? (
+                <p className="auth-message success">{favoriteMessage}</p>
+              ) : null}
               {rankLine ? <p className="profile-meta">{rankLine}</p> : null}
             </>
           ) : null}
@@ -336,6 +443,21 @@ export function PlayerProfilePage({
         <BadgeModal
           badge={selectedBadge}
           onClose={() => setSelectedBadge(null)}
+        />
+      ) : null}
+
+      {editingFavorite && header && isOwnProfile ? (
+        <FavoriteTeamDialog
+          teams={pickerTeams}
+          favoriteTeamId={header.favoriteTeamId}
+          saving={savingFavorite}
+          errorMessage={favoriteError}
+          onClose={() => {
+            if (!savingFavorite) setEditingFavorite(false)
+          }}
+          onSave={(favoriteTeamId) => {
+            void saveFavoriteTeam(favoriteTeamId)
+          }}
         />
       ) : null}
     </div>

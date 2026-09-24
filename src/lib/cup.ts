@@ -1,6 +1,7 @@
 import { t, type MessageKey } from '../i18n'
 import { formatLeaguePhaseRound } from './stages'
 import { supabase } from './supabase'
+import { loadTeamNameMap } from './favoriteTeam'
 
 export const DEFAULT_CUP_REWARDS = {
   winner: 50,
@@ -51,6 +52,9 @@ export type CupParticipant = {
   rank_position: number
   bracket_position: number
   entry_round: number
+  /** Current profile identity. Not part of the username snapshot. */
+  favorite_team_id?: number | null
+  favorite_team_name?: string | null
 }
 
 export type CupRoundStatus = 'pending' | 'in_progress' | 'final'
@@ -456,7 +460,7 @@ export const loadPlayersCupSnapshot = async (): Promise<{
   snapshot: PlayersCupSnapshot | null
   error: string | null
 }> => {
-  const [cupResult, matchdaysResult, profilesResult, userResult] =
+  const [cupResult, matchdaysResult, profilesResult, userResult, teamNames] =
     await Promise.all([
       supabase
         .from('cup_competitions')
@@ -486,6 +490,7 @@ export const loadPlayersCupSnapshot = async (): Promise<{
         .select('id', { count: 'exact', head: true })
         .eq('status', 'active'),
       supabase.auth.getUser(),
+      loadTeamNameMap(),
     ])
 
   if (cupResult.error) {
@@ -642,10 +647,44 @@ export const loadPlayersCupSnapshot = async (): Promise<{
     }
   }
 
+  const participants = (participantsResult.data ?? []) as CupParticipant[]
+  const userIds = participants
+    .map((participant) => participant.user_id)
+    .filter((userId): userId is string => Boolean(userId))
+  const favoriteByUser = new Map<string, number | null>()
+
+  if (userIds.length > 0) {
+    const { data: identityRows } = await supabase
+      .from('profiles')
+      .select('id, favorite_team_id')
+      .in('id', userIds)
+
+    for (const row of identityRows ?? []) {
+      favoriteByUser.set(
+        row.id as string,
+        (row.favorite_team_id as number | null) ?? null,
+      )
+    }
+  }
+
   return {
     snapshot: {
       ...baseSnapshot,
-      participants: (participantsResult.data ?? []) as CupParticipant[],
+      participants: participants.map((participant) => {
+        const favoriteTeamId = participant.user_id
+          ? favoriteByUser.get(participant.user_id) ?? null
+          : null
+        const favoriteTeamName =
+          favoriteTeamId === null
+            ? null
+            : teamNames.get(favoriteTeamId) ?? null
+
+        return {
+          ...participant,
+          favorite_team_id: favoriteTeamId,
+          favorite_team_name: favoriteTeamName,
+        }
+      }),
       rounds: (roundsResult.data ?? []) as CupRound[],
       ties: (tiesResult.data ?? []) as CupTie[],
       awards: (awardsResult.data ?? []) as CupAward[],

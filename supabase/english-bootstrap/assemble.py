@@ -23,6 +23,7 @@ UNSAFE = {
 POST_SCHEMA = {
     "20260906120000_feedback_messages.sql",
     "20260911120000_announcements.sql",
+    "20260924140000_profile_favorite_team.sql",
 }
 
 SAFETY = """-- =============================================================================

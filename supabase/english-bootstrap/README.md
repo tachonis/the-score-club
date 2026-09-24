@@ -30,7 +30,8 @@ up during `supabase db push` or `supabase db reset`. That is intentional.
 3. `0003_english_badges.sql` — 23 English `badge_definitions` (no awards)
 4. `0004_feedback_messages.sql` — player contact inbox (table, RLS, RPCs). Apply this to the **existing** English production project; do not `db push` Greek migration history. Also apply after 0001–0003 on any future empty English bootstrap.
 5. `0005_announcements.sql` — announcements tables, RLS, read RPCs, and push destination constraint. Apply to the **existing** English production project; do not `db push` Greek migration history. Also apply after 0001–0004 on any future empty English bootstrap. Does not include the Greek first-matchday draft.
-6. `verify.sql` — read-only post-seed checks
+6. `0006_favorite_team.sql` — `profiles.favorite_team_id` and the additive `get_leaderboard()` column. Schema parity only. Do not apply this file to Greek production, and do not `db push` Greek migration history into English.
+7. `verify.sql` — read-only post-seed checks
 
 `assemble.py` rebuilds `0001` and `0002` from classified `supabase/migrations`
 files. It does not connect to any hosted project.
@@ -134,6 +135,7 @@ unsafe Greek documentary files. Do not use reset as an English bootstrap path.
 
 - `20260906120000_feedback_messages.sql` — apply as `0004_feedback_messages.sql` to English production / empty bootstraps. Never `db push` this Greek migration history into English.
 - `20260911120000_announcements.sql` — apply as `0005_announcements.sql` to English production / empty bootstraps. Never `db push` this Greek migration history into English. Omit the Greek unpublished first-matchday draft.
+- `20260924140000_profile_favorite_team.sql` — apply as `0006_favorite_team.sql`. Schema parity only. Never apply the English copy to Greek production, and never `db push` Greek history into English.
 
 ### D — Needs manual review (schema taken, Greek seed replaced)
 

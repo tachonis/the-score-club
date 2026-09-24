@@ -9,6 +9,7 @@ import {
   type CupTie,
 } from '../../lib/cup'
 import { formatGreekAllCaps } from '../../lib/greekAllCaps'
+import { PlayerShield } from '../PlayerShield'
 
 type ParticipantMap = Map<number, CupParticipant>
 
@@ -43,6 +44,7 @@ export function CupPlayerName({
   } ${isMe ? 'is-me' : ''}`
   const content = (
     <>
+      <PlayerShield teamName={participant?.favorite_team_name} size={18} />
       <span className="cup-player-name-text">{name}</span>
       {participant ? (
         <CupSeedBadge rankPosition={participant.rank_position} />

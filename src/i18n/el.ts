@@ -563,6 +563,12 @@ export const el = {
     historyPoints: '+{n} βαθμοί',
     historyPointsZero: '0 βαθμοί',
     loadHistoryFailed: 'Δεν φορτώθηκε το ιστορικό προβλέψεων.',
+    editProfile: 'Επεξεργασία προφίλ',
+    favoriteTeam: 'Αγαπημένη ομάδα',
+    noTeam: 'Καμία ομάδα',
+    favoriteTeamUpdated: 'Η αγαπημένη ομάδα ενημερώθηκε.',
+    favoriteTeamSaveFailed: 'Η αγαπημένη ομάδα δεν αποθηκεύτηκε.',
+    supports: 'Υποστηρίζει: {team}',
   },
   admin: {
     heading: 'Διαχείριση αποτελεσμάτων',
