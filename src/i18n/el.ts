@@ -293,6 +293,12 @@ export const el = {
     decreaseGoals: 'Μείωση γκολ {team}',
     randomScore: 'Τυχαίο σκορ',
     randomScoreHelp: 'Δημιουργία τυχαίου σκορ',
+    randomiseMatchday: 'Τυχαία συμπλήρωση',
+    randomiseMatchdayConfirm:
+      'Να συμπληρωθούν με τυχαία σκορ όλες οι κενές προβλέψεις της αγωνιστικής;',
+    randomiseMatchdayNote:
+      'Οι ήδη συμπληρωμένες προβλέψεις δεν θα αλλάξουν.',
+    randomiseMatchdayAction: 'Τυχαία συμπλήρωση',
     saveSomeFailed: 'Κάποιες προβλέψεις δεν αποθηκεύτηκαν. Δοκίμασε ξανά.',
     savedCountOk: 'Αποθηκεύτηκαν {count} προβλέψεις.',
     allLockedNow:

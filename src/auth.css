@@ -1594,6 +1594,115 @@ button {
   max-width: 520px;
 }
 
+.matchday-utilities {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 0 14px;
+}
+
+.randomise-matchday-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  max-width: 100%;
+  min-height: 36px;
+  padding: 7px 12px;
+  border: 1px solid rgba(16, 44, 50, 0.14);
+  border-radius: 999px;
+  background: #f7f5f0;
+  color: #3d5558;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.randomise-matchday-button:hover:not(:disabled) {
+  border-color: rgba(16, 44, 50, 0.28);
+  background: #f1eee6;
+  color: #102c32;
+}
+
+.randomise-matchday-button:focus-visible {
+  outline: 2px solid rgba(167, 99, 37, 0.55);
+  outline-offset: 2px;
+}
+
+.randomise-matchday-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.randomise-matchday-dialog {
+  width: min(100%, 440px);
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  border: 1px solid rgba(231, 184, 117, 0.25);
+  border-radius: 20px;
+  background: #faf8f3;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.35);
+}
+
+.randomise-matchday-dialog:focus {
+  outline: none;
+}
+
+.randomise-matchday-dialog h2 {
+  margin: 0;
+  padding: 22px 22px 0;
+  color: #102c32;
+  font-size: 1.15rem;
+  line-height: 1.35;
+}
+
+.randomise-matchday-dialog p {
+  margin: 10px 0 0;
+  padding: 0 22px;
+  color: #4d6264;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.randomise-matchday-dialog-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 14px 22px 20px;
+  border-top: 1px solid #e1ddd4;
+  background: #f2eee6;
+}
+
+.randomise-matchday-cancel,
+.randomise-matchday-confirm {
+  min-height: 44px;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.randomise-matchday-cancel {
+  border: 1px solid rgba(16, 44, 50, 0.16);
+  background: #ffffff;
+  color: #102c32;
+}
+
+.randomise-matchday-confirm {
+  border: 0;
+  background: #102c32;
+  color: #ffffff;
+}
+
+.randomise-matchday-cancel:focus-visible,
+.randomise-matchday-confirm:focus-visible {
+  outline: 2px solid #d28b45;
+  outline-offset: 2px;
+}
+
 .prediction-knockout-note,
 .prediction-final-note {
   overflow-wrap: anywhere;
@@ -2128,6 +2237,28 @@ button {
 
   .selected-matchday-notes {
     max-width: 100%;
+  }
+
+  .matchday-utilities {
+    justify-content: stretch;
+    margin-bottom: 12px;
+  }
+
+  .randomise-matchday-button {
+    width: 100%;
+    min-height: 44px;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .randomise-matchday-dialog {
+    align-self: center;
+    height: auto;
+    max-height: calc(100vh - 20px);
+  }
+
+  .randomise-matchday-dialog-footer {
+    grid-template-columns: 1fr;
   }
 
   .prediction-result-summary {

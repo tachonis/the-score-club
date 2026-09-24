@@ -280,6 +280,11 @@ export const en = {
     decreaseGoals: 'Decrease {team} goals',
     randomScore: 'Random score',
     randomScoreHelp: 'Generate a random score',
+    randomiseMatchday: 'Randomise Matchday',
+    randomiseMatchdayConfirm:
+      'Fill all empty predictions in this matchday with random scores?',
+    randomiseMatchdayNote: 'Existing predictions will not be changed.',
+    randomiseMatchdayAction: 'Randomise',
     saveSomeFailed: 'Some predictions were not saved. Try again.',
     savedCountOk: 'Saved {count} predictions.',
     allLockedNow: 'The matches you tried to change have now locked.',

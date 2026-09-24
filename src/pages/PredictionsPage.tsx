@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   AppHeader,
   type AppDestination,
@@ -27,7 +27,13 @@ import {
   buildPredictionSaveFeedback,
   classifyPredictionSaveError,
 } from '../lib/predictionSave'
+import { isPredictionMatchLocked } from '../lib/predictionLock'
 import { generateRandomFootballScore } from '../lib/randomScore'
+import {
+  applyRandomiseMatchdayDraft,
+  isEligibleForMatchdayRandomise,
+  predictionDraftDiffersFromSaved,
+} from '../lib/randomiseMatchday'
 import { supabase } from '../lib/supabase'
 import { getCompactTeamName } from '../lib/teamDisplayName'
 import { formatGreekAllCaps } from '../lib/greekAllCaps'
@@ -103,6 +109,70 @@ const isMatchOpenForPredictions = (match: Match, now: number) => {
   return (
     match.status === 'scheduled' &&
     now < new Date(match.kickoff_at).getTime()
+  )
+}
+
+function RandomiseMatchdayDialog({
+  onCancel,
+  onConfirm,
+}: {
+  onCancel: () => void
+  onConfirm: () => void
+}) {
+  const dialogRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    dialogRef.current?.focus()
+  }, [])
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onCancel()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    document.body.classList.add('modal-open')
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      document.body.classList.remove('modal-open')
+    }
+  }, [onCancel])
+
+  return (
+    <div className="rules-overlay" role="presentation">
+      <section
+        ref={dialogRef}
+        className="randomise-matchday-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="randomise-matchday-title"
+        tabIndex={-1}
+      >
+        <h2 id="randomise-matchday-title">
+          {t('predictions.randomiseMatchdayConfirm')}
+        </h2>
+        <p>{t('predictions.randomiseMatchdayNote')}</p>
+        <footer className="randomise-matchday-dialog-footer">
+          <button
+            type="button"
+            className="randomise-matchday-cancel"
+            onClick={onCancel}
+          >
+            {t('common.cancel')}
+          </button>
+          <button
+            type="button"
+            className="randomise-matchday-confirm"
+            onClick={onConfirm}
+          >
+            {t('predictions.randomiseMatchdayAction')}
+          </button>
+        </footer>
+      </section>
+    </div>
   )
 }
 
@@ -195,6 +265,7 @@ export function PredictionsPage({
     ReadonlySet<number>
   >(() => new Set())
   const [message, setMessage] = useState('')
+  const [randomiseConfirmOpen, setRandomiseConfirmOpen] = useState(false)
 
   const [messageType, setMessageType] = useState<
     'success' | 'error'
@@ -458,11 +529,7 @@ export function PredictionsPage({
     : (goldenMatches[selectedMatchdayId] ?? null)
 
   const isMatchLockedAt = (match: Match, at: number) => {
-    return (
-      locallyLockedMatchIds.has(match.id) ||
-      match.status !== 'scheduled' ||
-      at >= new Date(match.kickoff_at).getTime()
-    )
+    return isPredictionMatchLocked(match, at, locallyLockedMatchIds)
   }
 
   const isMatchLocked = (match: Match) => {
@@ -498,17 +565,11 @@ export function PredictionsPage({
     )
   }
 
-  const hasUnsavedChanges = (matchId: number) => {
-    const current = predictions[matchId]
-    const saved = savedPredictions[matchId]
-
-    const currentHome = current?.home ?? ''
-    const currentAway = current?.away ?? ''
-    const savedHome = saved?.home ?? ''
-    const savedAway = saved?.away ?? ''
-
-    return currentHome !== savedHome || currentAway !== savedAway
-  }
+  const hasUnsavedChanges = (matchId: number) =>
+    predictionDraftDiffersFromSaved(
+      predictions[matchId],
+      savedPredictions[matchId],
+    )
 
   const goldenMatchMissingSavedPrediction =
     goldenMatchIsAvailable &&
@@ -565,6 +626,25 @@ export function PredictionsPage({
         away: String(score.away),
       },
     }))
+  }
+
+  const closeRandomiseConfirm = useCallback(() => {
+    setRandomiseConfirmOpen(false)
+  }, [])
+
+  const handleConfirmRandomiseMatchday = () => {
+    if (saving) {
+      return
+    }
+
+    setPredictions((currentPredictions) =>
+      applyRandomiseMatchdayDraft(
+        currentPredictions,
+        selectedMatches,
+        isMatchLocked,
+      ).predictions,
+    )
+    setRandomiseConfirmOpen(false)
   }
 
   const handleGoldenMatchSelection = async (match: Match) => {
@@ -643,6 +723,10 @@ export function PredictionsPage({
 
   const unsavedChangesCount = selectedMatches.filter((match) =>
     hasUnsavedChanges(match.id),
+  ).length
+
+  const randomiseMatchdayCount = selectedMatches.filter((match) =>
+    isEligibleForMatchdayRandomise(match, predictions, isMatchLocked),
   ).length
 
   const handleSavePredictions = async () => {
@@ -1049,6 +1133,23 @@ export function PredictionsPage({
             </section>
             )}
 
+            {selectedMatches.length > 0 && (
+              <div className="matchday-utilities">
+                <button
+                  type="button"
+                  className="randomise-matchday-button"
+                  disabled={saving || randomiseMatchdayCount === 0}
+                  onClick={() => setRandomiseConfirmOpen(true)}
+                >
+                  <span aria-hidden="true">🎲</span>
+                  {t('predictions.randomiseMatchday')}
+                  {randomiseMatchdayCount > 0
+                    ? ` (${randomiseMatchdayCount})`
+                    : ''}
+                </button>
+              </div>
+            )}
+
             <section className="matches-list">
               {selectedMatches.length === 0 ? (
                 <div className="empty-state">
@@ -1376,6 +1477,12 @@ export function PredictionsPage({
         )}
       </main>
 
+      {randomiseConfirmOpen && (
+        <RandomiseMatchdayDialog
+          onCancel={closeRandomiseConfirm}
+          onConfirm={handleConfirmRandomiseMatchday}
+        />
+      )}
     </div>
   )
 }
