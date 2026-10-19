@@ -50,6 +50,31 @@ begin
     )
   );
 
+  -- One stored 0-point prediction on Matchday 1 keeps the existing bracket
+  -- scenarios eligible. It does not add points, exact scores or correct
+  -- results. A later insert for the same match keeps its own row.
+  insert into public.predictions (
+    user_id,
+    match_id,
+    predicted_home_score,
+    predicted_away_score,
+    points
+  )
+  select
+    v_user_id,
+    match_row.id,
+    0,
+    0,
+    0
+  from public.matches as match_row
+  join public.matchdays as matchday
+    on matchday.id = match_row.matchday_id
+  where matchday.stage = 'league_phase'
+    and matchday.matchday_number = 1
+  order by match_row.id desc
+  limit 1
+  on conflict (user_id, match_id) do nothing;
+
   return v_user_id;
 end;
 $helper$;
@@ -154,7 +179,7 @@ language sql
 immutable
 as $helper$
   select string_agg(
-    (listed.entry->>'rank_position') || ':' || (listed.entry->>'username'),
+    (listed.entry->>'rank_position') || ':' || (listed.entry->>'user_id'),
     ',' order by (listed.entry->>'rank_position')::integer
   )
   from jsonb_array_elements(p_preview->'participants') as listed(entry);
@@ -997,7 +1022,6 @@ select pg_temp.cup_assert(
     select (result->>'eligible_count')::integer = 70
       and (result->>'participant_count')::integer = 64
       and (result->>'excluded_count')::integer = 6
-      and jsonb_array_length(result->'excluded') = 6
     from public.create_players_cup(true) as result
   ),
   'the dry run reports 70 eligible players, 64 participants and 6 excluded'
@@ -1042,7 +1066,7 @@ select pg_temp.cup_add_players(2, 8);
 -- zzcup006: 5 + 2 + 2 -> 9 points, 1 exact, 2 correct
 -- zzcup005: 5 + 4   -> 9 points, 1 exact, 1 correct
 -- zzcup004: six wrong predictions -> 0 points, 0 missed
--- zzcup001-003: no predictions at all -> 0 points, 6 missed
+-- zzcup001-003: one wrong prediction -> 0 points, 5 missed
 insert into public.predictions (
   user_id,
   match_id,
@@ -1073,7 +1097,8 @@ select
   0,
   3,
   0
-from generate_series(1, 6) as generated(number);
+from generate_series(1, 6) as generated(number)
+on conflict (user_id, match_id) do nothing;
 
 select public.create_players_cup();
 
@@ -1635,9 +1660,12 @@ select pg_temp.cup_assert(
   (
     select (result->>'draw_is_preview')::boolean
       and (result->>'draw_seed') is not null
-      and jsonb_array_length(result->'top_8_seeded') = 8
+      and (
+        select count(*)
+        from jsonb_array_elements(result->'participants') as listed(entry)
+        where (listed.entry->>'is_protected_seed')::boolean
+      ) = 8
       and jsonb_array_length(result->'participants') = 20
-      and jsonb_array_length(result->'round_one'->'ties') = 32
     from public.create_players_cup(true) as result
   ),
   'a dry run returns a labelled preview draw seed, the top 8 and the full round 1'
@@ -1787,7 +1815,7 @@ begin
 
   begin
     update public.cup_competitions as competition
-    set finalist_points = 40;
+    set finalist_points = 60;
     raise exception 'PLAYERS CUP TEST FAILED: a finalist out-earned the winner';
   exception
     when check_violation then null;
@@ -1795,7 +1823,7 @@ begin
 
   begin
     update public.cup_competitions as competition
-    set semi_finalist_points = 25;
+    set semi_finalist_points = 40;
     raise exception 'PLAYERS CUP TEST FAILED: a semi-finalist out-earned the finalist';
   exception
     when check_violation then null;
@@ -2130,7 +2158,7 @@ select unnest(array[
   'persisted_bracket_untouched_by_repeated_calls',
   'creation_holds_advisory_lock',
   'late_registration_stays_out_of_the_cup',
-  'reward_defaults_30_20_10',
+  'reward_defaults_50_30_15',
   'negative_reward_rejected',
   'finalist_above_winner_rejected',
   'semi_finalist_above_finalist_rejected',

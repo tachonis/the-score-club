@@ -45,6 +45,31 @@ begin
     jsonb_build_object('username', 'zzcup' || lpad(p_index::text, 3, '0'))
   );
 
+  -- Players added after the opening Matchday 1 insert, including the 41-64
+  -- field, still need one League Phase prediction to be eligible. A later
+  -- cup_predict_matchday upsert replaces the score on this same match.
+  insert into public.predictions (
+    user_id,
+    match_id,
+    predicted_home_score,
+    predicted_away_score,
+    points
+  )
+  select
+    v_user_id,
+    match_row.id,
+    0,
+    0,
+    0
+  from public.matches as match_row
+  join public.matchdays as matchday
+    on matchday.id = match_row.matchday_id
+  where matchday.stage = 'league_phase'
+    and matchday.matchday_number = 1
+  order by match_row.id desc
+  limit 1
+  on conflict (user_id, match_id) do nothing;
+
   return v_user_id;
 end;
 $helper$;

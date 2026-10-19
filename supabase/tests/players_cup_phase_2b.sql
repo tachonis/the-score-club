@@ -1189,7 +1189,7 @@ select pg_temp.cup_assert(
     join generate_series(1, 40) as player(index)
       on pg_temp.cup_user_id(player.index) = participant.user_id
     where award.award_type = 'winner'
-  ) = 30
+  ) = 50
   and (
     select pg_temp.cup_leaderboard_points(player.index)
       - pg_temp.cup_prediction_points(player.index)
@@ -1199,7 +1199,7 @@ select pg_temp.cup_assert(
     join generate_series(1, 40) as player(index)
       on pg_temp.cup_user_id(player.index) = participant.user_id
     where award.award_type = 'finalist'
-  ) = 20
+  ) = 30
   and (
     select array_agg(
       pg_temp.cup_leaderboard_points(player.index)
@@ -1212,7 +1212,7 @@ select pg_temp.cup_assert(
     join generate_series(1, 40) as player(index)
       on pg_temp.cup_user_id(player.index) = participant.user_id
     where award.award_type = 'semi_finalist'
-  ) = array[10, 10]::bigint[],
+  ) = array[15, 15]::bigint[],
   'leaderboard totals rise by exactly winner, finalist and semi-finalist points'
 );
 
@@ -1531,14 +1531,14 @@ select pg_temp.cup_assert(
     - pg_temp.cup_prediction_points(
       current_setting('test.old_finalist_index')::integer
     )
-    = 30
+    = 50
   and pg_temp.cup_leaderboard_points(
     current_setting('test.old_champion_index')::integer
   )
     - pg_temp.cup_prediction_points(
       current_setting('test.old_champion_index')::integer
     )
-    = 20
+    = 30
   and pg_temp.cup_leaderboard_points(
     current_setting('test.old_finalist_index')::integer
   )
@@ -1744,7 +1744,7 @@ select unnest(array[
   'no_participant_holds_two_cup_awards',
   'champion_award_is_winner_points',
   'awarded_total_is_predictions_plus_honour',
-  'leaderboard_deltas_are_30_20_and_10',
+  'leaderboard_deltas_are_50_30_and_15',
   'non_awarded_player_gets_no_cup_bonus',
   'cup_honours_do_not_change_other_leaderboard_columns',
   'cup_matchday_points_are_not_double_counted',

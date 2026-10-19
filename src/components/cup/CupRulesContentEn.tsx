@@ -31,7 +31,8 @@ export function CupRulesContentEn({
         <h3>Entry &amp; draw</h3>
         <ul>
           <li>
-            Active The Score Club players take part in the Players Cup.
+            The Players Cup includes active players who submitted at least one
+            prediction during the first two matchdays.
           </li>
           <li>
             At least 8 players are required for the competition to take place.
